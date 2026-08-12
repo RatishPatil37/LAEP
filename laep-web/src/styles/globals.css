@@ -1,0 +1,304 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   LAEP Global Design System — ISRO Deep Space Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Core colours */
+  --c-bg:         #030a1c;
+  --c-surface:    #071428;
+  --c-surface2:   #0c1e3a;
+  --c-surface3:   #112347;
+  --c-border:     #1c3154;
+  --c-border2:    #254070;
+
+  /* Brand */
+  --c-accent:     #ff6b00;   /* ISRO orange */
+  --c-accent-dim: #cc5200;
+  --c-accent-glow:rgba(255,107,0,0.25);
+
+  /* Data / status colours */
+  --c-safe:       #00e676;   /* safe terrain */
+  --c-ice:        #29b6f6;   /* ice signature */
+  --c-danger:     #ff1744;   /* hazard */
+  --c-warning:    #ffd740;   /* moderate */
+  --c-path:       #69ff47;   /* rover path */
+
+  /* Text */
+  --c-text:       #e8eaf6;
+  --c-text-dim:   #8899bb;
+  --c-text-muted: #4a6080;
+
+  /* Typography */
+  --font-ui:   'Space Grotesk', 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   16px;
+  --r-xl:   24px;
+
+  /* Transitions */
+  --t-fast: 150ms ease;
+  --t-med:  250ms ease;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-body);
+  background: var(--c-bg);
+  color: var(--c-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select { font-family: inherit; }
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--c-surface); }
+::-webkit-scrollbar-thumb { background: var(--c-border2); border-radius: 3px; }
+
+/* ── Utility ───────────────────────────────────────────────────────────── */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* ── App shell ─────────────────────────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 24px;
+  height: 56px;
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--c-text);
+}
+
+.topbar-logo-badge {
+  background: var(--c-accent);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.topbar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--c-text-dim);
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.topbar-nav a:hover {
+  color: var(--c-text);
+  background: var(--c-surface3);
+}
+
+.topbar-nav a.active {
+  color: var(--c-accent);
+  background: var(--c-accent-glow);
+}
+
+/* ── Page content ──────────────────────────────────────────────────────── */
+.page-content {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--r-md);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all var(--t-fast);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--c-accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--c-accent-dim); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-ghost {
+  background: var(--c-surface3);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+}
+.btn-ghost:hover { border-color: var(--c-border2); background: var(--c-surface2); }
+
+.btn-danger {
+  background: rgba(255, 23, 68, 0.15);
+  color: var(--c-danger);
+  border: 1px solid rgba(255,23,68,0.3);
+}
+.btn-danger:hover { background: rgba(255, 23, 68, 0.25); }
+
+/* ── Stat card ─────────────────────────────────────────────────────────── */
+.stat-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  transition: border-color var(--t-med);
+}
+.stat-card:hover { border-color: var(--c-border2); }
+
+.stat-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-family: var(--font-ui);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--c-text);
+  line-height: 1;
+}
+
+.stat-unit {
+  font-size: 0.875rem;
+  color: var(--c-text-dim);
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+/* ── Toast / Alert ─────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: var(--r-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideUp 0.25s ease;
+  max-width: 480px;
+  text-align: center;
+}
+
+.toast-error   { background: rgba(255,23,68,0.9); color: #fff; }
+.toast-success { background: rgba(0,230,118,0.9); color: #000; }
+.toast-info    { background: rgba(41,182,246,0.9); color: #000; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Spinner ────────────────────────────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--c-border2);
+  border-top-color: var(--c-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Range / Slider ─────────────────────────────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--c-border2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 2px solid var(--c-bg);
+  transition: box-shadow var(--t-fast);
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 4px var(--c-accent-glow);
+}
+
+/* ── Badge ──────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.badge-safe    { background: rgba(0,230,118,0.15); color: var(--c-safe); }
+.badge-ice     { background: rgba(41,182,246,0.15); color: var(--c-ice); }
+.badge-danger  { background: rgba(255,23,68,0.15);  color: var(--c-danger); }
+.badge-warning { background: rgba(255,215,64,0.15); color: var(--c-warning); }
+
+/* ── Mobile ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .topbar { padding: 0 16px; }
+  .topbar-nav a span { display: none; }
+}
