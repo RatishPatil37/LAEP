@@ -8,17 +8,40 @@ Two-phase approach:
 
 Movement model: 8-connected grid (cardinal + diagonal).
 Diagonal moves incur a 1.414× distance penalty.
+Includes automatic snap-to-nearest-navigable-cell for edge-case point selections.
 """
 import heapq
 import numpy as np
 from collections import deque
 from config import GRID_SIZE, SOUTH_POLE_BBOX
 
-
-# ──────────────────────────────────────────────────────────────────────────────
-# BFS Reachability pre-filter
-# ──────────────────────────────────────────────────────────────────────────────
 _NEIGHBORS_8 = [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(-1,1),(1,-1),(1,1)]
+
+
+def find_nearest_navigable_cell(cost_grid: np.ndarray, cell: tuple[int, int], max_radius: int = 15) -> tuple[int, int]:
+    """
+    If a selected point is in impassable terrain (slope > max_slope),
+    finds the nearest navigable cell within a max_radius grid search.
+    """
+    H, W = cost_grid.shape
+    if _in_bounds(cell, H, W) and cost_grid[cell] != np.inf:
+        return cell
+
+    r, c = cell
+    best_cell = cell
+    best_dist = float('inf')
+
+    for dr in range(-max_radius, max_radius + 1):
+        for dc in range(-max_radius, max_radius + 1):
+            nr, nc = r + dr, c + dc
+            if _in_bounds((nr, nc), H, W) and cost_grid[nr, nc] != np.inf:
+                dist = dr * dr + dc * dc
+                if dist < best_dist:
+                    best_dist = dist
+                    best_cell = (nr, nc)
+
+    return best_cell
+
 
 def bfs_reachable(cost_grid: np.ndarray, start: tuple[int, int]) -> np.ndarray:
     """
@@ -45,9 +68,6 @@ def bfs_reachable(cost_grid: np.ndarray, start: tuple[int, int]) -> np.ndarray:
     return visited
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# A* search
-# ──────────────────────────────────────────────────────────────────────────────
 def _heuristic(a: tuple, b: tuple) -> float:
     """Euclidean distance heuristic (admissible for 8-connected grid)."""
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
@@ -60,19 +80,17 @@ def a_star_search(
 ) -> list[tuple[int, int]]:
     """
     Find the minimum-cost path from start to goal on the cost grid.
-
-    Returns:
-        List of (row, col) tuples from start to goal (inclusive),
-        or empty list if no path exists.
+    Automatically snaps start and goal to nearest navigable cells if needed.
     """
     H, W = cost_grid.shape
 
-    # ── Sanity checks ──────────────────────────────────────────────────────
+    # ── Auto-snap impassable start/goal to nearest navigable cell ─────────
+    start = find_nearest_navigable_cell(cost_grid, start)
+    goal  = find_nearest_navigable_cell(cost_grid, goal)
+
     if not _in_bounds(start, H, W) or not _in_bounds(goal, H, W):
         return []
-    if cost_grid[start] == np.inf:
-        return []
-    if cost_grid[goal] == np.inf:
+    if cost_grid[start] == np.inf or cost_grid[goal] == np.inf:
         return []
     if start == goal:
         return [start]
@@ -80,7 +98,7 @@ def a_star_search(
     # ── BFS reachability pre-filter ────────────────────────────────────────
     reachable = bfs_reachable(cost_grid, start)
     if not reachable[goal]:
-        return []          # Goal is unreachable — skip expensive A* entirely
+        return []
 
     # ── A* search ─────────────────────────────────────────────────────────
     frontier: list = []
@@ -106,7 +124,6 @@ def a_star_search(
             if step_cost == np.inf:
                 continue
 
-            # Diagonal moves are √2 longer
             if dr != 0 and dc != 0:
                 step_cost *= 1.4142
 
@@ -131,16 +148,9 @@ def a_star_search(
     return path
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Coordinate conversion: grid pixel → lunar lon/lat
-# ──────────────────────────────────────────────────────────────────────────────
 def grid_to_lonlat(
     row: int, col: int, grid_size: int = GRID_SIZE, bbox: dict = SOUTH_POLE_BBOX
 ) -> tuple[float, float]:
-    """
-    Convert a grid (row, col) to lunar (longitude, latitude).
-    The simulation grid spans the SOUTH_POLE_BBOX bounding box.
-    """
     lon = bbox["lon_min"] + (col / grid_size) * (bbox["lon_max"] - bbox["lon_min"])
     lat = bbox["lat_max"] - (row / grid_size) * (bbox["lat_max"] - bbox["lat_min"])
     return round(lon, 6), round(lat, 6)
@@ -149,9 +159,6 @@ def grid_to_lonlat(
 def lonlat_to_grid(
     lon: float, lat: float, grid_size: int = GRID_SIZE, bbox: dict = SOUTH_POLE_BBOX
 ) -> tuple[int, int]:
-    """
-    Convert lunar (longitude, latitude) to grid (row, col).
-    """
     col = int((lon - bbox["lon_min"]) / (bbox["lon_max"] - bbox["lon_min"]) * grid_size)
     row = int((bbox["lat_max"] - lat) / (bbox["lat_max"] - bbox["lat_min"]) * grid_size)
     col = max(0, min(col, grid_size - 1))
@@ -164,10 +171,6 @@ def path_to_geojson(
     grid_size: int = GRID_SIZE,
     bbox: dict = SOUTH_POLE_BBOX,
 ) -> dict:
-    """
-    Convert a list of grid (row, col) waypoints to a GeoJSON LineString
-    with lon/lat coordinates.
-    """
     if not path:
         return {"type": "Feature", "geometry": None, "properties": {}}
 
@@ -188,9 +191,6 @@ def path_to_geojson(
     }
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Helpers
-# ──────────────────────────────────────────────────────────────────────────────
 def _in_bounds(cell: tuple[int, int], H: int, W: int) -> bool:
     r, c = cell
     return 0 <= r < H and 0 <= c < W
