@@ -42,25 +42,39 @@ export default function Explorer() {
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState(null);
 
-  // ── On mount: load CH2 footprints ──────────────────────────────────────
+  const [candidateSites, setCandidateSites] = useState([]);
+
+  // ── On mount: load CH2 footprints & candidate landing sites ──────────
   useEffect(() => {
     getCH2Footprints()
       .then(fc => mapRef.current?.addCH2Footprints(fc))
       .catch(() => {});          // Silent — data may not be available
+
+    getLandingSites()
+      .then(res => setCandidateSites(res.sites ?? []))
+      .catch(() => {});
   }, []);
 
-  // ── Map click handler ──────────────────────────────────────────────────
+  // ── Map click handler (smart auto-advance) ─────────────────────────────
   const handleMapClick = useCallback(([lon, lat]) => {
-    if (mode === MODE.START) {
-      const pt = [lon, lat];
+    const pt = [lon, lat];
+    if (mode === MODE.START || (!start && mode === MODE.NONE)) {
       setStart(pt);
       setMode(MODE.GOAL);
       mapRef.current?.setMarkers(pt, goal);
-    } else if (mode === MODE.GOAL) {
-      const pt = [lon, lat];
+    } else if (mode === MODE.GOAL || (start && !goal)) {
       setGoal(pt);
       setMode(MODE.NONE);
       mapRef.current?.setMarkers(start, pt);
+    } else {
+      // Both already set — start fresh with new start point
+      setStart(pt);
+      setGoal(null);
+      setMode(MODE.GOAL);
+      setPathResult(null);
+      setError(null);
+      mapRef.current?.setMarkers(pt, null);
+      mapRef.current?.addPathLayer(null);
     }
   }, [mode, start, goal]);
 
@@ -144,6 +158,33 @@ export default function Explorer() {
                 </span>
               </button>
             </div>
+
+            {candidateSites.length > 0 && (
+              <div style={{ marginTop: 6 }}>
+                <div style={{ fontSize: '0.68rem', color: 'var(--c-text-muted)', marginBottom: 4, fontWeight: 500 }}>
+                  Quick Preset Landing Sites:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {candidateSites.slice(0, 3).map((site, i) => (
+                    <button
+                      key={i}
+                      className="btn btn-ghost"
+                      style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--c-border)' }}
+                      onClick={() => {
+                        const startPt = [site.lon, site.lat];
+                        const goalPt  = [0.5, -85.0]; // Shackleton crater floor ice target
+                        setStart(startPt);
+                        setGoal(goalPt);
+                        setMode(MODE.NONE);
+                        mapRef.current?.setMarkers(startPt, goalPt);
+                      }}
+                    >
+                      📍 Site {i + 1} ({site.lon.toFixed(1)}°, {site.lat.toFixed(1)}°)
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: 8 }}>
               <button

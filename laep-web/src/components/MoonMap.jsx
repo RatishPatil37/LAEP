@@ -136,6 +136,12 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
     },
   }), []);
 
+  const onCoordMoveRef = useRef(onCoordMove);
+  const onMapClickRef  = useRef(onMapClick);
+
+  useEffect(() => { onCoordMoveRef.current = onCoordMove; }, [onCoordMove]);
+  useEffect(() => { onMapClickRef.current  = onMapClick;  }, [onMapClick]);
+
   // ── Build map once on mount ─────────────────────────────────────────
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return;
@@ -204,11 +210,11 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
 
     map.on('pointermove', (e) => {
       const [lon, lat] = e.coordinate;
-      onCoordMove?.({ lon: lon.toFixed(4), lat: lat.toFixed(4) });
+      onCoordMoveRef.current?.({ lon: lon.toFixed(4), lat: lat.toFixed(4) });
     });
 
     map.on('singleclick', (e) => {
-      onMapClick?.(e.coordinate);   // [lon, lat] directly (EPSG:4326 view)
+      onMapClickRef.current?.(e.coordinate);   // [lon, lat] directly (EPSG:4326 view)
     });
 
     return () => { map.setTarget(null); mapRef.current = null; };
