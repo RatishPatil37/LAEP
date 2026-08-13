@@ -1,0 +1,7 @@
+{
+  "name": "laep-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "cd laep-web && npm install && npm run build"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd laep-web && npm install && npm run build",
+  "outputDirectory": "laep-web/dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
