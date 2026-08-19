@@ -1,4 +1,8 @@
-/* ── Explorer page layout ───────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   LAEP Mission Control & Moon Map Styling — Aerospace HUD Theme
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Explorer Page Layout ──────────────────────────────────────────────── */
 .explorer-layout {
   display: flex;
   flex: 1;
@@ -6,316 +10,528 @@
   min-width: 0;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
-/* ── Map container ──────────────────────────────────────────────────────── */
+/* ── Map Container ─────────────────────────────────────────────────────── */
 .map-container {
   flex: 1;
   position: relative;
   overflow: hidden;
+  background: #01040a;
 }
 
 #moon-map {
   width: 100%;
   height: 100%;
-  background: #010710;
+  background: #01040a;
 }
 
-/* ── OpenLayers overrides to match ISRO theme ───────────────────────────── */
+/* ── OpenLayers Aerospace Overrides ────────────────────────────────────── */
 .ol-control button {
-  background: var(--c-surface2) !important;
-  color: var(--c-text) !important;
-  border: 1px solid var(--c-border) !important;
+  background: var(--c-surface-glass) !important;
+  color: var(--c-neon-cyan) !important;
+  border: 1px solid var(--c-border2) !important;
   border-radius: var(--r-sm) !important;
-  font-size: 1.1rem !important;
+  font-family: var(--font-hud) !important;
+  font-size: 1.15rem !important;
+  backdrop-filter: blur(8px);
+  transition: all var(--t-fast);
 }
+
 .ol-control button:hover {
   background: var(--c-surface3) !important;
-  border-color: var(--c-accent) !important;
+  border-color: var(--c-neon-cyan) !important;
+  box-shadow: 0 0 12px var(--c-neon-glow);
 }
 
-.ol-zoom { bottom: 24px !important; top: auto !important; right: 16px !important; left: auto !important; }
-.ol-attribution { background: rgba(3,10,28,0.8) !important; color: var(--c-text-dim) !important; font-size: 0.65rem !important; }
-.ol-attribution a { color: var(--c-ice) !important; }
+.ol-zoom { bottom: 24px !important; top: auto !important; right: 18px !important; left: auto !important; }
+.ol-attribution { background: rgba(5,8,17,0.85) !important; color: var(--c-text-dim) !important; font-size: 0.68rem !important; border-radius: 4px; }
+.ol-attribution a { color: var(--c-neon-cyan) !important; }
 
-/* ── Map mode indicator ─────────────────────────────────────────────────── */
+/* ── Map Top/Bottom Telemetry Overlays ─────────────────────────────────── */
+.coords-overlay {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--c-surface-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--c-border2);
+  border-radius: 24px;
+  padding: 6px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--c-text);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.coords-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coords-label {
+  color: var(--c-text-muted);
+  font-weight: 600;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.coords-val {
+  color: var(--c-neon-cyan);
+  font-weight: 700;
+}
+
 .map-mode-pill {
   position: absolute;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(3,10,28,0.85);
-  backdrop-filter: blur(10px);
+  background: var(--c-surface-glass);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--c-border2);
   border-radius: 20px;
-  padding: 8px 18px;
-  font-family: var(--font-ui);
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 8px 20px;
+  font-family: var(--font-hud);
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--c-text-dim);
   pointer-events: none;
   transition: all var(--t-med);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  z-index: 10;
+  letter-spacing: 0.04em;
 }
 
-.map-mode-pill.start-mode { border-color: var(--c-safe); color: var(--c-safe); }
-.map-mode-pill.goal-mode  { border-color: var(--c-ice);  color: var(--c-ice);  }
-
-/* ── Path animation ──────────────────────────────────────────────────────── */
-.path-drawn {
-  stroke-dasharray: 6 4;
-  animation: pathMarch 1.5s linear infinite;
+.map-mode-pill.start-mode {
+  border-color: var(--c-safe);
+  color: var(--c-safe);
+  box-shadow: 0 0 16px rgba(0, 230, 118, 0.3);
 }
 
-@keyframes pathMarch {
-  to { stroke-dashoffset: -20; }
+.map-mode-pill.goal-mode {
+  border-color: var(--c-ice);
+  color: var(--c-ice);
+  box-shadow: 0 0 16px rgba(0, 255, 204, 0.3);
 }
 
-/* ── Coordinates overlay ─────────────────────────────────────────────────── */
-.coords-overlay {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(3,10,28,0.8);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--c-border);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--c-text-dim);
-  pointer-events: none;
-}
-
-/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+/* ── Mission Control Sidebar ───────────────────────────────────────────── */
 .sidebar {
-  width: 320px;
+  width: 380px;
   flex-shrink: 0;
-  background: var(--c-surface);
+  background: var(--c-surface-glass);
+  backdrop-filter: blur(14px);
   border-right: 1px solid var(--c-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  z-index: 20;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
 }
 
 .sidebar-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--c-border);
   flex-shrink: 0;
+  background: rgba(11, 18, 32, 0.95);
 }
 
 .sidebar-title {
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--c-text);
-  letter-spacing: 0.02em;
+  font-family: var(--font-hud);
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .sidebar-subtitle {
+  font-family: var(--font-mono);
   font-size: 0.72rem;
+  color: var(--c-neon-cyan);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Sidebar Tab Selector */
+.sidebar-tabs {
+  display: flex;
+  background: var(--c-surface2);
+  border-bottom: 1px solid var(--c-border);
+  flex-shrink: 0;
+}
+
+.sidebar-tab {
+  flex: 1;
+  padding: 10px 4px;
+  font-family: var(--font-hud);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   color: var(--c-text-muted);
-  margin-top: 2px;
+  text-align: center;
+  border-bottom: 2px solid transparent;
+  transition: all var(--t-fast);
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.sidebar-tab:hover {
+  color: var(--c-text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sidebar-tab.active {
+  color: var(--c-neon-cyan);
+  border-bottom-color: var(--c-neon-cyan);
+  background: rgba(0, 229, 255, 0.06);
 }
 
 .sidebar-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* ── Control group ───────────────────────────────────────────────────────── */
+/* ── Control Group Panels ──────────────────────────────────────────────── */
 .ctrl-group {
+  background: var(--c-surface2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: border-color var(--t-fast);
+}
+
+.ctrl-group:hover {
+  border-color: var(--c-border2);
 }
 
 .ctrl-group-title {
-  font-family: var(--font-ui);
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-family: var(--font-hud);
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--c-text-muted);
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--c-border);
-}
-
-/* ── Slider control ──────────────────────────────────────────────────────── */
-.slider-ctrl {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.slider-row {
+  color: var(--c-neon-cyan);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.8rem;
 }
 
-.slider-label { color: var(--c-text-dim); font-weight: 500; }
-.slider-val {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--c-accent);
-  background: var(--c-accent-glow);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-/* ── Point selector ──────────────────────────────────────────────────────── */
+/* Waypoint Selectors */
 .point-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .point-btn {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
   padding: 10px 12px;
-  border-radius: var(--r-md);
-  border: 1.5px solid var(--c-border);
-  background: var(--c-surface2);
+  background: var(--c-surface3);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-sm);
   transition: all var(--t-fast);
   cursor: pointer;
 }
 
-.point-btn:hover { border-color: var(--c-border2); }
+.point-btn:hover {
+  border-color: var(--c-neon-cyan);
+}
 
-.point-btn.active-start { border-color: var(--c-safe); background: rgba(0,230,118,0.05); }
-.point-btn.active-goal  { border-color: var(--c-ice);  background: rgba(41,182,246,0.05); }
-.point-btn.has-point    { opacity: 1; }
+.point-btn.active-start {
+  border-color: var(--c-safe);
+  background: rgba(0, 230, 118, 0.12);
+  box-shadow: 0 0 12px rgba(0, 230, 118, 0.25);
+}
+
+.point-btn.active-goal {
+  border-color: var(--c-ice);
+  background: rgba(0, 255, 204, 0.12);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.25);
+}
 
 .point-btn-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-family: var(--font-hud);
+  font-size: 0.68rem;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
+
 .point-btn-label.start { color: var(--c-safe); }
 .point-btn-label.goal  { color: var(--c-ice); }
 
 .point-btn-coords {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--c-text-dim);
+  font-size: 0.72rem;
+  color: var(--c-text);
+  margin-top: 4px;
 }
 
-/* ── Layer toggles ───────────────────────────────────────────────────────── */
-.layer-list { display: flex; flex-direction: column; gap: 6px; }
-
-.layer-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: var(--r-sm);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all var(--t-fast);
-  user-select: none;
-}
-.layer-row:hover { background: var(--c-surface2); border-color: var(--c-border); }
-.layer-row.active { border-color: var(--c-border); background: var(--c-surface2); }
-
-.layer-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.layer-name {
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--c-text-dim);
-  flex: 1;
-}
-.layer-row.active .layer-name { color: var(--c-text); }
-
-.layer-toggle {
-  width: 30px; height: 16px;
-  border-radius: 8px;
-  background: var(--c-border2);
-  position: relative;
-  flex-shrink: 0;
-  transition: background var(--t-fast);
-}
-.layer-toggle::after {
-  content: '';
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  background: var(--c-text-muted);
-  transition: all var(--t-fast);
-}
-.layer-row.active .layer-toggle { background: var(--c-accent); }
-.layer-row.active .layer-toggle::after { left: 16px; background: #fff; }
-
-/* ── Path result panel ───────────────────────────────────────────────────── */
-.result-panel {
-  background: var(--c-surface2);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-lg);
-  overflow: hidden;
-}
-
-.result-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--c-border);
-  font-family: var(--font-ui);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-.result-header.success { color: var(--c-safe); }
-.result-header.error   { color: var(--c-danger); }
-.result-header.loading { color: var(--c-text-dim); }
-
-.result-stats {
+/* ── Custom Lat/Lon Coordinate Inputs ──────────────────────────────────── */
+.custom-coords-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--c-border);
+  gap: 10px;
 }
 
-.result-stat {
-  background: var(--c-surface2);
-  padding: 10px 14px;
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.result-stat-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--c-text-muted);
-}
-.result-stat-value {
+
+.input-field label {
   font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+}
+
+.input-field input {
+  background: var(--c-surface3);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--c-text);
+  outline: none;
+  transition: all var(--t-fast);
+}
+
+.input-field input:focus {
+  border-color: var(--c-neon-cyan);
+  box-shadow: 0 0 10px var(--c-neon-glow);
+}
+
+/* ── Benchmark Crater Preset Buttons ───────────────────────────────────── */
+.preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.preset-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--c-surface3);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.preset-item:hover {
+  border-color: var(--c-neon-cyan);
+  background: rgba(0, 229, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.preset-name {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--c-text);
+}
+
+.preset-meta {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--c-neon-cyan);
+}
+
+/* ── 3D Volumetric Ice Estimation Readout ───────────────────────────────── */
+.volumetric-panel {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.05), rgba(0, 255, 204, 0.08));
+  border: 1px solid rgba(0, 255, 204, 0.35);
+  border-radius: var(--r-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vol-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vol-title {
+  font-family: var(--font-hud);
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--c-ice);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.vol-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.vol-stat-card {
+  background: var(--c-surface3);
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border);
+}
+
+.vol-stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+}
+
+.vol-stat-val {
+  font-family: var(--font-hud);
+  font-size: 1.05rem;
+  font-weight: 800;
   color: var(--c-text);
   margin-top: 2px;
 }
 
-/* ── Mobile sidebar ─────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .explorer-layout { flex-direction: column-reverse; }
-  .sidebar {
-    width: 100%;
-    height: 300px;
-    border-right: none;
-    border-top: 1px solid var(--c-border);
-  }
+.vol-stat-val.highlight {
+  color: var(--c-ice);
+  text-shadow: 0 0 10px var(--c-ice-glow);
+}
+
+/* ── Elevation Profile & Kinematic HUD ─────────────────────────────────── */
+.elevation-profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.elevation-canvas {
+  width: 100%;
+  height: 90px;
+  background: var(--c-surface3);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border2);
+}
+
+/* ── Layer Toggle List ─────────────────────────────────────────────────── */
+.layer-toggle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  background: var(--c-surface3);
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.layer-item:hover {
+  background: var(--c-surface2);
+}
+
+.layer-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-family: var(--font-ui);
+  color: var(--c-text);
+}
+
+.layer-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.layer-switch {
+  width: 32px;
+  height: 18px;
+  background: var(--c-border2);
+  border-radius: 10px;
+  position: relative;
+  transition: background var(--t-fast);
+}
+
+.layer-switch.on {
+  background: var(--c-neon-cyan);
+  box-shadow: 0 0 8px var(--c-neon-glow);
+}
+
+.layer-switch-handle {
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform var(--t-fast);
+}
+
+.layer-switch.on .layer-switch-handle {
+  transform: translateX(14px);
+}
+
+/* ── Mission Export Buttons ────────────────────────────────────────────── */
+.export-btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-export {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--c-surface3);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--c-text);
+  transition: all var(--t-fast);
+  cursor: pointer;
+}
+
+.btn-export:hover {
+  border-color: var(--c-neon-cyan);
+  color: var(--c-neon-cyan);
+  background: rgba(0, 229, 255, 0.08);
 }

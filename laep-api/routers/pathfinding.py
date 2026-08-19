@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import numpy as np
 
 from algorithms.data_loader import generate_synthetic_scene
-from algorithms.cost_grid import compute_slope, build_cost_grid
+from algorithms.cost_grid import compute_slope, build_cost_grid, compute_sar_geometric_roughness
 from algorithms.a_star import (
     a_star_search, lonlat_to_grid, path_to_geojson, grid_to_lonlat,
     find_nearest_navigable_cell
@@ -11,7 +11,6 @@ from algorithms.a_star import (
 from config import GRID_SIZE, SOUTH_POLE_BBOX, PIXEL_SIZE_M
 
 router = APIRouter()
-
 
 class PathRequest(BaseModel):
     start_lon: float
@@ -22,15 +21,11 @@ class PathRequest(BaseModel):
     w_shadow: float = 2.0
     max_slope: float = 15.0
 
-
 @router.post("/pathfind")
 def compute_path(req: PathRequest):
     """
     Run A* pathfinding from a start lon/lat to a goal lon/lat.
-    Bulletproof implementation:
-    - Clamps parameters safely
-    - Automatically snaps impassable start/goal points to nearest safe cell
-    - Returns graceful fallback line if complete obstruction occurs
+    Guarantees seamless line connection directly between start marker and goal marker.
     """
     w_slope = max(0.0, min(10.0, req.w_slope))
     w_shadow = max(0.0, min(10.0, req.w_shadow))
@@ -39,8 +34,10 @@ def compute_path(req: PathRequest):
     scene = generate_synthetic_scene()
     dem = scene["dem"]
     shadow = scene["shadow_map"]
+    cpr = scene.get("cpr", np.ones_like(dem) * 0.3)
+    roughness = compute_sar_geometric_roughness(cpr)
     slope = compute_slope(dem)
-    cost_grid = build_cost_grid(slope, shadow, w_slope, w_shadow, max_slope)
+    cost_grid = build_cost_grid(slope, shadow, roughness, w_slope, w_shadow, 1.5, max_slope)
 
     # Convert lon/lat → grid pixels
     start_raw = lonlat_to_grid(req.start_lon, req.start_lat, GRID_SIZE, SOUTH_POLE_BBOX)
@@ -52,43 +49,39 @@ def compute_path(req: PathRequest):
 
     path = a_star_search(cost_grid, start, goal)
 
-    # If no path could be reconstructed due to total enclosure, generate safe straight line
     if not path:
         path = [start, goal]
 
-    # Compute energy cost along the path
-    energy_cost = sum(float(cost_grid[r, c]) if isfinite(cost_grid[r, c]) else 100.0 for r, c in path)
-
-    # Path distance in km
-    dist_m = 0.0
-    for i in range(1, len(path)):
-        dr = abs(path[i][0] - path[i-1][0])
-        dc = abs(path[i][1] - path[i-1][1])
-        dist_m += PIXEL_SIZE_M * (1.4142 if dr and dc else 1.0)
-
-    geojson = path_to_geojson(path, GRID_SIZE, SOUTH_POLE_BBOX)
+    # Generate GeoJSON with seamless exact coordinate join and elevation slice
+    geojson = path_to_geojson(
+        path=path,
+        dem=dem,
+        slope_grid=slope,
+        exact_start=(req.start_lon, req.start_lat),
+        exact_goal=(req.goal_lon, req.goal_lat),
+        grid_size=GRID_SIZE,
+        bbox=SOUTH_POLE_BBOX,
+        pixel_size_m=PIXEL_SIZE_M
+    )
 
     # Compute slope and ICS statistics along the path
     path_slopes = [float(slope[r, c]) for r, c in path]
     path_ics    = [float(scene["ice_score"][r, c]) for r, c in path]
+    props = geojson.get("properties", {})
 
     return {
         "path": geojson,
         "stats": {
-            "waypoints": len(path),
-            "distance_km": round(dist_m / 1000, 3),
-            "energy_cost": round(energy_cost, 2),
-            "max_slope_deg": round(max(path_slopes) if path_slopes else 0, 2),
-            "mean_slope_deg": round(sum(path_slopes) / len(path_slopes) if path_slopes else 0, 2),
+            "waypoints": props.get("waypoints", len(path)),
+            "distance_km": props.get("distance_km", 0.0),
+            "est_energy_wh": props.get("est_energy_wh", 0.0),
+            "max_slope_deg": props.get("max_slope_deg", round(max(path_slopes) if path_slopes else 0, 2)),
+            "mean_slope_deg": props.get("mean_slope_deg", round(sum(path_slopes) / len(path_slopes) if path_slopes else 0, 2)),
             "max_ics_along_path": round(max(path_ics) if path_ics else 0, 3),
+            "elevation_profile": props.get("elevation_profile", [])
         },
         "status": "success",
     }
-
-
-def isfinite(val):
-    return not np.isinf(val) and not np.isnan(val)
-
 
 @router.get("/landing-sites")
 def get_landing_sites():
@@ -118,6 +111,7 @@ def get_landing_sites():
             "shadow": round(float(shadow[r, c]), 3),
             "ics": round(float(scene["ice_score"][r, c]), 3),
             "elevation_m": round(float(dem[r, c]), 1),
+            "rank": len(sites) + 1,
+            "name": f"Landing Zone LZ-{len(sites) + 1}"
         })
-
-    return {"sites": sites[:5]}
+    return {"sites": sites}

@@ -1,0 +1,2435 @@
+======================================================================
+FILE: Comparison_of_Deep_Learning_Models_for_Crater_Detection_Using_OHRC_Dataset_of_Chandrayaan-2.pdf (3 pages)
+======================================================================
+--- Page 1 ---
+COMPARISON OF DEEP LEARNING MODELS FOR CRATER DETECTION USING OHRC 
+DATASET OF CHANDRAYAAN-2 
+ 
+Harshaditya Gaur1, Shaifali Garg2, Vinay Kumar3 
+ 
+Indian Institute of Remote Sensing Dehradun, Uttarakhand 248001, India123 
+ 
+ABSTRACT 
+The Orbital High-Resolution Camera (OHRC), with a spatial 
+resolution of 25cm, is one of  the most sophisticated optical 
+sensors available for lunar exploration, capturing detailed 
+observations of the lunar surface. This data is crucial for lunar 
+missions to define safe and unsafe regions such as craters, 
+ridges and boulders. The deep learning approach eliminates 
+the need for manual intervention and streamlines the analysis 
+of large lunar datasets. The combination of planetary data and 
+modern processing techniques has significantly improved the 
+accuracy and efficiency of crater detection, enabling detailed 
+and large-scale analyses of planetary surfaces. The study area 
+undertaken for the application of deep learning models for 
+automated crater detection is the landing site of the NASA 
+Apollo 12 (April 1967) and Surveyor 3 (November 1969) 
+missions. Models such as YOLOv8 and Mask R-CNN were 
+applied to detect medium to large-sized craters. The YOLOv8 
+model result outperformed the Mask R-CNN result by 
+providing higher accuracy and faster execution time. This 
+study contributes valuable insigh ts to the planetary science 
+community by highlighting the r obustness of different deep 
+learning models for crater analysis using optical datasets from 
+the Chandrayaan-2 lunar mission by ISRO, India. 
+Keywords— OHRC, Chanrayaan-2, YOLOv8, Mask RCNN, 
+Crater, Deep Learning 
+1. INTRODUCTION 
+The study of planetary science has reached new heights with 
+recent technological advancements in remote sensing that 
+have transformed our understanding of distant celestial 
+bodies, enabling us to analyze surface composition, 
+atmospheric dynamics, geographical features etc [1, 8, 9]. 
+Planetary geographies, such as lunar terrain, are vastly 
+covered with craters. The coll ision of extraterrestrial objects 
+such as asteroids, comets, and meteorites on the lunar surface 
+forms these circular surface depressions. These impact zones 
+pose challenges for planetary miss ions in various domains, 
+such as landing site selection of landers, navigation of 
+extravehicular activities, rover p ath planning etc [2]. Crater 
+detection is a formidable challenge due to their diverse and 
+complex characteristics. The study focuses on the automated 
+identification of lunar craters using the panchromatic dataset 
+of the Chandrayaan-2 OH RC (Orbiter High-Resolution 
+Camera) dataset, which provides a high spatial resolution of 
+0.25m with a swath of 3km providing comprehensive insights 
+into the lunar topography and morphology [3]. The area 
+selected for this study cove rs the landing sites of NASA 
+Apollo 12 (April 1967) /Surveyor 3 (1967) missions. A 
+comparative analysis of modern  deep learning models such 
+as YOLOv8 (You Only Look Once), which provides real-
+time object detection capabilit ies, and Mask R-CNN (Mask 
+Region-based Convolutional Neural Network), which uses 
+pixel-level segmentation for object detection was performed 
+[4, 5, 6]. This study demonstrates the improvements in 
+accuracy and efficiency in identifying and analyzing intricate 
+patterns within large planetar y datasets. Also highlights the 
+potential to transform planetary d ata analysis, particularly in 
+complex tasks such as object identification and classification.  
+ 
+2. STUDY AREA 
+ 
+The study area taken for this research is the NASA Apollo 12 
+(1967)/Surveyor 3 (1967) missions landing site, located in the 
+equatorial region of the Moon. This site was chosen for its 
+relatively even terrain charac teristics compared to the 
+undulating polar region of the Moon. Fig. 1 shows the data 
+strip from OHRC onboard Chandrayaan-2 Orbiter overlaid 
+on Google Moon for data visualization. 
+ 
+ 
+ 
+Fig. 1 Data Strip of OHRC on Surveyor 3/Apollo 12 landing 
+site visualized using Google Moon 
+2024 IEEE India Geoscience and Remote Sensing Symposium (InGARSS) | 979-8-3503-9034-6/24/$31.00 ©2024 IEEE | DOI: 10.1109/InGARSS61818.2024.10984392
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on July 30,2026 at 09:25:06 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 2 ---
+3. DATASET 
+OHRC (Orbiter High-Resolution Camera) is one of the 
+scientific instruments onboard th e Chandrayaan-2 Orbiter. It 
+is an optical imaging camera operating in the visible-
+panchromatic wavelength range (500-800nm), capturing 
+detailed lunar imagery with a ground sampling distance of 
+0.25m. The dataset was acquired between 16:06 - 16:07 GMT 
+over the equatorial region of Moon on May 04, 2021 [3, 7]. 
+Table 1: Dataset Specification 
+Spectral Range 500 - 800nm 
+GSD 0.25m 
+Orbit Altitude 100km 
+Swath 3km x 12 km (at nadir) 
+Platform Chandrayaan – 2 Orbiter 
+Type of data Panchromatic (Calibrated) 
+4. METHODOLOGY 
+The workflow for the study s tarts with acquiring data from 
+the IRSO-ISDA portal for the lunar equatorial region. The 
+single-band panchromatic data is pre-processed, which 
+involves a sequence of steps such as distortion check, noise 
+removal, etc. Data augmentation techniques such as rotation, 
+scaling, and flipping are done to enhance the dataset’s 
+diversity, thereby improving the model’s robustness. Data 
+annotation is performed where lunar craters are labelled to 
+create a ground truth dataset/mask for training the models. 
+ 
+Fig. 2: Flowchart of Crater Detection using Deep Learning 
+The dataset is then split into training, testing and validation  
+sets, with images resized to meet  model input requirements.
+ 
+Deep learning models such as  YOLOv8 and Mask R-CNN 
+were trained using the annotated data. During the training and 
+testing, the hyperparameters of all the models wer e adjusted 
+to achieve optimal performance . Lastly, the results are 
+compared based on accuracy and computational efficiency to 
+identify the best model fo r lunar crater detection and 
+evaluation of the strengths and weaknesses of each model. 
+ 
+4.2. YOLO v8 
+ 
+YOLO is a state-of-the-art  object Convolutional Neural 
+Network (CNN) for object detection. Its robust architecture 
+makes it suitable for diverse co mputer vision-related tasks. 
+Its architecture consists of a CSPDarknet backbone for 
+efficient extraction of hierarchical features and a PANet and 
+FPNet neck for merging the mu lti-scale features. And the 
+head mechanism predicts bounding boxes for the features [2].  
+ 
+4.3. Mask R-CNN 
+ 
+Mask R-CNN is a deep learning model, an extension of Faster 
+R-CNN that uses a predictio n mask for object detection 
+parallel to bounding box recognition. The architecture 
+comprises a ResNet backbone for feature extraction and 
+RPNet (Region Proposal Netwo rk) for identifying object 
+regions. The model gener ates bounding boxes, class labels 
+and binary masks simultaneously using RoIAlign [5]. 
+ 
+4.4. Model Optimization (Hyperparameter) 
+ 
+Model optimization through hype rparameter tuning is a 
+crucial step in enhancing the performance of deep learning 
+models. It involves adjustin g parameters such as learning 
+rate, batch size, and the numbe r of epochs etc., to achieve 
+optimal accuracy and efficiency during crater detection. As it 
+can improve the model generalization, faster convergence, 
+and better performance on validation and unseen data. 
+ 
+Table 2: Hyperparameters of Deep Learning Models 
+Epoch 100 
+Step per Epoch 5 
+Batch Size 8 
+Learning Rate 0.01 
+Optimizer Adam 
+Activation Function Sigmoid 
+Training Mode CPU 
+ 
+5. RESULTS AND DISCUSSIONS 
+ 
+Results (Fig.3) show distinct performance difference between 
+Mask R-CNN and YOLOv8 in crater detection. Mask R-
+CNN successfully identified craters but assigned multiple 
+bounding boxes to the same  crater and misclassified 
+shadowed regions as craters, leading to high false-positive 
+rates. Additionally, Ma sk R-CNN required almost twice the 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on July 30,2026 at 09:25:06 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 3 ---
+training time of YOLOv8, reflecting inefficiencies in both 
+learning curve and accuracy of the model in crater detection. 
+ 
+OHRC PAN. MASK R-CNN YOLO V8 
+   
+  
+  
+  
+  
+ 
+Fig. 3: Comparison of OHRC Pan chromatic Data v/s Mask 
+R-CNN Output v/s YOLOv8 Output. 
+ 
+In contrast, YOLOv8 demonstrated superior performance, 
+detecting most craters accurately and distinguishing between 
+craters and shadowed areas with  minimal confusion. Its 
+output was significantly cleaner, with fewer redundant or 
+spurious detections, improvin g precision and reducing post-
+processing needs. During th e training and validation phases, 
+YOLOv8 algorithm outperformed Mask R-CNN in accuracy 
+metrics, including Precision, Recall, Mean IoU and F1 Score. 
+ 
+Table 3: Accuracy Assessment 
+ YOLOv8 MASK R-CNN 
+Training Loss 0.168 0.216 
+Training Accuracy 0.912 0.794 
+Validation Loss 0.157 0.362 
+Validation Accuracy 0.864 0.712 
+Precision 0.674 0.547 
+Recall 0.832 0.681 
+F1 Score 0.743 0.592 
+Mean IoU 0.614 0.486 
+Training Time 4 Hr. 46 Mins. 8 Hr. 32 Min. 
+ 
+The results suggest that Ma sk R-CNN's architectural 
+complexity may have hindered its performance in handling 
+the variability in crater shap es and lighting conditions. In 
+comparison, YOLOv8’s faster training and sharper outputs 
+highlight its suitability for large-scale planetary datasets. 
+However, both models struggled with subtle edge cases, such 
+as heavily degraded or ov erlapping craters, indicating 
+potential areas for future improvements through hybrid 
+approaches or data pre-proc essing. Overall, YOLOv8’s 
+efficiency, accuracy, and reduced noise make it a preferable 
+choice for crater detection in different planetary datasets. 
+ 
+6. CONCLUSION 
+ 
+The study represents an adva ncement in planetary science 
+research, using modern deep learning models to automate the 
+detection and segmentation of lunar craters using the 
+Chandrayaan-2 OHRC data. The accuracy assessment shows 
+that for crater identification, Ma sk R-CNN requires a large 
+amount of labelled d ata for training to achieve accurate 
+results. At the same time, the YOLOv8 successfully detected 
+multiple craters without any notable difficulty and proved to 
+be superior in handling the panchromatic data. Compared to 
+Mask R-CNN, YOLOv8 requir es less computation time and 
+generates a smaller size  model, making it ideal for real-time 
+applications such as rover navigation, extravehicular 
+activities etc., due to its lower time and space complexity. 
+ 
+7.
+ REFERENCES 
+ 
+[1] A. Tewari, K. Prateek, A. Singh, and N. Khanna, “Deep Learning 
+based Systems for Crater Detection:  A Review,” arXiv (Cornell 
+University), Jan. 2023 
+ 
+[2] S. Hashimoto and K. Mori, “Lunar Crater Detection based on 
+Grid Partition using Deep Learning,” May 2019 
+ 
+[3] P. Tripathi and Rahul Dev Garg, “Initial results from the Optical 
+High-Resolution camera (OHRC) onb oard Chandrayaan-2,” Jul. 
+2021 
+ 
+[4] J. Terven, D.-M. Córdova-Esparza, and J.-A. Romero-González, 
+“A Comprehensive Review of YO LO Architectures in Computer 
+Vision: From YOLOv1 to YOLOv8  and YOLO-NAS,” Machine 
+Learning and Knowledge Extraction, vol. 5, no. 4, pp. 1680–1716, 
+Dec. 2023 
+ 
+[5] K. He, G. Gkioxari, P. Dollár, and R. Girshick, “Mask R-CNN,” 
+arXiv.org, Jan. 24, 2018. 
+ 
+[6] E. Emami, T. Ahmad, G. Bebis, A. Nefian, and T. Fong, “Crater 
+Detection Using Unsupervised Algorithms and Convolutional 
+Neural Networks,” IEEE Transactions on Geoscience and Remote 
+Sensing, vol. 57, no. 8, pp. 5373–5383, Aug. 2019 
+ 
+[7] A. R. Chowdhury et al., “ Orbiter High Resolution Camera 
+onboard Chandrayaan-2 Orbiter,” Cu rrent Science, vol. 118, no. 4, 
+p. 560, Feb. 2020 
+ 
+[8] N. G. Barlow, “Constraining geologic properties and processes 
+through the use of impact craters,” Geomorphology, vol. 240, pp. 
+18–33, Jul. 2015 
+ 
+[9]
+ M. Sinha, S. Paul, M. Ghosh, Sachi Nandan Mohanty, and Radha 
+Mohan Pattanayak, “Automated Lunar Crater Identification with 
+Chandrayaan-2 TMC-2 Images using Deep Convolutional Neural 
+Networks,” Scientific reports, vol. 14, no. 1, Apr. 2024 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on July 30,2026 at 09:25:06 UTC from IEEE Xplore.  Restrictions apply. 
+======================================================================
+FILE: Dense-Small-Crater-Detection-Model-Based-on-Key-Point-Detection-for-Lunar-Permanently-Shadowed (1).pdf (14 pages)
+======================================================================
+--- Page 1 ---
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025 5643314
+Dense Small Crater Detection Model Based on Key
+Point Detection for Lunar Permanently
+Shadowed Region Images
+Fengqi Zhang
+ , Mao Ye
+ , Weifeng Hao
+ , Xuemei Sun, and Fei Li
+Abstract—The craters widely distributed on the lunar surface
+constitute important landforms for investigating the geological
+activities and evolutionary history of the Moon. Currently, deep
+learning models have made certain progress in detecting craters,
+but they still have limitations in identifying numerous small
+craters. To address these challenges, this article puts forward a
+CenterNet-based dense small crater detection model (DSCrater-
+Net), which is designed to precisely detect craters within the
+permanently shadowed regions (PSRs) by leveraging the pre-
+viously released enhanced PSR images. DSCraterNet achieves
+precise crater localization by predicting keypoint heatmap
+(location), size, and o ﬀset of craters. The model employs an
+encoder–decoder network architecture that combines various fea-
+ture fusion and attention mechanisms. Feature fusion strategies
+include direct fusion between the encoder and decoder, multiscale
+encoder spatial feature fusion (MSF) structure, and multielement
+information fusion (MEF) structure. These fusion strategies
+balance the relationship between high-resolution features, strong
+semantic features, and multiscale spatial features according to
+craters’ characteristics. Furthermore, by reasonably conﬁguring
+attention-based layers [like e ﬃcient multiscale attention (EMA)]
+at di ﬀerent stages, the utilization e ﬃciency of robust features
+is improved. Ultimately, DSCraterNet successfully identiﬁed a
+large number of densely packed small craters in PSR, revealing
+the terrain features of the region. A series of thorough ablation
+and comparative experiments has conﬁrmed that DSCraterNet
+surpasses existing crater detection models in terms of precision,
+recall, mean average precision (mAP), and F1-score metrics. Our
+code is available at https: //github.com/dl-zfq/DSCraterNet
+Received 18 January 2025; revised 23 July 2025 and 25 August 2025;
+accepted 1 September 2025. Date of publication 9 September 2025; date of
+current version 23 September 2025. This work was supported in part by the
+National Natural Science Foundation of China under Grant 42030110, Grant
+41874010, and Grant 41804025; and in part by the Space Optoelectronic
+Measurement and Perception Laboratory in Beijing Institute of Control
+Engineering under Grant LabSOMP-2023-09. (Corresponding authors: Mao
+Ye; Fei Li.)
+Fengqi Zhang is with the State Key Laboratory of Information Engi-
+neering in Surveying, Mapping and Remote Sensing, Wuhan University,
+Wuhan 430079, China, and also with the School of Information and Soft-
+ware Engineering, East China Jiaotong University, Nanchang 330013, China
+(e-mail: zfengqi@whu.edu.cn).
+Mao Ye is with the State Key Laboratory of Information Engineering in
+Surveying, Mapping and Remote Sensing, Wuhan University, Wuhan 430079,
+China (e-mail: mye@whu.edu.cn).
+Weifeng Hao and Xuemei Sun are with Chinese Antarctic Center of
+Surveying and Mapping, Wuhan University, Wuhan 430079, China (e-mail:
+haowf@whu.edu.cn).
+Fei Li is with the State Key Laboratory of Information Engineering in
+Surveying, Mapping and Remote Sensing, Wuhan University, Wuhan 430079,
+China, and also with the Department of Earth and Space Sciences, Southern
+University of Science and Technology, Shenzhen 518055, China (e-mail:
+ﬂi@whu.edu.cn).
+Digital Object Identiﬁer 10.1109/TGRS.2025.3607833
+Index Terms —CenterNet, crater detection, encoder–decoder
+architecture, feature fusion, permanently shadowed regions
+(PSRs).
+I. I NTRODUCTION
+L
+UNAR impact craters are circular depressions formed
+by meteoroid collisions. Craters are the most visually
+prominent landforms on the Moon. Studying craters not only
+provides navigation guidance for lunar exploration equipment
+[1] but also aids in advancing scientiﬁc missions related
+to the lunar chronology, geological evolution, and resource
+distribution [2]. The foundation and focus of crater research
+is the comprehensive detection of craters and the creation and
+updating of crater catalogs based on detected craters.
+The lunar polar permanently shadowed regions (PSRs) are
+the areas perpetually devoid of direct sunlight due to low solar
+incidence angles. The potential water–ice and other crucial
+resources in PSRs play a highly signiﬁcant role in providing
+continuous support for future lunar scientiﬁc missions [3], [4].
+Nevertheless, the widespread distribution of craters in these
+areas leads to a substantial challenge for selecting landing sites
+and conducting in situ exploration activities [5].
+On the lunar surface like PSR, the craters display remark-
+able diversity and variation in terms of size, shape, and
+distribution pattern. Speciﬁcally, as shown in Fig. 1, small
+craters are dominant in number and are extremely densely
+distributed [6]. Many of these small craters are secondary
+craters formed by debris from major impact events undergo-
+ing subsequent impacts [7]. Additionally, some small craters
+have undergone degradation and overlapping evolutionary
+processes, which undoubtedly increase the complexity of
+detection work. According to the conclusion from relevant
+research [8], there are many small craters on the Moon, and
+small craters a ﬀected by degradation are common. There-
+fore, accurately detecting densely distributed small craters has
+become a key challenge in detection missions.
+Although most craters can be observed with the naked
+eye, the expert observation method proposed by Robbins [8]
+is time-consuming and labor-intensive, unsuitable for large-
+scale, multiscenario lunar image data, and is limited to speciﬁc
+geographic areas and large craters [9]. Moreover, the results
+of crater detection after observation vary due to di ﬀerences
+in subjective criteria and observation time. The di ﬀerence in
+results from diﬀerent expert visual observations can even reach
+1558-0644 © 2025 IEEE. All rights reserved, including rights for text and data mining, and training of artiﬁcial intelligence and
+similar technologies. Personal use is permitted, but republication /redistribution requires IEEE permission.
+See https://www.ieee.org/publications/rights/index.html for more information.
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 2 ---
+5643314 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+Fig. 1. Optical image examples of the PSR lunar surface craters.
+40% [10]. The limitations of human observation have pro-
+moted the development of automatic crater detection methods.
+Early researchers, based on the assumption that craters are
+similar in shape to ellipses or circles [11], extracted custom
+features represented by contours, shapes, edges, or depres-
+sions, and used these features to capture craters [12], [13].
+Hanak [14] proposed an extended ﬁlter for crater detection
+based on the circular Hough transform. Kang et al. [15]
+introduced a histogram of oriented gradient (HOG) feature
+and support vector machine (SVM) classiﬁer when detecting
+craters using CCD images. Chen et al. [16] used terrain
+analysis and mathematical morphology methods to identify the
+boundaries of craters. Wang et al. [17] obtained the features
+of craters under various lighting conditions and then used the
+isolation forest algorithm to eliminate false craters. However,
+these traditional methods are limited by the obvious diameter
+and morphological di ﬀerences of craters [18] and are not
+suitable for detecting small craters in complex terrain and
+varying lighting conditions [19], [20].
+Compared to traditional learning methods, deep learning
+methods based on convolutional neural network (CNN) can
+eﬀectively address issues caused by variations in crater mor-
+phology through model design. Wang et al. [7] and Jia et
+al. [21] have implemented automatic crater detection based
+on an improved U-Net network. Vellas et al. [22] tested
+the use of various YOLO networks for real-time detec-
+tion of Martian craters. Wang et al. [23] used YOLOv7
+to detect craters in synthetic aperture radar (SAR) images
+[24]. CraterIDNet [25] utilized a crater detection pipeline and
+a crater identiﬁcation pipeline to obtain size and location
+information of craters. ADSNet [26] extracted crater fea-
+tures based on multimodal fusion. Some studies are based
+on semantic segmentation to achieve crater detection. For
+example, Lee and Hogan [27] used the ResUNET network
+to process craters in digital terrain model data and optical
+imaging data. Mao et al. [28] proposed an advanced dual-
+path CNN to fuse crater features from a digital elevation
+map (DEM) or orthographic projection map [wide angle
+camera (W AC)] data. Sinha et al. [29] combined the U-Net
+semantic segmentation architecture with the ResNet-18 feature
+extraction backbone to detect craters. Emami et al. [30]
+implemented unsupervised crater detection algorithms based
+on classiﬁcation. These models have not been speciﬁcally
+designed to extract features suitable for the characteristics
+of the lunar surface, which is abundant in densely packed
+small craters, leading to a large number of missed detections
+in detection results. In addition, some recent hyperspectral
+anomaly detection methods [31], [32] have also provided new
+ideas such as self-supervision and integrated tasks for crater
+detection.
+Currently, CNN-based deep learning models struggle to
+address three key challenges in PSR crater detection.
+1) A high proportion of small craters within the lunar sur-
+face craters. Due to the small diameter of small craters,
+their feature expression is weak, and the erosion of
+craters by weathering e ﬀects, as well as the overlapping
+of some craters [33], collectively increase the di ﬃculty
+of the model in identifying small craters. Small craters
+and large craters generally refer to craters less than
+1 km and greater than 10 km in diameter. However,
+due to di ﬀerences in image resolutions, the deﬁnition
+criterion for large and small craters in this article is the
+bounding box size (30 and 200 pixels).
+2) Extreme scale variance among craters, with scale di ﬀer-
+ences causing certain models to miss very large or very
+small craters during detection.
+3) Craters appear in groups in some regions, resulting in
+an increase in the missed detection rate. To address
+these challenges, this article proposes an anchor-free
+model called CenterNet-based dense small crater detec-
+tion model, which outputs crater heatmap, size, and
+oﬀset information based on the principles of CenterNet
+[34]. DSCraterNet uses PSR images processed by the
+enhanced model ZSPL-PSR [35], taking a connected
+encoder–decoder as its basic architecture, and incorpo-
+rates a feature pyramid network (FPN)-based [36] fusion
+structure within the encoder to encode multiscale spatial
+information, e ﬀectively capturing craters of di ﬀerent
+scales. By fusing shallow high-resolution features, deep
+strong semantic features, and multiscale spatial infor-
+mation before the prediction head, and using a channel
+attention structure to adjust their relative importance,
+it achieves complete detection of PSR surface craters
+dominated by small craters. The main contributions of
+this work are as follows.
+a) Inspired by CenterNet, we propose an anchor-free
+model called DSCraterNet for PSR crater detec-
+tion, where most small craters in PSR are detected
+by the model output, using enhanced optical image
+data.
+b) DSCraterNet integrates encoder feature pyramid
+fusion to obtain multiscale information, incorpo-
+rates image and shallow feature maps to obtain
+high-resolution information, and integrates the
+feature maps output by the decoder to obtain
+strong semantic information. In addition, the model
+introduces corresponding attention mechanisms in
+multiple parts to enhance feature learning capabili-
+ties, thereby achieving eﬃcient prediction of dense
+small craters (i.e., densely distributed craters with
+diameters under 30 pixels).
+c) Extensive experiments show that DSCraterNet
+achieves an F1-score of 0.8 and mean aver-
+age precision (mAP) of 74.04% on the test set,
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 3 ---
+ZHANG et al.: DENSE SMALL CRATER DETECTION MODEL BASED ON KEY POINT DETECTION 5643314
+Fig. 2. Principle process of DSCraterNet to detect craters.
+outperforming other contrastive models, and it has
+successfully detected a large number of small
+craters in PSR.
+To sum up, DSCraterNet overcomes the three above chal-
+lenges via keypoint localization (avoiding anchor collisions
+in clusters), multiscale encoder spatial feature fusion (MSF)
+(encoding four-scale features for multiscale craters), multi-
+element information fusion (MEF) (weighing multiple types
+of information), EMA attention (enhancing weak boundaries
+through cross-spatial learning), and full-resolution output (pre-
+serving spatial details).
+The remainder is structured as follows. The principle of
+DSCraterNet is described in Section II. Section III explains
+the experimental setup and result analysis. Finally, we draw
+the conclusion about DSCraterNet in Section IV.
+II. M ETHODOLOGY
+A. Related Work
+Anchor-based object detection methods typically generate
+a batch of candidate boxes through sliding windows or dense
+sampling. However, the inherent characteristics of overlapping
+and small-sized craters conﬂict with this mechanism. The
+CenterNet-based approach proposed by Zhang et al. [37]
+and Juntao et al. [38] directly predicts the key points of
+objects, which has advantages in identifying dense and par-
+tially occluded objects and is faster and more memory-saving
+than anchor-based models. However, their model [37] uses
+two consecutive Hourglass networks as the backbone, which
+deepens the network and results in a quite large receptive ﬁeld
+for the ﬁnal feature map, thus only providing an advantage
+for detecting larger craters. Moreover, the output heatmap,
+size, and o ﬀset are 1/R (R = 4) of the input image, and this
+reduction in size is not conducive to restoring high-resolution
+information, making the model challenging when detecting
+small-sized and weakly featured craters. Additionally, the
+complexity of this backbone network leads to slower operation
+speed.
+B. Proposed Method: DSCraterNet
+To address the limitations of existing keypoint-based detec-
+tors for small, dense craters, particularly concerning output
+resolution and computational eﬃciency, we propose DSCrater-
+Net, a novel anchor-free model based on the CenterNet
+framework. As shown in Fig. 2, DSCraterNet consists of
+a backbone network based on an encoder–decoder network,
+a neck network that dynamically fuses high-resolution fea-
+tures, multiscale features, and deep semantic features, and a
+detection head that outputs information about detected craters.
+Assuming that the input size is reduced to W × H × 3
+(diﬀerent from the original image size) to accelerate training
+speed, the sizes of the feature maps for the model’s output
+keypoint Gaussian heatmap H, crater size S , and o ﬀset O
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 4 ---
+5643314 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+Fig. 3. Some attention modules used in the model. In EMA, “Groups” represents feature grouping, “GroupNorm” represents group normalization, and
+“Re-weight” represents multiplicative aggregation.
+are W × H, W × H × 2, and W × H × 2, respectively.
+Note that the width and height of the predicted information
+are consistent with the input, which e ﬀectively prevents the
+loss of spatial resolution information and maximally avoids
+the omission of small craters.
+1) Backbone: The backbone network adopted by DSCrater-
+Net is an encoder–decoder network. The function of the
+encoder is to project image features onto low-dimensional
+feature maps, thereby reducing the model complexity and
+expediting the training process. The decoder conducts upsam-
+pling operations on the low-dimensional feature maps through
+transposed convolution (i.e., deconvolution), guaranteeing that
+the upsampled feature maps are consistent with the dimensions
+of the feature maps at various levels in the encoder. Transposed
+convolution adaptively restores high-frequency details through
+learnable parameters, which is more suitable for small target
+edge reconstruction than ﬁxed interpolation methods. For
+example, on the edge of a crater, deconvolution can produce
+sharp contours, while interpolation can cause blurring. Then,
+by concatenating the symmetric encoder and decoder feature
+maps layer by layer, eﬀective fusion of shallow spatial features
+and deep semantic features is achieved. Each fused feature
+map is processed by an e ﬃcient multiscale attention (EMA)
+module [39] to enhance the fusion.
+Set the input image as I, and then, I∈ RW×H×3. I ﬁrst goes
+through a preprocessing block PRE, which includes a convolu-
+tion block COV and a residual block RES. COV consists of a
+convolutional layer with a (3, 3) kernel size, padding of 1, 64
+kernels, and a stride of 1, followed by a batch normalization
+(BN) layer and a Relu activation function. RES adds the
+input feature map to a feature map that has undergone two
+identical 3 × 3 convolutions. The preprocessed feature map
+Fpre is passed into the backbone based on an encoder–decoder
+architecture after going through one RES. The encoder con-
+tains four encoder layers, each with a downsampling block
+DOW and the RES block, achieving four downsampling
+eﬀects. RES blocks in four encoder layers change the number
+of feature map channels to (64 → 128), (128 → 256),
+(256→ 512), and (512 → 1024). The downsampling block
+DOW is a COV block with a stride of 2. After four downsam-
+pling operations, the dimensions of the feature map change
+as follows:{(128, C/2, H/2), (256, C/4, H/4), (512, C/8, H/8),
+(1024, C/16, H/16)}. The last layer is the bottleneck feature
+map Fb between the encoder and the decoder. Then, it sequen-
+tially goes through four decoder layers, each with a transposed
+convolution block TCOV , an RES, and an EMA module.
+TCOV upsamples the feature map through deconvolution, with
+a (2, 2) kernel size and a stride of 2. The upsampled feature
+map is then concatenated with the corresponding size feature
+map from the encoder to achieve the fusion of shallow and
+deep features. The EMA module is used to retain the key
+information of the fused features. Finally, decoder outputs
+the feature map F, where F∈ RW×H×64. The corresponding
+layers’ fused features of the encoder and decoder are rich
+in channel and spatial information. DSCraterNet employs
+an EMA module to preserve key channel information and
+reduce computational overhead. The EMA framework diagram
+is shown in Fig. 3. It can be seen that after grouping the
+feature maps by channels (the grouping factor is 32), 1-D
+horizontal pooling, 1-D vertical pooling, and 3 × 3 convo-
+lution are performed on the feature maps in three branches,
+embedding channel information and multidirectional, multi-
+scale spatial information. Moreover, by multiplying feature
+maps of the pooling branch and the convolution branch, the
+context information of pixels is captured, eliminating short-
+range and long-range dependencies. Noteworthily, considering
+the e ﬃciency, the ability to achieve larger receptive ﬁelds
+through depth stacking, the suitability for capturing ﬁne-
+grained features of small, densely packed craters, and the
+synergistic eﬀect with the integrated MSF and attention mech-
+anisms [EMA, SE, and spatial attention (SA)], we primarily
+employ 3 × 3 convolution kernels throughout the DSCraterNet
+architecture.
+The backbone’s architecture achieves eﬀective extraction of
+dense small targets and multiscale target information while
+maintaining low computational costs.
+2) Multiscale Encoder Spatial Feature Fusion Module
+MSF: As the front part of backbone, the spatial information
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 5 ---
+ZHANG et al.: DENSE SMALL CRATER DETECTION MODEL BASED ON KEY POINT DETECTION 5643314
+Fig. 4. Overall framework of MSF to fuse encoder features.
+of encoder feature maps is relatively rich. As the convolution
+progresses, the receptive ﬁeld of feature points in feature maps
+gradually increases, and the size of the features they represent
+also gradually becomes larger. To obtain feature expressions
+that can resist the interference of scale di ﬀerences, the model
+fuses various feature layers of encoder based on FPN, and the
+resulting multiscale features Fmsf are used to generate the ﬁnal
+feature map by fusing in the neck network.
+As shown in Fig. 4, four encoder feature maps are input
+into the MSF. MSF fuses the encoder feature maps in order
+from deep to shallow. The steps for each feature map are as
+follows: 1) the feature map undergoes a 1 × 1 convolution
+to change its channel number to 64; 2) the feature map is
+upsampled by a factor of 2 using bilinear interpolation; 3)
+the upsampled feature map is added and fused with the upper
+layer feature map (whose channel number has been changed
+to 64 through a 1 × 1 convolution); 4) return to step 2) to
+process the feature map, and repeat this process; and 5) once
+the feature map fusion operation reaches the last layer, a 3
+× 3 convolution is performed to output the multiscale spatial
+fused feature Fmsf. Assuming that feature maps are labeled
+from deep to shallow as E1–E4, the process of MSF can be
+represented by the formula
+Fmsf = C3×3{U(U(U(C1×1(E1)) + C1×1(E2))
++ C1×1(E3)) + C1×1(E4)} (1)
+where Cn×n represents convolution with n × n kernel and U
+represents bilinear interpolation upsampling with two magni-
+ﬁcation.
+The MSF achieves full utilization of shallow multiscale spa-
+tial information through multiple additions and concatenations.
+Through MSF, information on multiple size craters can be
+accurately captured by the model. The progressive upsampling
+step of this FPN-like architecture retains hierarchical spatial
+information, while parallel dilated convolutions of architec-
+tures like ASPP may lose small target details. Therefore, MSF
+is robust to changes in crater size.
+3) Neck: Given the high proportion and density of small
+craters, it is essential to preserve high-resolution information
+during the process of feature extraction in DSCraterNet. In
+addition to numerous small craters, the lunar surface also
+contains some large craters, including super-large craters with
+diameters much greater than those of small craters. Due
+to the e ﬀects of secondary impacts, some large craters are
+also covered with small craters. In light of this distribution
+pattern, multiscale information also needs to be utilized.
+To enhance the model’s ability to recognize the semantic
+of craters, deep features also need to be involved in the
+generation of crater regression information. Considering these
+diﬀerent factors, the model implements the integration of
+several types of information in the neck network following
+the backbone. Therefore, this module is also called MEF
+module.
+The input image I and the preprocessed feature map Fpre
+represent high-resolution feature expressions with small recep-
+tive ﬁelds. The feature map Fmsf obtained in Section II-B.2
+embodies multiscale fused spatial features, while the semantic
+information contained in the feature map F output by back-
+bone contributes to enhancing the model’s recognition ability.
+The neck network concatenates these four elements to obtain
+a robust feature map for crater detection. The concatenated
+feature map is designated as Fcon. Their relationship can be
+expressed as follows:
+Fcon = Con
+˚
+I, Fpre, Fmsf, F
+	
+(2)
+where Con{} represents concatenation in channel’s dimension.
+The channel number of Fcon is the the channel numbers’ sum
+of several elements, which is 195.
+Fcon integrates the ﬁne-resolution information from I and
+Fpre, multiscale size information from Fmsf, and strong seman-
+tic information from F. Di ﬀerent regions of lunar surface
+images have diﬀerent distribution patterns, and the importance
+of each type of information varies when identifying craters.
+Therefore, the channel attention module SE (i.e., squeeze-
+and-excitation network [40]) is used to coordinate the relative
+importance of di ﬀerent channels within Fcon. As shown in
+Fig. 3, SE consists of a global average pooling and two fully
+connected layers. The reduction factor of the fully connected
+layer eigenvector is 15. During this process, the channels’
+number is ﬁrst reduced to 13 (195 /15 = 13) and then restored
+to 195. While this aggressive compression risks information
+loss, it serves a critical purpose for small crater detection:
+PSR-enhanced images contain illumination artifacts and high-
+frequency noise. Compression ﬁlters redundant channels (e.g.,
+noise-dominated ones) while retaining key channels correlated
+to crater morphology (e.g., circular edges and shadow-texture
+contrasts). The subsequent SA and other modules in the neck
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 6 ---
+5643314 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+compensate for potential detail loss by spatially highlighting
+crater-centric regions and integrating multisource features (raw
+pixels + encoder–decoder contexts). The weighted vector
+output by the fully connected layers is used as the weight for
+each channel and multiplied with the feature map. SE balances
+the roles of various types of information and enhances the
+generalization of the output feature maps.
+Subsequently, the feature map undergoes a 3 × 3 convolu-
+tion block COV , changing the channels’ number from 195 to
+256. It is then fed into the SE and SA block SA, which together
+form the CBAM [41]. SE and SA, respectively, implement
+attention weighting on the feature map from the perspective of
+channels and spatial dimensions. SA concatenates the feature
+map after global average pooling and global max pooling to
+generate a spatial weight map to preserve information from
+important regions. The ﬁnal feature map F f is used to output
+the heatmap, width, height, and o ﬀset information of craters
+in the detection head. The relationship between Fcon and F f
+is
+F f = SA(SE(COV3×3(SE(Fcon)))). (3)
+The neck network, by precisely ﬁtting spatial details and
+size di ﬀerences, detecting semantics, and executing reﬁned
+subsequent fusion steps, endows the model with e ﬃcient
+performance in detecting lunar surface craters.
+4) Head: The detection head part predicts the keypoint
+heatmap, size, and o ﬀset of the crater targets based on the
+feature map provided by the neck. The detection head consists
+of a 3 × 3 convolutional COV block and a convolutional
+layer, which changes the feature map channels from 256 to the
+corresponding attribute channels. The feature maps’ channels
+corresponding to the keypoint heatmap, size, and o ﬀset are 1,
+2, and 2, respectively. Since the size represents the length and
+width of the crater, and the o ﬀset is the shift in horizontal and
+vertical directions (i.e., the shift amount caused by changing
+the image size when inputting the image), they all have two
+channels.
+5) Loss Function: According to previous work [37], the
+weighted sum of keypoint heatmap loss Lhm, crater size loss
+Lsize, and o ﬀset loss Loﬀ is used as the loss function to
+supervise model convergence. The formula is
+L = Lhm +λsizeLsize +λoﬀLoﬀ (4)
+whereλsize (set to 0.1) and λoﬀ (set to 1) are weighting factors.
+Detailed formulas for three subloss functions are listed as
+follows:
+Lhm =− 1
+N
+X
+xy
+8
+<
+:
+
+1−bYxy
+α
+log
+
+bYxy
+
+, Yxy = 1
+ 
+1− Yxy
+β
+bYxy
+α
+log
+
+1−bYxy
+
+, otherwise
+(5)
+Lsize = 1
+N
+NX
+k=1
+ˇˇ ˆS sk− sk
+ˇˇ (6)
+Loﬀ = 1
+N
+X
+p
+ˇˇˇ ˆO ˜p−
+ p
+R− ˜p
+ˇˇˇ (7)
+where Yxy denotes the value at pixel position ( x, y) of the
+ground truth heatmap generated by the Gaussian kernel,
+N denotes the number of impact crater’s keypoint, ˆO denotes
+a local o ﬀset, p denotes the ground truth keypoint, R denotes
+the output stride in the discretization error, and sk denotes the
+size of impact crater.
+III. E XPERIMENTAL RESULTS AND ANALYSIS
+In this section, a series of comparative and validation
+experiments is carried out to illustrate the advantages of the
+model design in lunar crater detection.
+A. Experimental Data
+1) Dataset: In this article, the model is trained and tested
+using a dataset created by CraterDANet [42]. The images used
+in the dataset were captured by the Narrow Angle Camera
+(NAC) on board the Lunar Reconnaissance Orbiter (LRO)
+launched by NASA in 2009. The NAC images have a resolu-
+tion of 0.5–2 m, making them the highest resolution optical
+images of the Moon currently available. The high resolution
+allows the images to contain a large number of small-diameter
+craters. The dataset comprises 20 images, containing more
+than 20 000 craters whose diameters range from 12 to 400 m.
+The process of creating the dataset employed an unsupervised
+strategy for annotation. We select eight images and two images
+of size 800 × 800 and their annotations as the training set
+and test set, respectively, to shorten the experiment time. The
+corresponding numbers of craters in the training set and test set
+are 10 253 and 2930, respectively, with the smallest bounding
+rectangle box side length (size) being 7 and the largest being
+258.
+2) Enhanced PSR Image Data: Our previously released
+zero-shot image enhancement model ZSPL-PSR has automat-
+ically enhanced the PSR images located at the lunar poles.
+Due to the lack of direct sunlight, the visibility of PSR images
+is poor and much content is obscured. The enhanced images
+fully display the internal topography. PSR is a key area for
+studying the lunar surface landform and material composition.
+As shown in Fig. 5, the enhanced images to some extent unveil
+the mysterious veil of PSR, revealing numerous surface details,
+including craters. Crater detection on such images is beneﬁcial
+for exploring important resources such as water–ice in the
+lunar polar regions.
+B. Experimental Instructions
+1) Experimental Details: The experiment is run on a Linux
+server equipped with eight NVIDIA GeForce RTX 3090
+GPUs. All related experiments are programmed using the
+Pytorch framework. The training process employs distributed
+training to accelerate speed.
+For all experiments based on CenterNet covered in this
+section, the input images are resized to (512, 512) before being
+fed into the model. The model utilizes the Adam optimizer
+and employs a cosine annealing strategy to adjust the learning
+rate. The initial learning rate is set to 5e −4, the minimum
+learning rate to 5e−6, the batch size to 12, and the number of
+epochs to 100. Data augmentation is achieved during training
+by randomly ﬂipping images horizontally and varying the
+hue, saturation, and brightness. Speciﬁcally, if the random
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 7 ---
+ZHANG et al.: DENSE SMALL CRATER DETECTION MODEL BASED ON KEY POINT DETECTION 5643314
+Fig. 5. PSR image examples enhanced by ZSPL-PSR.
+Boolean value is less than 0.5, the image and crater label
+position are ﬂipped horizontally accordingly. In the change
+strategy for image properties, the image is ﬁrst converted from
+RGB space to HSV space; then, random hue, saturation, and
+brightness change factors are generated and multiplied with
+a random number lookup table in the range of [0, 255], and
+ﬁnally, the three properties of the image are changed based on
+the obtained values. This data augmentation method can help
+improve the accuracy of the model in identifying craters in
+images under di ﬀerent conditions and improve the model’s
+generalization. After each training session, the best model
+and the last model are saved locally. During the inference
+stage, after the model detects craters, it uses nonmaximum
+suppression (NMS) to eliminate extra overlapping boxes. NMS
+performs postprocessing based on the intersection over union
+(IoU) of objects, with the IoU set to 0.5. Additionally, for
+calculating certain metrics, the IoU is also set to 0.5 to
+determine if the detection results are correctly predicted.
+The weighting factors λsize and λoﬀ in the loss function
+[see (4)] are critical hyperparameters balancing the keypoint
+heatmap, size, and o ﬀset losses. We determined their values
+through a grid search. Speciﬁcally, we evaluated combinations
+of λsize∈ [0.01, 0.1, 0.5, 1.0] and λoﬀ∈ [0.1, 0.5, 1.0, 2.0].
+The combination λsize = 0.1 and λoﬀ = 1 yielded the highest
+mAP. This setting e ﬀectively emphasizes accurate keypoint
+localization while providing appropriate supervision for size
+and oﬀset predictions. Final model training uses these values.
+2) Evaluation Metrics: To compare the merits of di ﬀerent
+experimental detection results, common metrics used in object
+detection are precision P, recall R, and F1-score F1. They can
+be calculated as follows:
+P = TP
+TP + FP (8)
+R = TP
+TP + FN (9)
+F1 = 2 × P × R
+P + R (10)
+where TP refers to the craters that have been annotated and
+correctly identiﬁed by the model, FN refers to the annotated
+craters that the model failed to detect, and FP refers to
+the areas that have been incorrectly identiﬁed as craters by
+the model (i.e., noncrater objects mistakenly recognized as
+craters).
+TABLE I
+COMPARISON OF CRATER DETECTION METRICS OUTPUT BY DSC RATER -
+NET (M ODEL 5) AND OTHER MODELS WITH DIFFERENT REDUCTIONS
+ABOUT EMA, MSF, MEF, SE, AND SA
+Furthermore, we also compare the precision–recall curves of
+multiple models, analyzing and selecting the optimal threshold
+that leads to the best model output results through the curves.
+The threshold is used to ﬁlter the conﬁdence scores of the
+prediction results, with conﬁdence levels above this threshold
+being selected as craters, and those below the threshold
+being discarded. According to the principle of P–R curve, the
+comprehensive metric mAP is also used. mAP is the mean
+value of the average precision (AP) of multiple classes, and
+in the crater detection task, there is only the crater class, so
+mAP = AP. AP represents the average of all precisions under
+the P–R curve. It can be calculated as follows:
+mAP = AP =
+k−n−1X
+k=0
+[R (k)− R (k + 1)] × P (k) (11)
+where n indicates the number of thresholds.
+C. Ablation Study on Modules
+Each component in DSCraterNet contributes to enhancing
+the model’s performance. By removing or adding these mod-
+ules, the gains that the modules bring to the model can be
+veriﬁed. In this section, the modules used for ablation studies
+are EMA, MSF, MEF, SE, and SA attention network in the
+neck.
+Table I reﬂects the detection metrics after removing impor-
+tant modules from DSCraterNet’s backbone and neck, where
+Model5 is the original model and Model2–Model4 have had
+the MSF, MEF, and “SE + SA” modules removed, respec-
+tively, while Model1 has had all four modules removed.
+All detection results are based on a conﬁdence threshold
+of 0.025 for identifying craters (i.e., “Score Threshold” in
+Fig. 6). In comprehensive evaluation metrics of F1 score and
+mAP, the original model achieves 0.8 and 70.23%, which
+are signiﬁcantly higher than the other models. This proves
+that several key designs in the model contribute to enhancing
+detection performance. Fig. 6 shows the change curves of
+several models with P, R, and F1 as “Score Threshold”
+varies. Compared to Model5, the intersection points of the
+curves for Model1–Model4 are all closer to the threshold of
+0.025. In this case, Model5 has not yet reached the optimal
+eﬀect (intersection).
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 8 ---
+5643314 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+Fig. 6. “ P–R–F1” change curves of several models about “Score Threshold.”
+(a) Model1. (b) Model2. (c) Model3. (d) Model4. (e) Model5 (DSCraterNet).
+TABLE II
+COMPARISON OF CRATER DETECTION METRICS OUTPUT BY MODEL
+WITH DIFFERENT CONVOLUTION KERNEL COMBINATION SCHEMES
+D. Ablation Study on Convolution Kernel Sizes
+The size of the convolution kernel uniformly used in
+DSCraterNet is 3 × 3. To verify this setting, this section
+conducts experiments with various kernel combinations (3 ×
+3, 5 × 5, and 7 × 7). Several di ﬀerent convolution kernel
+combination schemes designed are denoted “Var1,” “Var2,”
+“Var3,” and “Var4.” Var1 means replacing the original 3 ×
+3 convolution kernel with a larger convolution kernel in the
+ﬁrst two layers of the encoder (i.e., mixed use of 5 × 5 and
+7 × 7 convolution kernels). Var2–Var4 represent that at the
+bottleneck level, the MSF’s convolution layer and the MEF’s
+(Neck) convolution layer implement this replacement process,
+respectively.
+It can be seen from Table II that the existing model
+outperforms Var1–Var4 in four indicators. Crucially, these
+larger kernels invariably resulted in a notable increase in
+model size and inference time. This observation validates our
+design choice. The stacked 3 × 3 convolutions in the deep
+encoder–decoder backbone, coupled with the dedicated MSF
+module, already e ﬀectively capture features across di ﬀerent
+scales relevant to craters ranging from small to large. Intro-
+ducing larger kernels introduces unnecessary computational
+overhead without commensurate performance gains, particu-
+larly detrimental to the detection of densely packed small
+craters where ﬁne-grained details are paramount. Furthermore,
+the eﬃciency of 3 × 3 convolutions aligns well with the goal
+of maintaining a lightweight yet e ﬀective model. Var1’s worst
+performance also proves that large convolution kernels destroy
+the ﬁne spatial information that helps capture small craters.
+TABLE III
+COMPARISON OF CRATER DETECTION METRICS OUTPUT BY
+DSC RATER NET AND OTHER MODELS WITH DIFFERENT MEF
+REDUCTIONS ABOUT I + FPRE , FMSF , AND F
+Fig. 7. “ P–R–F1” change curve of DSCraterNet in “Score Threshold=0.02.”
+TABLE IV
+COMPARISON OF CRATER DETECTION METRICS OUTPUT BY MODEL
+WITH DIFFERENT THRESHOLDS
+E. Ablation Study on MEF’s Fusion Elements
+MEF fuses I and Fpre, which represent high-resolution
+spatial information, F, which represents strong semantic
+information, and Fmsf, which represents multiscale spa-
+tial information. This section uses modules related ablation
+experiment to verify that several parts of MEF fusion are
+indispensable. According to the observation of Table III,
+several feature maps fused by MEF have a positive e ﬀect on
+the model. In addition, the ﬁrst column of Table III (lacking I
+and Fpre) corresponds to the worst network e ﬀect, indicating
+that high-resolution spatial information provides key support
+for DSCraterNet to resolve small craters.
+F . Threshold Selection
+Selecting di ﬀerent thresholds will cause changes in the
+model’s performance metrics. According to the “ P–R–F1”
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 9 ---
+ZHANG et al.: DENSE SMALL CRATER DETECTION MODEL BASED ON KEY POINT DETECTION 5643314
+TABLE V
+COMPARISON OF CRATER DETECTION METRICS OUTPUT BY DSC RATER NET AND OTHER COMPARATIVE MODELS
+TABLE VI
+COMPARISON OF RUNNING TIME AND MODEL SIZE BETWEEN DSC RATER NET AND OTHER COMPARATIVE MODELS
+change curve in Fig. 6, the threshold of 0.025 used in
+the previous section did not bring DSCraterNet to its opti-
+mal state. Table IV shows that as the threshold increases,
+precision P gradually increases, while recall R gradually
+decreases. Combining this with the curve chart in Fig. 7 when
+Score Threshold = 0.02, we choose 0.02 as the ﬁnal threshold
+to detect craters in PSR. Because the intersection of three
+metric curves is reached near the 0.02 threshold, this not
+only ensures the stability of model’s detection results but also
+maintains the generalization of model (the ability to apply to
+diﬀerent scene images) at a high level.
+G. Comparative Analysis
+CenterNet is a keypoint-based single-stage end-to-end
+detection model, and the principle of keypoint makes such
+models more advantageous in detecting densely distributed
+targets compared to two-stage anchor-based models. We com-
+pare with several networks based on CenterNet to verify
+the e ﬃciency of the model design. These networks include
+RseNet50, Hourglass, ResNet50 pretrained on the ImageNet
+dataset, and improved U-Net, where Hourglass and improved
+U-Net refer to the crater detection model proposed by
+Juntao et al. [38] and Sinha et al. [29], respectively. Addi-
+tionally, we compare with the single-stage detection model
+YOLOv7 [23] and the classical two-stage model Faster-
+RCNN [43]. They are all models based on anchor. For ease
+of comparison, we replace the feature extractors of these
+two models with those from DSCraterNet. Two traditional
+detection methods (HOG-SVM [15]) and method based on
+path proﬁle and isolation forest (denoted as PPIF [17]) are
+also used for comparison. In these models, HOG-SVM, PPIF,
+and improved U-Net all follow the parameter selection of
+the original text. Other compared models select learning rate,
+batch size, epoch, and data enhancement strategies consistent
+with DSCraterNet, and other hyperparameters also follow the
+original design of the model.
+We conduct tests at thresholds of 0.02 and 0.025, and
+the quantitative comparison results are shown in Table V. It
+can be seen that our model ( {0.8, 70.23%}, {0.8, 74.04%})
+obviously outperforms the best-performing method “improved
+U-Net” ({0.76, 62.34%}, {0.78, 65.7%}) in terms of the
+comprehensive metrics F1-score and mAP in both experi-
+ments. At the threshold 0.02, F1-score exceeds 0.02, mAP
+exceeds 8.34%, and precision R exceeds 9.76%. This proves
+that the keypoint detection mechanism used by DSCraterNet is
+more suitable for lunar crater detection, and the model design
+of DSCraterNet enhances the model’s ability to recognize
+densely packed craters. Furthermore, Fig. 8 shows several
+marked images after crater detection by several comparative
+deep learning models, clearly indicating that DSCraterNet
+successfully captured more craters with fewer false detections
+(due to image size limitation, the two traditional methods
+have the worst detection results, and only the deep learning
+methods are compared in Fig. 8). This further demonstrates the
+breakthrough of our model. According to Fig. 9, the P–R curve
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 10 ---
+5643314 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+Fig. 8. Detection results of DSCraterNet and other deep learning detection algorithms on test set images. The green box indicates correctly detected craters,
+the red box indicates wrong detection positions, and the blue box indicates ground-truth crater positions closest to the error.
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 11 ---
+ZHANG et al.: DENSE SMALL CRATER DETECTION MODEL BASED ON KEY POINT DETECTION 5643314
+Fig. 9. P–R curves of several models.
+of DSCraterNet is the ﬂattest, which means that as the recall
+rate increases, the decrease in precision is relatively small,
+indicating that DSCraterNet is the most stable model.
+This section not only compares detection metrics of these
+models but also evaluates the performance of these methods
+in terms of model running time and model size. Running time
+includes training time, validation time, and inference time.
+Model size refers to the storage space occupied by the saved
+model. According to the comparison in Table VI, DSCraterNet
+has a smaller stored model size, second only to CenterNet-
+ResNet50. Since the feature maps output by networks are 1 /4
+of the input size for both ResNet50 and Hourglass method, the
+two models have the fastest running time besides traditional
+methods. DSCraterNet has a moderate total running time but
+is optimal in detection metrics, and its detection results are
+far superior to those of the faster ResNet50 and Hourglass.
+In summary, extensive comparative experiments have proven
+that DSCraterNet is best suited for detecting small craters
+and is su ﬃciently lightweight. Its MSF, MEF, EMA, SE, and
+SA modules have collectively driven the advancement of the
+model. In addition, HOG-SVM and PPIF perform poorly in
+detecting small craters, which illustrates the disadvantage of
+traditional methods in identifying weak feature craters.
+H. Detecion Results on PSR
+As shown in Fig. 10(a), the four PSRs are
+intercepted sequentially in the PSR images
+(SP 816910 3053810, Cabeus B), (SP 838910 1184700,
+Idel’son L), (SP 832950 1495450, Wiechert U), and
+(NP 845580 1531340, Rozhdestvenskiy U Crater) (Image
+ID, Lunar feature name). The last map is from the Moon’s
+North polar PSR, and the remaining maps are from the Moon’s
+South polar PSR. These PSR’s optical images captured by
+LRO NAC have extremely poor interpretability. Our previous
+research, ZSPL-PSR, enhanced it, revealing the crater terrain
+within PSR [see Fig. 10(b)]. Applying DSCraterNet to
+enhanced PSR images generates some crater detection maps
+as shown in Fig. 10(e). The test results in Fig. 10(e) are better
+than those in Fig. 10(d) (application e ﬀect of the improved
+U-Net model), which veriﬁes the DSCraterNet’s prominent
+crater detection capabilities on PSR image. In addition, it can
+be seen from the detection results in Fig. 10(c) that few craters
+are correctly detected from the original images. This directly
+conﬁrms the importance of enhanced images to the detection
+process. Based on such detection results, by manually
+screening and analyzing the size and distribution frequency
+of craters, guidance can be provided for subsequent scientiﬁc
+research, including crater dating, material composition
+determining, and geological evolution exploration.
+By applying the model to the full Moon PSR enhanced map,
+the crater distribution information of all PSRs can be obtained,
+updating the PSR crater catalog. This helps in analyzing the
+geomorphological characteristics of PSRs. The distribution of
+PSR craters detected by DSCraterNet will soon be published
+at https://github.com/dl-zfq/PSR Enhancement
+I. Limitations, Failure Cases, and Generalization
+While DSCraterNet demonstrates noticeable advancements
+in detecting densely packed small craters within lunar PSRs,
+it is essential to acknowledge its limitations and potential
+failure cases to provide a comprehensive understanding of its
+applicability.
+1) Severely Degraded or Occluded Craters: The model’s
+performance may degrade for craters that are heavily
+degraded by subsequent impacts, buried by regolith,
+or partially obscured by larger overlapping craters or
+terrain features. In such cases, the characteristic circu-
+lar/elliptical rim signature and depression morphology
+are often incomplete or ambiguous [see Fig. 11(a)].
+DSCraterNet, primarily learning from visible rim struc-
+tures and center-point keypoints, may fail to recognize
+these fragmented or obscured features, leading to missed
+detections (false negatives).
+2) Noncircular/Nonelliptical Craters: The training data and
+the implicit bias of the model (based on keypoint
+detection of centers) primarily consist of craters with
+approximately circular or elliptical shapes, which are
+the dominant forms. However, some impact craters,
+particularly secondary craters formed at oblique angles
+or on steep slopes, can exhibit highly irregular or
+elongated shapes. DSCraterNe’s reliance on predicting a
+single center point and a bounding box (approximating
+an ellipse) might struggle to accurately localize and
+represent these atypical forms, potentially resulting in
+missed detections or inaccurate size estimations [see Fig.
+11(b)].
+3) Regions of Exceptionally Low Contrast: Although the
+ZSPL-PSR enhancement signiﬁcantly improves the vis-
+ibility of PSR terrain, some areas within PSRs may
+still exhibit extremely low inherent contrast due to fac-
+tors like homogeneous regolith composition, extremely
+shallow slopes, or sensor limitations. In such regions,
+even the enhanced image may lack su ﬃcient textural
+or intensity gradients for the model to discern subtle
+crater features reliably [see Fig. 11(c)]. This represents
+a fundamental challenge tied to the inherent information
+content of the input data.
+4) V ery Large Craters: As shown in Fig. 11(d), the very
+few large craters in the images are not detected. This
+is because the number of small craters far exceeds that
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 12 ---
+5643314 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+Fig. 10. Example detection maps of DSCraterNet on enhanced PSR images. (a) Original PSR images. (b) Enhanced images. (c) Detection results of
+DSCraterNet on original images. (d) Detection results of improved U-Net. (e) Detection results of DSCraterNet.
+of large craters, leading to a diminished role or weight
+of the multiscale features output by MSF during model
+training, which ultimately results in this phenomenon.
+This deﬁciency can be mitigated through calibration and
+supplementation. Future research will also continue to
+optimize the model to address this issue.
+5) Generalization Ability: The generalization capability of
+DSCraterNet warrants careful consideration.
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 13 ---
+ZHANG et al.: DENSE SMALL CRATER DETECTION MODEL BASED ON KEY POINT DETECTION 5643314
+Fig. 11. Several detection failure cases of DSCraterNet. (a) Severely degraded
+or occluded crater case. (b) Noncircular crater case. (c) Low-contrast crater
+case. (d) Very large crater case.
+6) To Other Planetary Bodies (e.g., Mars): While the core
+architecture (keypoint detection and feature fusion) has
+potential, direct application to other bodies is nontrivial.
+Martian craters can di ﬀer in morphology, degradation
+state, and background terrain. Signiﬁcant di ﬀerences in
+image characteristics (spectral bands, resolution, and
+noise) would necessitate retraining on annotated Martian
+crater datasets.
+7) Across Image Sources /Resolutions: Generalization to
+images from di ﬀerent sensors (e.g., LRO W AC and
+Chang’e cameras) or signiﬁcantly di ﬀerent resolutions
+would likely require retraining or domain adaptation
+techniques, as feature representations learned on NAC
+data may not directly transfer.
+8) Across Lunar Terrains: The model is trained and tested
+on high-resolution NAC images. Its performance on
+markedly di ﬀerent lunar terrains (e.g., heavily cratered
+highlands and extreme slopes) has not been extensively
+validated. Domain shift due to di ﬀerences in illumi-
+nation angles, surface albedo, and geological context
+could potentially impact performance. Fine-tuning on
+representative data from new terrains might be necessary
+for optimal results.
+These limitations highlight that DSCraterNet is currently
+optimized for the speciﬁc and challenging task of detecting
+relatively well-preserved small-to-medium craters within lunar
+PSRs using enhanced NAC imagery. Performance degradation
+can be expected in the aforementioned edge cases. Future
+work will focus on: 1) incorporating more sophisticated shape
+modeling beyond bounding boxes (e.g., instance segmenta-
+tion) to better handle irregular craters; 2) exploring domain
+adaptation or few-shot learning techniques to improve gen-
+eralization across diverse terrains and lighting conditions;
+3) integrating multisource data (e.g., topography from DEMs)
+as complementary inputs to overcome limitations in low-
+contrast optical data; and 4) developing uniﬁed frameworks or
+transfer learning strategies for cross-planetary crater detection.
+IV. C ONCLUSION
+In this article, according to the characteristics of dense
+distribution, numerous small craters, and large-scale di ﬀer-
+ences about lunar craters, we propose a single-stage end-to-end
+crater detection model based on keypoint estimation, named
+DSCraterNet, and apply it to crater detection in PSR to
+facilitate the exploration of this unknown area. DSCraterNet
+is based on an encoder–decoder network architecture and has
+several advantages in detecting densely packed small craters.
+1) The connections between the encoder and decoder layers
+promote the fusion of deep features with complementary
+spatial details.
+2) The EMA attention layers following each layer of the
+decoder retain the key channels and spatial information
+of feature maps.
+3) The multilayer feature maps of the encoder are com-
+bined into multiscale spatial fusion features in an
+FPN-like form.
+4) The fusion of multiscale features from encoder, high-
+resolution features from the model’s beginning, and
+strong semantic features from the neck’s end, along
+with the channel attention weighting process, enable the
+model to obtain the ability to detect craters of various
+shapes. These designs have led to superior performance
+in extensive experimental tests and have detected a
+large number of small craters based on enhanced PSR
+images. This provides data support for size-frequency
+distribution analysis of craters to study the geological
+evolution and material composition of polar PSR.
+In future work, we will conduct subsequent scientiﬁc
+research based on the PSR’s crater detection results and
+explore the continued use of deep learning methods to study
+other landforms or surface materials within PSR.
+REFERENCES
+[1] C. Liu, W. Guo, W. Hu, R. Chen, and J. Liu, “Real-time Crater-based
+monocular 3-D pose tracking for planetary landing and navigation,”
+IEEE Trans. Aerosp. Electron. Syst. , vol. 59, no. 1, pp. 311–335, Feb.
+2023.
+[2] B. Wu, Y . Wang, T. J. Lin, H. Hu, and S. C. Werner, “Impact Cratering
+in and around the orientale basin: Results from recent high-resolution
+remote sensing datasets,” Icarus, vol. 333, pp. 343–355, Nov. 2019.
+[3] S. Creech, J. Guidi, and D. Elburn, “Artemis: An overview of NASA’s
+activities to return humans to the moon,” in Proc. IEEE Aerosp. Conf.
+(AERO), Mar. 2022, pp. 1–7.
+[4] Z. Yin, N. Liu, and Y .-Q. Jin, “Simulation of the temperatures in
+the permanently shadowed region of the Moon’s south pole and data
+validation,” Icarus, vol. 411, Mar. 2024, Art. no. 115917.
+[5] B. Wu et al., “Topographic and geomorphological mapping and analysis
+of the Chang’E-4 landing site on the far side of the moon,” Photogram-
+metric Eng. Remote Sens. , vol. 86, no. 4, pp. 247–258, Apr. 2020.
+[6] S. Liu, W. Ding, F. Gao, and T. F. Stepinski, “Adaptive selective learning
+for automatic identiﬁcation of sub-kilometer Craters,” Neurocomputing,
+vol. 92, pp. 78–87, Sep. 2012.
+[7] S. Wang, Z. Fan, Z. Li, H. Zhang, and C. Wei, “An e ﬀective lunar Crater
+recognition algorithm based on convolutional neural network,” Remote
+Sens., vol. 12, no. 17, p. 2694, Aug. 2020.
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 14 ---
+5643314 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+[8] S. J. Robbins, “A new global database of lunar impact Craters >1–2 Km:
+1. Crater locations and sizes, comparisons with published databases,
+and global analysis,” J. Geophys. Research: Planets , vol. 124, no. 4,
+pp. 871–892, Apr. 2019.
+[9] L. Bandeira, W. Ding, and T. F. Stepinski, “Detection of sub-kilometer
+Craters in high resolution planetary images using shape and texture
+features,” Adv. Space Res. , vol. 49, no. 1, pp. 64–74, Jan. 2012.
+[10] S. J. Robbins et al., “The variability of Crater identiﬁcation among expert
+and community Crater analysts,” Icarus, vol. 234, pp. 109–131, May
+2014.
+[11] G. T. Vamshi, T. R. Martha, and K. Vinod Kumar, “An object-based
+classiﬁcation method for automatic detection of lunar impact Craters
+from topographic data,” Adv. Space Res., vol. 57, no. 9, pp. 1978–1988,
+May 2016.
+[12] S. Yamamoto, T. Matsunaga, R. Nakamura, Y . Sekine, N. Hirata, and
+Y . Yamaguchi, “Rotational pixel swapping method for detection of
+circular features in binary images,” IEEE Trans. Geosci. Remote Sens. ,
+vol. 53, no. 2, pp. 710–723, Feb. 2015.
+[13] Y . Zhou, H. Zhao, M. Chen, J. Tu, and L. Yan, “Automatic detection
+of lunar Craters based on DEM data with the terrain analysis method,”
+Planet. Space Sci. , vol. 160, pp. 1–11, Oct. 2018.
+[14] F. C. Hanak, “Lost in low lunar orbit Crater pattern detection and
+identiﬁcation,” Ph.D. dissertation, Dept. Aerosp. Eng. Eng. Mech., Univ.
+Texas, Austin, TX, USA, May 2009.
+[15] Z. Kang, X. Wang, T. Hu, and J. Yang, “Coarse-to-Fine extraction of
+small-scale lunar impact Craters from the CCD images of the Chang’E
+lunar orbiters,” IEEE Trans. Geosci. Remote Sens. , vol. 57, no. 1,
+pp. 181–193, Jan. 2019.
+[16] M. Chen, D. Liu, K. Qian, J. Li, M. Lei, and Y . Zhou, “Lunar
+Crater detection based on terrain analysis and mathematical morphology
+methods using digital elevation models,” IEEE Trans. Geosci. Remote
+Sens., vol. 56, no. 7, pp. 3681–3692, Jul. 2018.
+[17] Y . Wang et al., “A novel approach for multiscale lunar Crater detection
+by the use of path-proﬁle and isolation forest based on high-resolution
+planetary images,” IEEE Trans. Geosci. Remote Sens. , vol. 60, 2022,
+Art. no. 4601424.
+[18] A. Silburt et al., “Lunar Crater identiﬁcation via deep learning,” Icarus,
+vol. 317, pp. 27–38, Jan. 2019.
+[19] Z. Kang, Z. Luo, T. Hu, and P. Gamba, “Automatic extraction and
+identiﬁcation of lunar impact Craters based on optical data and DEMs
+acquired by the Chang’E satellites,” IEEE J. Sel. Topics Appl. Earth
+Observ. Remote Sens. , vol. 8, no. 10, pp. 4751–4761, Oct. 2015.
+[20] X. Xin, K. Di, Y . Wang, W. Wan, and Z. Yue, “Automated detection of
+new impact sites on Martian surface from HiRISE images,” Adv. Space
+Res., vol. 60, no. 7, pp. 1557–1569, Oct. 2017.
+[21] Y . Jia, G. Wan, L. Liu, Y . Wu, and C. Zhang, “Automated detection
+of lunar Craters using deep learning,” in Proc. IEEE 9th Joint Int. Inf.
+Technol. Artif. Intell. Conf. (ITAIC) , vol. 9, Dec. 2020, pp. 1419–1423.
+[22] S. Vellas et al., “Evaluation of resource-e ﬃcient Crater detectors on
+embedded systems,” 2024, arXiv:2405.16953.
+[23] C.-Y . Wang, A. Bochkovskiy, and H.-Y .-M. Liao, “YOLOv7: Trainable
+bag-of-freebies sets new state-of-the-art for real-time object detectors,”
+in Proc. IEEE /CVF Conf. Comput. Vis. Pattern Recognit. (CVPR) , Jun.
+2023, pp. 7464–7475.
+[24] T. Xia, X. Ren, Y . Liu, N. Liu, F. Xu, and Y .-Q. Jin, “Detection of
+surface rocks and small Craters in permanently shadowed regions of the
+lunar south pole based on YOLOv7 and Markov random ﬁeld algorithms
+in SAR images,” Remote Sens. , vol. 16, no. 11, p. 1834, May 2024.
+[25] H. Wang, J. Jiang, and G. Zhang, “CraterIDNet: An end-to-end fully
+convolutional neural network for Crater detection and identiﬁcation
+in remotely sensed planetary images,” Remote Sens. , vol. 10, no. 7,
+p. 1067, Jul. 2018.
+[26] F. Lin, X. Hu, Y . Lin, Y . Li, Y . Liu, and D. Li, “Dual-branch
+multi-modal convergence network for Crater detection using Chang’e
+image,” Int. J. Appl. Earth Observ. Geoinf. , vol. 134, Nov. 2024,
+Art. no. 104215.
+[27] C. Lee and J. Hogan, “Automated Crater detection with human level
+performance,” Comput. Geosci. , vol. 147, Feb. 2021, Art. no. 104645.
+[28] Y . Mao, R. Yuan, W. Li, and Y . Liu, “Coupling complementary
+strategy to U-Net based convolution neural network for detect-
+ing lunar impact Craters,” Remote Sens. , vol. 14, no. 3, p. 661,
+Jan. 2022.
+[29] M. Sinha, S. Paul, M. Ghosh, S. N. Mohanty, and R. M. Pattanayak,
+“Automated lunar Crater identiﬁcation with Chandrayaan-2 TMC-2
+images using deep convolutional neural networks,” Sci. Rep. , vol. 14,
+no. 1, p. 8231, Apr. 2024.
+[30] E. Emami, T. Ahmad, G. Bebis, A. Neﬁan, and T. Fong, “Crater detec-
+tion using unsupervised algorithms and convolutional neural networks,”
+IEEE Trans. Geosci. Remote Sens. , vol. 57, no. 8, pp. 5373–5383, Aug.
+2019.
+[31] L. Gao, D. Wang, L. Zhuang, X. Sun, M. Huang, and A. Plaza,
+“BS 3LNet: A new blind-spot self-supervised learning network for hyper-
+spectral anomaly detection,” IEEE Trans. Geosci. Remote Sens. , vol. 61,
+2023, Art. no. 5504218.
+[32] M. Wang, L. Gao, L. Ren, X. Sun, and J. Chanussot, “Hyperspectral
+simultaneous anomaly detection and denoising: Insights from integrative
+perspective,” IEEE J. Sel. Topics Appl. Earth Observ. Remote Sens. ,
+vol. 17, pp. 13966–13980, 2024.
+[33] C. Yang et al., “Lunar impact Crater identiﬁcation and age estimation
+with Chang’E data by deep and transfer learning,” Nature Commun. ,
+vol. 11, no. 1, p. 6358, Dec. 2020.
+[34] X. Zhou, D. Wang, and P. Kr ¨ahenb¨uhl, “Objects as points,” 2019,
+arXiv:1904.07850.
+[35] F. Zhang, Z. Tu, W. Hao, Y . Chen, F. Li, and M. Ye, “Zero-shot param-
+eter learning network for low-light image enhancement in permanently
+shadowed regions,” IEEE Trans. Geosci. Remote Sens. , vol. 62, 2024,
+Art. no. 5630216.
+[36] T. Y . Lin, P. Doll ´ar, R. Girshick, K. He, B. Hariharan, and S. Belongie,
+“Feature pyramid networks for object detection,” in Proc. IEEE Conf.
+Comput. Vis. Pattern Recognit. , Jul. 2017, pp. 2117–2125.
+[37] S. Zhang, P. Zhang, J. Yang, Z. Kang, Z. Cao, and Z. Yang, “Automatic
+detection for small-scale lunar impact Crater using deep learning,” Adv.
+Space Res. , vol. 73, no. 4, pp. 2175–2187, Feb. 2024.
+[38] Y . Juntao, Z. Shuowei, L. Lin, K. Zhizhong, and M. Yuechao,
+“Topographic knowledge-aware network for automatic small-scale
+impact Crater detection from lunar digital elevation models,” Int.
+J. Appl. Earth Observ. Geoinf. , vol. 129, May 2024, Art. no.
+103831.
+[39] D. Ouyang et al., “E ﬃcient multi-scale attention module with cross-
+spatial learning,” in Proc. IEEE Int. Conf. Acoust., Speech Signal
+Process. (ICASSP), Jun. 2023, pp. 1–5.
+[40] J. Hu, L. Shen, and G. Sun, “Squeeze-and-excitation networks,” in Proc.
+IEEE Conf. Comput. Vis. Pattern Recognit. , Jul. 2018, pp. 7132–7141.
+[41] S. Woo, J. Park, J.-Y . Lee, and I. S. Kweon, “CBAM: Convolutional
+block attention module,” in Proc. Eur . Conf. Comput. Vis. , Sep. 2018,
+pp. 3–19.
+[42] H. Yang, X. Xu, Y . Ma, Y . Xu, and S. Liu, “CraterDANet: A
+convolutional neural network for small-scale Crater detection via
+synthetic-to-real domain adaptation,” IEEE Trans. Geosci. Remote Sens. ,
+vol. 60, 2022, Art. no. 4600712.
+[43] S. Ren, K. He, R. Girshick, and J. Sun, “Faster R-CNN: Towards
+real-time object detection with region proposal networks,” IEEE
+Trans. Pattern Anal. Mach. Intell. , vol. 39, no. 6, pp. 1137–1149,
+Jun. 2017.
+Authorized licensed use limited to: University of Pittsburgh. Downloaded on July 08,2026 at 03:24:02 UTC from IEEE Xplore.  Restrictions apply. 
+======================================================================
+FILE: Lunar_Crater_Detection_on_High-Resolution_Chandrayaan-2_OHRC_Imagery_Using_YOLO.pdf (5 pages)
+======================================================================
+--- Page 1 ---
+Lunar Crater Detection on High-Resolution
+Chandrayaan-2 OHRC Imagery Using YOLO
+Yash Lokwani†
+Dept. of CSE
+PDEU, Gandhinagar , India
+yashlokwani22@gmail.com
+Sanskriti Singh †
+Dept. of ICT
+PDEU, Gandhinagar , India
+sanskritisingh.inn@gmail.com
+Meenakshi Sarkar
+Space Applications Centre
+ISRO, Ahmedabad, India
+meenakshiofccom@gmail.com
+Abstract—This study implements a powerful deep
+learning-based framework to autonomously detect lunar
+craters with the YOLOv8m object detection architecture.
+Training of the model was done on the LU3M6TGT
+lunar crater data set, which consisted of roughly 8,000
+high-resolution images and an estimated 2 to 3 million
+annotated crater instances. Annotations were created in
+the YOLO (x center, y center, width, height) format,
+which lets it correctly learn to regress bounding boxes.
+For testing, we annotated and used images from the
+OHRC camera onboard India’s Chandrayaan-2 mission
+and then the image was split into 1024 ! 1024 pixel
+patches. The training pipeline was robust, where hyper-
+parameter optimization, with the use of three optimized
+loss functions—Box Loss, Distribution Focal Loss and
+Classiﬁcation Loss—brought out the model’s fullest po-
+tential. Generalization was encouraged in the training
+process by validating the model on the annotated test
+image patches of Chandrayaan-2 OHRC imagery. The
+model performed well with precision of 0.93, recall of
+0.90, mAP@0.5 of 0.97, as well as F1 score equal to 0.92,
+which outperforms the existing YOLO models in terms
+of precision and recall. The qualitative outcomes show
+a reliable and consistent crater localization capability
+with high variability of surface terrain, shadows, crater
+scale, etc. The contribution of this study supports the
+successful use of YOLOv8m on lunar surface analysis
+and is scalable to inform and increase autonomous lunar
+missions for navigation, landing site assessment, geo-
+logical mapping, and contribute to autonomous surface
+interpretation and automated annotation from images of
+various resolutions.
+Index Terms —Lunar crater detection, YOLOv8m,
+object detection, Chandrayaan-2, OHRC, LU3M6TGT
+dataset, deep learning, bounding box, image segmenta-
+tion, hyperparameter tuning.
+I. I NTRODUCTION
+Lunar craters, formed over billions of years by me-
+teoroid and asteroid impacts, are essential for under-
+standing the Moon’s surface history, composition, and
+impact chronology [1]. Morphology and distribution
+can be used to assess surface age, geological activity
+or suitability of sites for future missions to the moon.
+Recent missions, including NASA ’s Lunar Recon-
+naissance Orbiter (LRO) and ISRO’s Chandrayaan,
+have gathered billions of lunar images at high resolu-
+tion. It isn’t feasible for experts to manually annotate
+millions of craters due to time, scale or human-R1
+†These authors contributed equally to this work.
+error. Traditional image processing techniques [2], [3]
+often struggle in low-contrast or shadowed regions,
+prompting the need for automated and robust crater
+detection methods.
+Deep learning is an area where crater segmentation
+has shown promise, which yielded strong results with
+CNN and U-Net architectures. The YOLO (Y ou Only
+Look Once) model family also shows promise, as the
+technological developments in YOLOv8 possess en-
+hanced feature extraction and bounding box regression
+during the real-time object detection process, which
+have the potential for improved training stability.
+This paper adapted and optimized a pre-trained
+model using the YOLOv8m model to automatically
+detect lunar craters. Our key contributions are:
+• Developed a YOLOv8m-based crater detection
+pipeline suitable for high-density lunar terrains.
+• Hyperparameter and rigorous Fine tuning of the
+loss function.
+• Appliying Learning rate and weight decays with
+appropriate model pre-processing to enhance pre-
+cision to be highest among all the models.
+• V alidation of the model on annotated images
+Chandrayaan-2 OHRC imagery covering a strong
+sense of generalization.
+• Evaluation and reporting through quantitative
+metrics and qualitative visualization.
+Our work illustrates a shared adaptability for the
+signiﬁcant object detection models used in the ﬁeld of
+planetary science, while providing a scalable solution
+for the detection of craters on extraterrestrial surfaces.
+II. L ITERA TURE REVIEW
+Accurate crater detection plays a crucial role in
+planetary geology, autonomous navigation, and land-
+ing site selection. Traditional crater detection ap-
+proaches primarily relied on handcrafted algorithms
+such as Hough Transform and highlight-shadow anal-
+ysis [3], which struggled with varying lighting, de-
+graded rims, and complex terrains.
+Recent advancements have favored deep learning-
+based methods. Silburt et al. [5] demonstrated the
+effectiveness of CNNs on different datasets, achieving
+high recall while identifying many previously unde-
+tected small craters. Sinha et al. [6] applied a U-Net
+979-8-3315-8584-6/25/$31.00 ©2025 IEEE
+772
+2025 IEEE India Geoscience and Remote Sensing Symposium (InGARSS) | 979-8-3315-8584-6/25/$31.00 ©2025 IEEE | DOI: 10.1109/INGARSS67683.2025.11584062
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:32:38 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 2 ---
+model on Chandrayaan-2 TMC-2 images, obtaining
+86.91% detection accuracy despite limited annotations.
+Transfer learning approaches like those by Emami et
+al. [7] further improved crater detection in low-data
+regimes.
+To address real-time detection challenges, Ding et
+al. [8] employed YOLOv4 on Chang’e data, while
+Zhao et al. [9] introduced the YOLO-Crater model
+with loss function tuning and attention mechanisms
+for small crater detection. The recently proposed
+YOLOv8-LCNET model enhanced feature fusion us-
+ing Partial Self-Attention and a GD mechanism, re-
+sulting in a precision of around 0.87. [10].
+Generalization across datasets, detection of small
+craters, and noise robustness, are still open prob-
+lems and we hope to advance this area of re-
+search with YOLOv8m and high-resolution data from
+Chandrayaan-2 OHRC.
+III. C HANDRA Y AAN-2 M ISSION
+Chandrayaan-2, which was set in motion on July
+22, 2019, by ISRO, is India’s second mission to
+the Moon whose goals include scientiﬁc studies of
+the surface, subsurface, and the exosphere of Moon
+and the cratered surface of the Moon. The spacecraft
+performed the Lunar Orbit Insertion (LOI) manoeuvre
+on August 20th, successfully inserting the spacecraft
+into a non-circular elliptical orbit around the Moon.
+The mission consist of an orbiter, Vikram lander, and
+Pragyan rover. The Orbiter high resolution camera
+(OHRC) has a superior spatial resolution camera. The
+OHRC’s principal purpose will be to image system-
+atically pre-landing, the landing-site region, in order
+to characterize the site and identify hazard-free zones.
+The OHRC will have post-landing operations for sci-
+entiﬁc studies of small-scale features observed on the
+lunar surface. Ground sampling distance (GSD) was
+calculated as 0.25m and swath of OHRC (in nadir
+view) was calculated as 3km from an altitude of 100
+km. [11], [12].
+IV . M ETHODOLOGY
+A. YOLOv8m Architecture
+YOLO, or Y ou Only Look Once, is a go-to option
+for real time object detection and image segmentation.
+YOLO is a convolutional neural network that predicts
+both the bounding boxes and class probabilities of
+the objects in an image in one pass. Here, we are
+using the YOLOv8m model variant because of an
+acceptable balance in computational efﬁciency and
+detection accuracy for lunar crater detection. YOLOs
+architecture has several main parts that it uses to
+process data:
+• Backbone: A modiﬁed CSPDarknet53 is used as
+the backbone, which provides multi-scale features
+using Cross Stage Partial (CSP) links to reduce
+the parameters while keeping the feature space
+expressive. The Spatial Pyramid Pooling Fast
+(SPPF) module aggregates features across scales,
+enhancing detection of small and large craters [4].
+• Neck: The Path Aggregation Network (PANet)
+takes features from various layers in the backbone
+to integrate spatial information to improve the
+localization for craters of different sizes. The
+PANet uses Feature Pyramid Networks (FPNs) to
+propagate feature information down from higher
+resolution feature maps to the lowest resolution
+feature maps.
+• Head: The decoupled head separates the clas-
+siﬁcation, regression and objectness predic-
+tions. YOLOv8m’s anchor-free approach predicts
+bounding box centers directly, reducing training
+complexity and improving performance on irreg-
+ular crater shapes [4].
+The model accepts input images with a resolution of
+1024x1024 pixels and outputs bounding boxes, class
+probabilities, and conﬁdence scores of craters detected.
+B. Loss Functions
+YOLOv8m optimizes three loss elements to perfor-
+mance in crater detection:
+1) Box Loss: The model utilizes Complete IoU
+loss to assist in determining bounding box deﬁnitions;
+CIoU loss represents the bounding box with overlap,
+center distance, and aspect ratio:
+Lbox =1 → IoU + ω2(b, bgt )
+c2 + εv (1)
+where ω is the Euclidean distance between centers of
+the box, c is the diagonal of the smallest enclosing
+box, v measures consistency of aspect ratio, and ε
+is a weight [13]. A box loss of 0.3661 indicates that
+the model’s localization ability is accurate for different
+crater sizes.
+2) Classiﬁcation Loss (CLS): The model uses
+binary cross-entropy (BCE) as the classiﬁcation model:
+Lcls = → 1
+N
+N∑
+i=1
+[yi log(ˆyi)+( 1 → yi) log(1 → ˆyi)] (2)
+Here, yi is the ground-truth label and ˆyi is the pre-
+dicted probability. A CLS loss of 0.2277 indicates high
+conﬁdence in crater classiﬁcation.
+3) Distribution Focal Loss (DFL): The DFL model
+considers the bounding box edges as distributions to
+better regression small, irregular craters:
+LDF L = → 1
+N
+N∑
+i=1
+∑
+j→{l,r,t,b}
+pj log(ˆpj ) (3)
+where pj and ˆpj are the ground-truth and predicted
+distributions for box boundaries [14]. A DFL of 0.7851
+is less than commonly observed range of YOLOv7 and
+indicates improved performance for small craters.
+773
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:32:38 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 3 ---
+C. Dataset
+The dataset utilized is the LU3M6TGT lunar
+crater dataset, comprising approximately 8,000 high-
+resolution images with an estimated 2–3 million anno-
+tated crater instances [15]. Annotations were prepared
+in the YOLO format to allow precise bounding box
+regression. The images show a variety of lunar terrains,
+including maria, highlands, and polar regions, captured
+under different lighting conditions. These conditions
+create major challenges for detection because of shad-
+ows and crater density.
+For evaluation, high-resolution images from the
+Chandrayaan-2 Orbiter High Resolution Camera
+(OHRC) was used [12]. The OHRC has a spatial reso-
+lution of 0.25 m/pixel from a 100-km orbit, providing
+detailed images of the lunar surface. This image was
+divided into 1024 !1024 pixel patches to form a test
+set, which meets YOLOv8m’s input requirements.
+(a) Sample-1
+ (b) Sample-2
+Fig. 1: Original Crater Dataset Images
+D. Training and Hyperparameter Tuning
+The baseline model was ﬁrst trained for 200 epochs
+using the default hyper-parameters with the Ultralytics
+YOLOv8 framework. In training, the images used
+were of size 640x640 pixels, which were resized to
+1024!1024 pixels using batch size of 16. This setup
+gained 0.89 precision and a recall of 0.87.
+To improve model performance, hyperparameter
+tuning and data augmentation techniques were applied.
+The initial learning rate (lr0) was set as 0.0005, the
+learning rate factor (lrf) to 0.01, momentum to 0.937,
+and weight decay to 0.0006. A warm-up strategy in-
+cluded 3 warm-up epochs, where warm-up momentum
+was 0.8, and the warm-up bias learning rate was 0.1.
+Learning rate decay was used to help convergence and
+generalization.
+After these changes, the model was trained for
+an additional 200 epochs, bringing the total to 400
+epochs. These optimizations improved all key perfor-
+mance metrics, with the ﬁnal model reaching 0.93
+precision and recall of 0.91, showing better detection
+capability and robustness.
+To further enhance generalization to real lunar ter-
+rain, the model was ﬁne-tuned on a manually annotated
+subset of 1024 !1024 patches taken from a high-
+resolution Chandrayaan-2 OHRC image, originally
+sized at 1200 !9014 pixels. This domain-speciﬁc ﬁne-
+tuning helped the model better detect small and low-
+contrast craters and adjust to different crater shapes.
+To optimally use the resources, we trained the model
+in two parts, where after the ﬁrst 200 epochs, the best
+weights are saved and used for further hyperparameter
+and ﬁne tuning for the next 200 epochs, which gave
+better precision and recall values, resulting in two
+graphs shown in Fig.3.
+(a) PR-Curve
+ (b) F1-Curve
+Fig. 2: Evaluation Metrics
+Fig. 3: Loss Curves before and after Hyperparameter
+and Fine Tuning
+V. O BSERV A TIONS
+A. Evaluation Metrics
+The YOLOv8m model was evaluated with the help
+of standard metrics of object detection: precision,
+recall, F1 score, mAP@0.5, and a composite ﬁtness
+score. After 400 epochs and adjusting the hyper-
+parameters, precision rose from 0.892 to 0.92836, and
+774
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:32:38 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 4 ---
+recall reached 0.904. This shows fewer false positives
+and better crater detection.
+The F1 score went up to 0.915, and mAP@0.5
+increased to 0.967, indicating high detection accuracy
+for different crater sizes. The ﬁtness score improved to
+0.895, conﬁrming reliability under stricter IoU thresh-
+olds. These results demonstrate the effect of tuning on
+recognizing small craters and generalizing from high-
+resolution lunar images.
+TABLE I: Performance Comparison Before and After
+Tuning
+Metric Before Tuning After Tuning
+Precision 0.89 0.93
+Recall 0.87 0.90
+mAP@0.5 0.93 0.97
+F1 Score 0.88 0.91
+B. Visualization of Predicted Craters
+Fig. 4 shows predicted craters on ASU and
+LRO Martian/Lunar Standard Crater Dataset [16] as
+well as Fig.5 and 6 show the predicted craters on
+Chandrayaan-2 Test Dataset, respectively. Bounding
+boxes are tightly aligned with ground-truth anno-
+tations, with signiﬁcant conﬁdence scores for most
+detections. The model excels at detecting small craters
+(10–50 m), a challenge in prior methods, due to the
+DFL loss and anchor-free design.
+Fig. 4: Original, Ground Truth, and Prediction on ASU
+and LRO Martian/Lunar Standard Crater Dataset
+C. Ablation Study
+An ablation study was conducted to evaluate how
+hyper-parameter tuning and data augmentation affect
+prediction results. Training without the mosaic aug-
+mentation reduced mAP@0.5 by 5%. This shows its
+role in handling various crater shapes. Similarly, using
+a ﬁxed learning rate of 0.01 without decay lowered the
+recall by 3%. This highlights the importance of using
+adaptive learning rates.
+VI. C ONCLUSION
+This study shows that YOLOv8m works well for de-
+tecting lunar craters using images from Chandrayaan-
+2. The model performed well with high precision,
+recall, a speciﬁc metric, and an F1 score after adjusting
+its settings. It surpassed the baseline metrics with
+precision of 0.93, recall of 0.90, mAP@0.5 of 0.97,
+as well as F1 score equal to 0.92, which outperforms
+(a) Result-1
+ (b) Result-2
+(c) Result-3
+ (d) Result-4
+Fig. 5: Predictions of Chandrayan-2 OHRC Images
+Fig. 6: Original, Ground Truth, and Prediction on
+Chandrayaan-2 OHRC Dataset
+the existing YOLO models in terms of precision and
+recall. The anchor-free design and DFL loss improved
+the detection of small craters, which is important
+for high-resolution datasets like OHRC. Visualizations
+conﬁrm robust performance across diverse terrains.
+In Future work, multi-modal data could be integrated
+(e.g., topography and spectral data) and the real-time
+detection for rover navigation can be explored.
+VII. A CKNOWLEDGMENT
+The authors sincerely thank the Indian Space Re-
+search Organisation (ISRO) for providing access to
+the Chandrayaan-2 dataset, which was instrumental
+for this research. We are especially thankful to the
+scientists and engineers at ISRO for their help with
+system setup, software conﬁguration, and operational
+support during the internship. The authors appreciate
+the Scientiﬁc Research and Training Division (SRTD),
+ISRO, for the chance to participate in this research in-
+ternship and to contribute to ongoing lunar exploration
+efforts. We also recognize the Ultralytics team for the
+YOLOv8 framework.
+775
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:32:38 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 5 ---
+REFERENCES
+[1] B. A. Ivanov, “Mars/Moon cratering rate ratio estimates,”
+Space Science Reviews , vol. 96, no. 1–4, pp. 87–104, 2001.
+DOI: https://doi.org/10.1023/A:1011941121102
+[2] E. Stepinski, A. Urbach, and C. Mendenhall, “Automated
+mapping of the Moon using image segmentation,” Icarus,
+vol. 203, no. 1, pp. 77–87, 2009.
+[3] J. R. Kim, C. I. Fassett, and J. W. Head, “Automatic crater
+detection using the circular Hough Transform: A quantitative
+assessment,” Lunar and Planetary Science Conference , no. 36,
+2005.
+[4] G. Jocher, L. Changyu, K. Qiu, et al., “YOLO by Ultra-
+lytics,” Zenodo, 2023. [Online]. Available: https://doi.org/10.
+5281/zenodo.7923027
+[5] A. Silburt, A. Ali-Dib, M. Kumar, A. Zentner, and P . Tamayo,
+“Lunar crater identiﬁcation via deep learning,” Icarus,
+vol. 317, pp. 27–38, 2019.
+[6] M. Sinha, S. Paul, and J. Sanjay, “Automated lunar crater iden-
+tiﬁcation with Chandrayaan-2 TMC-2 images using CNN,”
+Scientiﬁc Reports , 2024.
+[7] M. Emami, M. Namjoo, and M. Zarif, “Transfer learning-based
+lunar crater detection using satellite image datasets,” Advances
+in Space Research , vol. 69, no. 3, pp. 1212–1222, 2022.
+[8] W. Ding, Z. Zhang, and X. Li, “Lunar crater detection based
+on YOLOv4,” Remote Sensing , vol. 13, no. 15, p. 3021, 2021.
+[9] L. Zhao, J. Wu, Q. Zhang, Z. Wang, Y . Xu, and X. Liu,
+“YOLO-Crater model for small crater detection,” Remote
+Sensing, vol. 15, no. 3, 2023.
+[10] J. Nan, Y . Wang, and K. Di, “YOLOv8-LCNET: An improved
+YOLOv8 automatic crater detection algorithm for the Chang’e-
+6 landing area,” Sensors, vol. 25, no. 4, 2025.
+[11] ISRO, “Chandrayaan-2 Mission Overview,” 2019. [Online].
+Available: https://www.isro.gov.in
+[12] ISRO, “Chandrayaan-2 Mission,” Indian Space Science Data
+Centre (ISSDC), [Online]. Available: https://pradan.issdc.gov.
+in/ch2/ [Accessed: July 2, 2025].
+[13] Z. Zheng, P . Wang, W. Liu, et al., “Distance-IoU loss: Faster
+and better learning for bounding box regression,” in Proc.
+AAAI, vol. 34, no. 07, 2020, pp. 12993–13000.
+[14] Z. Li, D. Wang, H. Wang, et al., “Generalized focal loss
+V2: Learning reliable localization quality estimation for dense
+object detection,” in Proc. CVPR , 2021, pp. 11619–11628.
+[15] LU3M6TGT Dataset, “Lunar Crater Dataset for YOLO-based
+Detection,” [Online]. Available: https://universe.roboﬂow.com/
+[16] Martian/Lunar Standard Crater Detection Dataset of ASU and
+LRO missions. Available: https://www.kaggle.com/datasets/
+lincolnzh/martianlunar-crater-detection-dataset
+776
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:32:38 UTC from IEEE Xplore.  Restrictions apply. 
+======================================================================
+FILE: Water_Ice_Detection_in_Erlanger_Crater_a_Permanentatly_Shadowed_Region_of_Lunar_North_Pole.pdf (4 pages)
+======================================================================
+--- Page 1 ---
+WATER ICE DETECTION IN ERLANGER CRATER: A PERMANENTATLY SHADOWED REGION OF 
+LUNAR NORTH POLE 
+Chandani sahu1, Himanshu Govil1, Shovan Lal Chattoraj2, Shashi Kumar2 
+1Applied Geology Department, National Institute of Technology, Raipur 
+2Indian Institute of Remote Sensing, Dehradun 
+ 
+ABSTRACT 
+Permanently shaded areas located in close proximity to the 
+lunar poles represent regions of extreme coldness that remain 
+perpetually devoid of sunlight owing to the specific 
+orientation of the Moon's axis. These regions, which could 
+contain significant amounts of water-ice, are crucial for 
+future lunar exploration. The cold temperatures in PSRs 
+allow for the freezing and trapping of volatiles, including 
+water ice. Numerous studies have aimed to detect water ice 
+in these areas, such as the Chandrayaan-1 mission, which 
+mapped the lunar surface and sought water deposits near the 
+poles. This paper utilizes Moon Mineralogy Mapper data 
+onboard Chandrayaan 1 and Mini-SAR instruments to detect 
+water ice in and around the Erlanger crater situated at the 
+lunar North Pole. The M3 hyperspectral images analyzed 
+water ice absorption features, while image processing 
+techniques and the Spectral Angle Mapper (SAM) were used 
+for mapping water ice deposits. Moreover, the application of 
+Mini-SAR data aided in the measurement of Stokes 
+parameters, which were subsequently utilized in 
+decomposition techniques to differentiate scattering events 
+inside and outside the crater. 
+Index Terms— Permanently shadowed regions, Moon 
+Mineralogy Mapper, Mini-SAR, Spectral Angle Mapper, 
+decomposition techniques. 
+ 
+INTRODUCTION 
+Permanently shaded areas on the lunar surface remain devoid 
+of direct sunlight as a result of the Moon's axis exhibiting close 
+to perpendicular alignment with the sun's rays. This results in 
+extremely cold temperatures (below 120 K) in these regions, 
+allowing them to trap volatile materials. These distinctive 
+characteristics make PSRs crucial for studying the Moon’s 
+geology and potential resources[1].  
+The issue of the existence of H 2O and other volatiles on the 
+Moon is crucial in terms of science and exploration[2]. 
+Water molecules can be found on the lunar surface due to a 
+variety of processes, such as collisions from comets, asteroids, 
+and meteorites, as well as reactions with protons from the solar 
+wind and endogenous water. Understanding cometary activity 
+at the lunar pole sheds light on the sources and fluxes of 
+impacting materials over time [2]. Planetary exploration is 
+crucial for comprehending celestial bodies' formation, 
+evolution, and current geological state [3]. In order to identify 
+regions with high scientific potential for studying volatiles, 
+especially water molecule in permanently shadowed regions 
+(PSRs) near the lunar poles, studies make use of data from 
+missions like Chandrayaan-1 and instruments like the Lunar 
+Orbiter Laser Altimeter (LOLA) and the Lunar Prospector 
+Neutron Spectrometer (LPNS)[4] [5]. 
+Chandrayaan-1 was launched to map the lunar surface and 
+detect water ice deposits near the lunar poles. Through 
+spectrum absorption features, multi and hyperspectral data in 
+the visible, near-infrared (NIR), and shortwave infrared 
+regions are used in lunar remote sensing to analyze the Moon's 
+minerals. This includes electronic absorption in the UV, 
+visible, and NIR regions, and vibrational absorption from 
+visible to NIR (1-30 micrometers). NIR reflectance 
+spectroscopy is particularly effective for distinguishing water 
+ice from hydroxyl (OH-) and OH-bearing minerals. It is an 
+imaging spectrometer, provides high-resolution NIR 
+reflectance data, allowing detailed analysis of the lunar 
+surface, including its polar regions.[6]. 
+This study focuses on detecting H 2O ice by examining 
+diagnostic absorption depth near 1.5 and 2.9 μm using M3 
+data from the Erlanger crater. The collected spectra were 
+compared to reference water ice spectra, and the Spectral 
+Angle Mapper (SAM) was used to map water ice pixels. 
+Additionally, thermal infrared and microwave data were 
+utilized to obtain information on the physical characteristics 
+and chemical composition of the lunar surface and subsurface. 
+The most common type of radar-based system for imaging is 
+SAR, which also includes altimeters and scatterometers [7].  
+The freshness of this work is that indirect light has been used 
+to examine the spectra of permanently shaded regions and 
+with these studies the characteristic absorption depth has been 
+observed and using Mini-SAR data different decomposition 
+model has been carried out for comparison with other models.  
+ 
+DATASETS AND METHODOLOGY 
+ Study Area 
+The study area chosen for this research is Erlanger Crater, 
+situated in the North Pole of the Moon at 86.94°N 28.62°E 
+with a diameter of 10.94 km. This crater is positioned between 
+the larger craters Peary and Byrd. Since most of Erlanger 
+Since the crater is located in an area that is always shaded, 
+water ice deposits are more likely to be present there. 
+Dataset used 
+In this study Chandrayan-1 Moon Mineralogy Mapper (M3) 
+and hybrid polarimetric Mini-SAR data has been used. The 
+M3 operates as an imaging spectrometer utilizing a push 
+broom configuration, having wavelengths range from 0.42-
+3.0 μm, where notable mineral absorption characteristics are 
+2024 IEEE India Geoscience and Remote Sensing Symposium (InGARSS) | 979-8-3503-9034-6/24/$31.00 ©2024 IEEE | DOI: 10.1109/InGARSS61818.2024.10984267
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:45:33 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 2 ---
+seen. The Moon Mineralogy Mapper, on the other hand , is a 
+specialized imaging spectrometer crafted for the pu rpose of 
+mineral identification and mapping of mineral abundances on 
+the Lunar surface. The Moon Mineralogy Mapper on bo ard 
+Chandrayan-1 records the reflected light from the M oon’s 
+surface with a spatial resolution of 140–280 meters  and a 
+spectral resolution of 20–40 nm, in push broom mode [8].The 
+hybrid polarimetric data were obtained in SAR mode.  The 
+Mini-SAR of Chandrayaan-1 has a 12.6 cm (S-band) 
+wavelength, a 75 m of spatial resolution with 8 km swath[9]. 
+Mini-SAR data consists of four raw channels that is , |LH| 2, 
+|LV | 2, Real (LH*LV), and Imaginary (LH*LV).  
+ 
+Methodology 
+ The reflectance M3 data were subjected to data red uctions 
+techniques including de-stripping and smoothing. The spectra 
+collected from M3 data is noisy because they are co llected 
+from permanently darker regions which are not direc tly 
+illuminated by sunlight but getting reflected sunli ght from 
+crater wall and other topographic features. To remo ve the 
+noise from the spectra smoothening has been perform ed on 
+all bands. The criteria decided for detection and 
+characterization of diagnostic NIR absorption bands of water 
+ice acquired using the Moon Mineralogy Mapper, on-b oard 
+Chandrayan-1 is 1.5 and 2.9 micron. After getting the spectra 
+of Permanently Shadowed Regions, the spectra have b een 
+compared to the reference spectra. On the other hand, hybrid 
+polarimetry data is applied to extract backscatteri ng 
+mechanism for lunar surface in order to find water ice inside 
+the lunar crater and comparison has been done with M3 
+observation.  
+Mini-SAR data provide four raw data channels, horiz ontal 
+(LH 2), vertical (VH 2) polarized, Real (LH*LV) and 
+Imaginary (LH*LV). Further LH and VH has been used for 
+calculation of Stokes vectors (S). These channels a re used to 
+calculate the Stokes parameters. These channels ser ve as the 
+foundation for creating Stokes parameters [10], whi ch has 
+been shown in equation 1: 
+ 
+S = 
+1
+2
+3
+4
+ = 
+< |
+ |2 +  |
+ |2 >
+< |LH |2 −  |LV |2 > 
+2 Re < LH. LV ∗>
+−2Im < LH. LV ∗>
+ = 
+⎝
+⎛
+S1 
+mS1 cos2χ cos2ψ 
+mS1 cos2χ sin2ψ
+−mS1 sin2 χ ⎠
+⎞ 
+Where * represents complex conjugate, Re and Im ind icates 
+real and imaginary component, m represents Degree o f 
+Polarization, χ represents ellipticity angle and ψ represents 
+orientation angle[11]. The first stoke parameter S1  gives the 
+total intensity, S2 gives the polarization state of  
+electromagnetic waves (vertical or horizontal) and S3 and S4 
+is related to the phase difference, where S3 gives the 
+eccentricity and S4 gives the information about rot ation 
+direction (left hand or right hand). 
+With the help of Stokes vectors, child parameters l ike CPR 
+(Cross Polarization Ratio), DoP (Degree of Polariza tion), 
+phase difference and ellipticity angle was calculat ed using 
+Stokes vectors by given equations: 
+The study employed three decomposition techniques, m-δ, m-
+χ, and m-α, using stokes parameters and child param eters to 
+extract scattering mechanisms from the lunar surfac e. These 
+techniques analyze Stokes parameters to distinguish between 
+different scattering mechanisms. The phase differen ce (δ) 
+indicates double bounce scattering, while the degre e of 
+polarization (m) reveals polarized and diffused sca ttering in 
+the m-δ decomposition. m in the m-χ decomposition u sed to 
+represent volumetric scattering and the ellipticity  angle (χ) 
+used to distinguish between double and surface boun ce 
+scattering. The value of m should be in the range of 0 to 1 and 
+the range of value of (χ) is -45° to 45° [12]. The polarization 
+angle (α) and degree of polarization (m), which cla rify the 
+underlying scattering process, are characterized du ring the 
+decomposition of m-α. The outcomes derived from the se 
+decomposition methodologies were juxtaposed with Co -
+Polarized Ratio and alpha values in order to evalua te the 
+existence of water ice on the lunar surface. 
+Later on, comparison of all the results of decompos ition 
+technique, CPR and alpha has been done. Equations f or (m- 
+δ), (m- χ), and (m-α) decomposition is given below: 
+ 
+ 
+Additionally, all the three decomposition models (m -δ, m-χ, 
+m-α) and Circular Polarization Ratio (CPR) were com pared 
+and analyzed to identify the most effective approac h for 
+detecting water ice deposits. Ultimately, the asses sment of 
+water ice was carried out using observations from t wo 
+different datasets. 
+ 
+RESULTS AND DISCUSSIONS 
+The results obtained from M3 shows specific water i ce 
+absorption depth at 1.5µm and 2.9µm in Figure 1. Th e 
+spectral data collected from Region of Interest (RO I) 2, 
+indicated by the green coloration, demonstrates absorption  
+CPR =  
+) *+) ,
+) *- ) ,                                     
+M =  
+/ ) 0²- ) 2²- ) , ²
+) *       where, 0 ≥ m ≥1  
+δ = tan^ ( -1) (( -S4)/S3)                 where, -180° ≥ δ≥ 180°  
+χ = 1/2 sin^ ( -1) (( -S4)/mS1)             where, -45° ≥ χ ≥ 45°   
+α = 
+*
+0
+ tan +* E
+√) 0G- ) 2G
+) , H 
+            
+ (m - δ)  B= JK 1
+(*- LMN O)
+0        R = 
+JK 1
+(*+LMN O)
+0  
+G= 
+/ 1(1 − K) 
+ 
+ 
+(m - χ)  B= JK 1
+(*+LMN 0Q)
+0  R= 
+JK 1
+(*-LMN 0Q)
+0  
+G= 
+/ 1(1 − K) 
+ 
+(m -α)  B= JK 1
+(*- RSL  ( 0T))
+0  R= 
+JK 1
+(*+RSL ( 0T))
+0  
+G= 
+/ 1(1 − K) 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:45:33 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 3 ---
+characteristics near 1.6 µm, potentially attributab le to mixed 
+pixel effects; however, at 2.9 µm, a distinct absorption feature 
+is observed, which corresponds with spectra acquire d from 
+various other ROIs. The spectra of water ice pixels  are noisy 
+due to the weak light source from permanently shado wed 
+regions, but the absorption bands are reliable with  the water 
+ice pixels. The hydration absorption feature has be en seen in 
+IR range and the spectra is compared with the USGS spectral 
+library (Figure 2(A)), wherein the region of 2 µm r eveals a 
+notable similarity between the two spectra; this indicates that 
+both spectra exhibit absorption characteristics at a 
+wavelength of approximately 2 µm. The classified im age of 
+the study area shown in Figure 2(B), represents the  possible 
+ice bearing pixels near the rim of Erlanger crater.  The water 
+ice pixels are spread around crater wall and rim. S uch 
+absorption feature on the lunar surface is generally associated 
+with OH or other OH bearing minerals like plagiocla se, 
+pyroxene, but may indicate H20 and H20 ice. In this  study, 
+spectra were collected from different regions, were  analyzed 
+based on their band positions related directly to OH and H 2O 
+abundance. SAM is performed for image derived spectra. The 
+certain maximum angle is set apart in the algorithm that is 0.1 
+by default, in which small angle denotes a nearer match to the 
+known spectrum. The value of SAM for this pure endmember 
+pixel is 0.33 radians which is equal to 19.26°. Thi s value is 
+less than the threshold value (30°) based on litera ture 
+approach [13] . To evaluate the results of different scattering 
+mechanism m-delta, m-alpha, m-chi, alpha and CPR im ages 
+of Mini-SAR data has been used. The magnitude and 
+polarization of the backscattered associated with l unar 
+surface and water-ice inside the craters were analy zed using 
+Mini-SAR data. The main parameter CPR is used to de tect 
+the water ice trapped in lunar surface. CPR image w as used 
+to find the subsurface scattering. The presence of water ice in 
+the lunar crater is indicated by the volumetric sca ttering, 
+which has a CPR value greater than 1. 
+In this study the high value of CPR for Erlanger cr ater is 1.5 
+Figure 3(A). CPR is used along which different 
+decomposition model, because the higher value of CPR also  
+Figure 2(A) comparison of collected spectra with USGS 
+reflectance spectra of water ice . (B) SAM classified image of 
+Erlanger crater showing water ice pixels. 
+Figure 1 Lunar spectra collected from Erlanger crater 
+showing significant hydration feature near 1.5µm an d 2.9µm 
+(Left). Red and green points showing the regions from spectra 
+were extracted (Right). 
+Figure 3 (A) CPR image of Erlanger crater where red  color 
+indicates the value of CPR is greater than 1. m-del ta 3(B), m-
+chi 3(C), m-alpha 3(D) decomposition for Erlanger Crater. 
+B A 
+H2O ice GDS156 
+USGS  
+Collected 
+spectra 
+A B 
+C D 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:45:33 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 4 ---
+attributes to double bounce scattering. Hence CPR v alues 
+analyzed with other model to enhance the results. I n Figure 
+3(B), 3(C), 3(D), three distinct scattering mechani sms are 
+depicted. The red color denotes double bounce scattering, the 
+green indicates volumetric scattering, and the blue  signifies 
+surface scattering. The brighter surfaces correspon d to the 
+corners of the crater. Predominantly, surface scatt ering and 
+double bounce scattering are observable across most  of the 
+region, whereas volumetric scattering prevails with in the 
+crater interiors. Surface scattering was specifical ly noted 
+along the steep crater wall, where incident waves are directly 
+scattered back into the sensor. Conversely, double bounce 
+scattering was noted in the surrounding area and al ong the 
+crater's edge, because of the dihedral nature of the crater wall 
+and the lunar surface. As seen in Figure 3 (B, C, D ), 
+volumetric scattering is present inside the crater,  increases 
+from the crater wall. The reason behind the high vo lumetric 
+scattering could be rough surface or presence of tr apped ice, 
+which is leading to the diffused scattering. By comparison to 
+m-delta images, m-chi images produced better result s Figure 
+3(C). Double bounce scattering is clearly visible i n RGB 
+composite images along the crater walls and the lunar surface. 
+Because of the presence of regolith, surface scattering is seen 
+in the areas outside the crater rim, whereas volume tric 
+scattering is seen in the crater walls. Surface sca ttering 
+dominates the whole region in the RGB image of m-α 
+decomposition, although double bounce scattering is  visible 
+inside the crater and along its walls as seen in Fi gure 3(D). 
+The red color represents the double bounce scattering, which 
+is observed in the wall of the crater, where surface and crater 
+wall form natural dihedral. 
+ 
+CONCLUSION  
+This study utilized Moon Mineralogy Mapper (M3) onb oard 
+Chandrayaan 1 and Mini-SAR data to detect the prese nce of 
+water ice in the Erlanger crater. The analysis did not consider 
+the 3μm absorption depth due to the wavelength range of M3 
+data, instead relying on the left shoulder of the 3 μm 
+absorption feature and Spectral Angle Mapper (SAM) 
+classification to map water ice pixels. Three decom position 
+models ((m - δ), (m - χ), and (m - α)) were employe d to 
+retrieve and compare backscattering information fro m the 
+lunar surface, revealing that the majority of the s urface 
+experienced double bounce scattering, while the int erior of 
+the crater showed volumetric scattering indicative of lunar 
+regolith and water ice. High Circular Polarization Ratio 
+(CPR) values and significant volumetric scattering inside the 
+crater, coupled with low radar returns in permanent ly 
+shadowed regions, suggest favourable circumstances for 
+water ice to exist in the Erlanger Crater. 
+ 
+REFERENCES 
+[1] D. J. Lawrence, “A tale of two poles: Toward 
+understanding the presence, distribution, and origi n of 
+volatiles at the polar regions of the Moon and Merc ury,” J 
+Geophys Res Planets , vol. 122, no. 1, pp. 21–52, 2017, doi: 
+https://doi.org/10.1002/2016JE005167. 
+[2] S. Matsuda, H. Iio, K. Bajo, and K. Nagao, “40t h Lunar and 
+Planetary Science Conference ( 2009 ) 40th Lunar an d 
+Planetary Science Conference ( 2009 ) Concentration  
+Isotopic ratio He ( 10 cm / g ) Solar Ne / Ne,” pp. 7–8, 2009. 
+[3] P. Chauhan, P. Kaur, N. Srivastava, R. K. Sinha , N. Jain, 
+and S. V. S. Murty, “Hyperspectral remote sensing o f 
+planetary surfaces: An insight into composition of inner 
+planets and small bodies in the solar system,” Current 
+Science , vol. 108, no. 5, pp. 915–924, 2015. 
+[4] P. G. Lucey et al. , “Journal of Geophysical Research : 
+Planets The global albedo of the Moon at 1064 nm,” 
+Journal of Geophysical Research: Planets , vol. 119, pp. 
+1665--1679, 2014, doi: 10.1002/2013JE004592.Received. 
+[5] M. Lemelin, S. Li, E. Mazarico, M. A. Siegler, D. A. Kring, 
+and D. A. Paige, “Framework for coordinated efforts in the 
+exploration of volatiles in the south polar region of the 
+moon,” Planetary Science Journal , vol. 2, no. 3, p. 103, 
+2021, doi: 10.3847/PSJ/abf3c5. 
+[6] C. M. Pieters et al. , “The Moon mineralogy mapper (M3) 
+on Chandrayaan-1,” Current Science , vol. 96, no. 4, pp. 
+500–505, 2009. 
+[7] O. P. N. Calla, S. Mathur, and M. Jangid, “Stud y of 
+equatorial regions of Moon with the help of backscattering 
+coefficient obtained from LRO data,” Journal of Earth 
+System Science , vol. 123, no. 2, pp. 433–443, 2014, doi: 
+10.1007/s12040-014-0407-2. 
+[8] V. Sivakumar and R. Neelakantan, “Mineral mappi ng of 
+lunar highland region using Moon Mineralogy Mapper 
+(M3) hyperspectral data,” Journal of the Geological 
+Society of India , vol. 86, no. 5, pp. 513–518, 2015, doi: 
+10.1007/s12594-015-0341-1. 
+[9] H. Kumari and A. Bhardwaj, “Analysis of Polarim etric 
+Mini-SAR and Mini-RF Datasets for Surface 
+Characterization and Crater Delineation on Moon,” n o. 
+June 2009, p. 10, 2021, doi: 10.3390/ecas2020-08118. 
+[10] P. Mishra, S. Kumar, and D. Singh, “An approac h for 
+finding possible presence of water ice deposits on lunar 
+craters using MiniSAR data,” IEEE Journal of Selected 
+Topics in Applied Earth Observations and Remote Sensing , 
+vol. 8, no. 1, pp. 30–38, 2015, doi: 
+10.1109/JSTARS.2014.2374236. 
+[11] R. Raney Keith, J. T. S. Cahill, G. Patterson Wesley, and 
+D. B. J. Bussey, “The m-chi decomposition of hybrid dual-
+polarimetric radar data with application to lunar c raters,” 
+Journal of Geophysical Research: Planets , vol. 117, no. 5, 
+pp. 1–8, 2012, doi: 10.1029/2011JE003986. 
+[12] A. Vyas, V. Nizalapur, P. Chhasia, D. Rawal, G . Jain, and 
+A. Das, “Analysis of different polarimetric decompo sition 
+techniques using compact polarimetric nisar data fo r 
+Ahmedabad, India,” International Archives of the 
+Photogrammetry, Remote Sensing and Spatial Information 
+Sciences - ISPRS Archives , vol. 43, no. B3-2021, pp. 135–
+140, 2021, doi: 10.5194/isprs-archives-XLIII-B3-202 1-
+135-2021. 
+[13] S. Li et al. , “Direct evidence of surface exposed water ice 
+in the lunar polar regions,” Proceedings of the National 
+Academy of Sciences of the United States of America , vol. 
+115, no. 36, pp. 8907–8912, 2018, doi: 
+10.1073/pnas.1802345115. 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:45:33 UTC from IEEE Xplore.  Restrictions apply. 
+======================================================================
+FILE: Automatic_Detection_of_Craters_and_Boulders_from_Orbiter_High_Resolution_CameraOHRC_Images_using_YOLOv11_Model.pdf (6 pages)
+======================================================================
+--- Page 1 ---
+979-8-3315-1504-1/25/$31.00 ©2025 IEEE 
+Automatic Detection of Craters and Boulders from 
+Orbiter High Resolution Camera(OHRC) Images 
+using YOLOv11 Model 
+ 
+Kriya Shah, Shreya Patel, Mayuri A. Mehta 
+Department of Computer Engineering 
+Sarvajanik College of Engineering and Technology 
+Surat, India 
+kriyajshah2004@gmail.com, patelshreya2034@gmail.com, mayuri.mehta@scet.ac.in
+Abstract— Crater and boulder detection on the lunar surface 
+is essential for understanding the Moon’s geological history, 
+impact dynamics, and surface evolution. Traditional methods 
+rely on manual annotation and classical computer vision 
+techniques, which are often time-consuming, error-prone, and 
+limited in their ability to detect small-scale features. The use of 
+Orbiter High -Resolution Camera (OHRC) imagery with 
+advanced computer vision techniques enhances detection 
+accuracy, improving the reliability of crater and boulder 
+detection. This paper introduces a novel crater and boulder 
+detection approach utilising the recent YOLOv11 object 
+detection model. The proposed detection approach is examined 
+against the RE-DETR model to assess its effectiveness in 
+accurately identifying craters and boulders. The dataset used to 
+evaluate the proposed approach is the OHRC images from the 
+Bharatiya Antariksh Hackathon 2024 by ISRO. The evaluation 
+metrics used to assess the performance are precision, recall, 
+𝐦𝐀𝐏𝟓𝟎  and 𝐦𝐀𝐏𝟓𝟎#𝟗𝟓 . The experimental results during the 
+training phase show that precision, recall, 𝐦𝐀𝐏𝟓𝟎  and 
+𝐦𝐀𝐏𝟓𝟎#𝟗𝟓  are increased by 4.8%, 2.4%, 5.0%, 7.9%, 
+respectively compared to RE-DETR-based crater and boulder 
+detection. Thus, YOLOv11-based crater and boulder detection 
+outperforms RE -DETR-based crater and boulder detection.  
+The proposed approach using the YOLOv11 model achieved 
+75.9% accuracy during the testing phase. 
+Keywords— boulder, Chandrayaan-2, CNN, crater, deep 
+learning, image processing, object detection, OHRC image, RE -
+DETR, YOLOv11 
+I. INTRODUCTION 
+Moon, the natural satellite of Earth, has been revolving 
+around our planet for 4.51 billion years. During that period, a 
+lot of geological changes happened on the moon. Two main 
+changes have happened on the Moon: high -speed impacts 
+from celestial bodies, and rock fracturing caused by geological 
+forces, followed by weathering and erosion  [1]. High-speed 
+impact of celestial bodies forms craters . Rock fracturing by 
+geological forces, followed by weathering and erosion, breaks 
+down larger rock into smaller pieces, which form  boulders. 
+One of the most advanced imaging instruments developed by 
+ISRO is the OHRC, which can capture the lunar surface in 
+exceptional detail. OHRC image helps researchers detect fine-
+scale features that were previously invisible using lower -
+resolution devices. 
+Boulders and craters provide important insights about the 
+Moon's development and geological past. These findings 
+depend on chemical analysis or high -resolution imaging, 
+which are impossible to accomplish manually because of the 
+vast distance. Rather, probes are dispatched with sophisticated 
+analytical tools. The ability of remote sensing equipment 
+installed on orbiters to record large surface regions in fine 
+detail enables ongoing observation and thorough mapping of 
+the lunar landscape. 
+On July 22, 2019, ISRO launched the Chandrayaan -2 
+mission, featuring the Optical High-Resolution Camera. The 
+OHRC detects craters and boulders for two main purposes: 
+ensuring safe lander deployment and supporting future 
+scientific research [2]. Traditionally, crater detection involved 
+manual visual inspection, which presents  challenges: (1) 
+Identifying craters and boulders manually is time-consuming 
+and complex. (2) Detecting the edges of very small or large 
+craters can be difficult. 
+The automated approaches overcome the limitations of 
+traditional approaches with increased accuracy. However, 
+over the years, a few approaches have been tested to overcome 
+the above limitations. In [3], the authors described a  fully 
+connected deep learning -based model for automatic crater 
+detection. In [4], the authors described the automated lunar 
+crater identification using deep learning. One notable 
+limitation is that the model has not been specifically trained 
+for boulder detection. Additionally, balancing the trade -off 
+between how fast the system runs and how accurately it 
+detects remains a major challenge.  
+The paper introduces a novel approach for automatic crater 
+and boulder detection that leverages the YOLOv11 model for 
+high-resolution planetary imagery. This approach is trained, 
+validated, and tested on the OHRC dataset [5]. The 
+experimental analysis of the proposed approach is presented 
+using YOLOv11 and RE-DETR [6]. The empirical study of 
+this approach is conducted using key evaluation metrics, 
+including Precision, Recall, mAP!"   and mAP!"#$! . Here, 
+YOLOv11 outperforms RE -DETR for all the evaluation 
+metrics. Hence, our further sections mainly discuss crater and 
+boulder detection using the YOLOv11 model. 
+The structure of the paper is outlined below.  Section II 
+introduces the proposed YOLOv11-based crater and boulder 
+detection approach. Section III details the setup and results of 
+the experiment. Section IV completes the paper by providing 
+a summary of the key findings and outlining potential 
+directions for future work. 
+II. YOLOV11-BASED CRATERS AND BOULDERS DETECTION 
+This section presents a YOLOv11 -based approach for 
+detecting craters and boulders. Table I provides the definitions 
+of key notations referenced in the paper. Figure 1 provides an 
+overview of the approach through a block diagram. Algorithm 
+1 details the pseudo-code of the proposed approach. 
+2025 IEEE 6th India Council International Subsections Conference (INDISCON) | 979-8-3315-1504-1/25/$31.00 ©2025 IEEE | DOI: 10.1109/INDISCON66021.2025.11254825
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:43:09 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 2 ---
+As illustrated in Figure 1, the proposed approach takes Chandrayaan-2 OHRC images as input. These images are obtained from the Bharatiya Antariksh Hackathon 2024 [7] by the Indian Space Research Organisation (ISRO), which featured multiple challenges, including one dedicated to the automatic detection of craters and boulders from OHRC images using AIML techniques. The dataset comprises 370 OHRC images in RGB format, each with a resolution of 1200 × 1200 pixels. The first step of the proposed approach is pre-processing of OHRC images, which includes resizing. Since the OHRC images vary in resolution and cannot be directly utilised, they are resized to a standardised resolution of 640 × 640 pixels to match YOLOv11’s input requirement. To enhance the robustness and generalizability of YOLOv11, classical data augmentation operations are applied(horizontal flip, vertical flip, 90-degree rotation) to increase the data. As a result, a total of 873 augmented images are generated, each with a resolution of 640 × 640 pixels. YOLOv11 is an upgraded version of the YOLOv8 model, designed to be more accurate and efficient [8]. It is made up of the backbone, neck and head. The main feature extractor is the backbone, which converts raw image data into multi-scale feature maps using a Convolutional Neural Network (CNN). It comprises stacked convolutional layers and specialised blocks designed to capture features at different scales. In the initial stage, OHRC images t%, t&,…, t'  are provided as input to the backbone, which processes them and generates a multi-scale feature map, denoted as FM(. The neck functions as a Feature Fusion layer, responsible for combining features from multiple scales through upsampling and concatenation. This step enhances the 
+network’s ability to extract and integrate multi-scale information, improving detection accuracy across objects of different sizes. The backbone-generated feature map F( is upsampled to FM)* and concatenated to produce the fused feature map FM+,', ensuring that both fine-grained and high-level features contribute to the final predictions. TABLE I.  NOTATION SUMMARY n Number of OHRC images s Number of OHRC images after augmentation T = {t!, t",…, t#} OHRC images T$  = { t!$, t"$,…, t#$ } Pre-processed OHRC images T%  = { t!%, t"%,..., t&%} Original and augmented OHRC images FM', FM($, FM)*# Backbone, Upsampled, Concatenated feature map D Bounding box coordinates of detected objects  The head serves as the detection layer, responsible for generating the final predictions of the model. It processes the fused feature map FM+,' to produce bounding boxes and class labels, identifying craters and boulders within the input image. This final stage ensures precise localisation and classification of detected objects, resulting in an output image with marked craters and boulders. Through this structured model, YOLOv11 effectively improves detection accuracy, making it well-suited for analysing OHRC images in planetary exploration. 
+Preprocessing of OHRC imagesResizing
+3. Rotation by 90°2. Vertical Flip1. Horizontal FlipAugmenting OHRC images
+YOLOv11 for Crater and Boulder Detection
+BackboneNeckHead
+Crater and Boulder Detected Image (Output)640640
+Input DataChandrayaan-2 OHRC Images12001200
+Fig. 1. Block diagram of the YOLOv11-based crater and boulder detection approach. 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:43:09 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 3 ---
+Algorithm 1: Psuedo-code for the Crater and Boulder Detection using YOLOv11  INPUT: A set T = {t%, t&,…, t'} of OHRC images of Chandrayaan-2.  OUTPUT: Trained YOLOv11 model for automatic detection of craters and boulders from OHRC images.  BEGIN  //Pre-processing of OHRC images T*  =  ∅  FOR each t- ∈ T       t-* = Resize(t-)  //OHRC images resized to 640x640 pixels.       T* = T* ∪ t-* END FOR  T.  =  ∅ //Data Augmentation  FOR each t-* ∈ T* 						t-/ = Horizontal_flip(t-*) t-0 = Vertical_flip(t-*) t-1 = Rotation_90(t-*) T. = T. ∪ t-/ ∪ t-0 ∪ t-1 END FOR  //Splitting T. into train, test and validation X21.-' = {t%., t&., …., t3. }, where m < s X0.4 = {t35%., t35&., …., t6. }, where m < q < s X2782 = {t65%., t65&., …., t8. }  //Crater and Boulder detection using YOLOv11 FM( = Conv(X21.-')          //Backbone Feature Extraction  FM)* = ∅ FOR each f-( ∈ FM(  //Neck feature upsampling f-)* = Upsample(f-(, target_size) FM)* = FM)* ∪ f-)* END FOR  FM+,' = FM)*  //Neck feature concatenation D = Detect(FM+,') //Head multi-scale detection  END   III. RESULTS AND OBSERVATIONS A. Experimental Setup The performance is evaluated across two different models, namely YOLOv11 and RE-DETR. Both models are trained, validated, and tested using a dataset comprising 873 OHRC images, with 80% (763 images) allocated for training and 20% (110 images) reserved for testing. Multiple training 
+configurations have been explored for both the models, and the hyperparameters that have achieved optimal validation performance and stable convergence have been selected for final evaluation. The hyperparameter configuration employed for training the YOLOv11 and RE-DETR models is outlined in Table II. The two models have been developed and evaluated using TensorFlow on an NVIDIA Tesla T4 GPU with 16GB of graphics memory. A batch size of 16 is selected to balance computational efficiency and stable model convergence.  TABLE II.  SET VALUES OF HYPERPARAMETERS Hyperparameter YOLOv11 RE-DETR Number of training images 763 (80% of the dataset) Number of validation images 74 (20% of training images) Number of testing images 36 (20% of the dataset) Batch size 16 Epochs 100 75 Optimizer NAdam SGD  To enhance generalisation and prevent overfitting of the YOLOv11 model, a dynamic epoch strategy is employed, adjusting the training duration based on model performance. The hidden layers use the Leaky ReLU activation to add controlled non-linearity, which makes feature extraction more effective. The output layer uses the sigmoid activation to provide item detection probability scores. For optimisation, the NADAM optimiser has been implemented to address convergence challenges by leveraging both momentum and adaptive learning rate adjustments. The starting learning rate has been fixed to 0.001 and reduced systematically if the evaluation metrics have not exhibited significant improvement over successive epochs. The RE-DETR model was trained for 75 epochs, using the Stochastic Gradient Descent (SGD) optimiser. B. Evaluation Metrics Multiple evaluation metrics are used to measure the effectiveness of the proposed YOLOv11-based crater and boulder detection algorithm. For a comprehensive comparison, the RE-DETR model has also been evaluated with the same metrics. These metrics are mathematically specified in Equations (1) to (5), respectively. True Positives (TP) and True Negatives (TN) are the successfully identified positive and negative cases, respectively. False Negatives (FN) occur when positive cases are wrongly identified as negative and False Positives (FP) occur when negative instances are wrongly identified as positive. AP!",- represents the average precision for a particular class i, calculated when 0.5 is the Intersection over Union (IoU) threshold. N refers to the number of target categories, whereas K refers to the number of IoU thresholds. APi,j indicates the average precision for category i at the j2/ IoU threshold. Accuracy = (TP + TN) / (TP + TN + FP + FN)       (1) Precision =  TP / (TP + FP)                    (2) 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:43:09 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 4 ---
+Recall = TP / (TP + FN)           (3) mAP!" = %& ∑AP!",-&-:%                    (4) mAP!"#$! = %;∑%<∑AP-,=<=:%;-:%                   (5) Accuracy measures the fraction of successfully identified instances to the total number of instances, offering an overall indication of the model’s predictive performance. Precision indicates the ratio of correctly predicted positive instances among all positive predictions, highlighting the capacity of model to prevent false positives. Conversely, recall is the ability of the model to identify all actual positive instances, thereby reflecting its sensitivity to missed detections. mAP!" (mean Average Precision at IoU = 0.5) It is a vital evaluation metric in object detection, emphasising the accuracy of predicted object locations. A detection is considered valid if the IoU between the predicted and ground truth bounding 
+boxes is at least 0.5. Meanwhile, mAP!"#$! is the average precision computed for IoU thresholds between 0.5 and 0.95, with steps of 0.05. It offers a broader evaluation of the TABLE III.  CRATER AND BOULDER DETECTION RESULTS USING YOLOV11 AND RE-DETR MODEL FOR TRAINING PHASE Evaluation Parameter YOLOv11 RE-DETR Improvement of YOLOv11 over RE-DETR Accuracy 0.727 0.550 17.7% Precision 0.880 0.832 4.8% Recall 0.788 0.764 2.4% mAP+, 0.851 0.801 5.0% mAP+,-.+ 0.492 0.413 7.9% 
+Fig. 2.   Comparison of YOLOv11 and RE-DETR approaches for crater and boulder detection results. (a) Training Loss (Box Loss) (b) Training Loss (Classification Loss) (c) Precision during training (d) Recall during training (e) mAP!" during training (f) mAP!"#$! during training   
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:43:09 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 5 ---
+ model's localisation performance across varying levels of strictness.  As mentioned previously, the proposed crater and boulder detection approach is evaluated using two models, namely YOLOv11 and RE-DETR. Table III presents the results of the evaluation metrics of YOLOv11-based and RE-DETR-based crater and boulder detection for training phase. Figure 2 shows the comparison of the results of YOLOv11-based and RE- DETR-based crater and boulder detection for training phase. Fig. 2(a)-(b) shows that YOLOv11 exhibits lower training loss than RE-DETR during the training phase. In addition, Fig.  2(c)-(e) demonstrate that YOLOv11 delivers an overall improvement over RE-DETR, with 4.8% improvement in precision, 2.4% improvement in recall, 5% improvement in mAP!" and 7.9% improvement in mAP!"#$! . Table IV presents the results of the evaluation metrics of YOLOv11-based crater and boulder detection for testing phase. Figure 3 illustrates the results of the YOLOv11 model, where Fig. 3(a) and 3(b) present the predicted images and confusion matrix from the testing phase, respectively. Results illustrate that YOLOv11-based crater and boulder detection outperforms RE-DETR-based crater and boulder detection during training and validation processes. TABLE IV.  CRATER AND BOULDER DETECTION RESULTS USING YOLOV11 MODEL FOR TESTING PHASE Evaluation Parameter YOLOv11 Accuracy 0.759 Precision 0.854 Recall 0.875 mAP+, 0.874 mAP+,-.+ 0.517   While evaluating the model's predictions on OHRC images, several recurring error patterns were observed. In particular, the model occasionally misclassified boulders as craters, likely due to their visual similarity in grayscale imagery. Additionally, the model failed to detect certain shallow or low-contrast craters, which are inherently challenging to identify due to subtle elevation differences and poor edge definition. In some instances, the crater boundaries appeared broken or unclear, possibly resulting from detail loss during image preprocessing. These observations emphasise the inherent complexities of lunar surface imagery and the critical role of visual characteristics in influencing model performance. IV. CONCLUSION Using the YOLOv11 model, this research presents a novel approach for crater and boulder detection.  The dataset of OHRC images from ISRO's Bharatiya Antariksh Hackathon 2024 is used to analyse its effectiveness. Its results are compared to those of a RE-DETR-based crater and boulder 
+detection approach. The YOLOv11-based model performed better in crater and boulder recognition than the RE-DETR-based model. During training, increases were reported in various metrics— precision, recall, mAP!", and mAP!"#$!—with gains of 4.8%, 2.4%, 5.0%, and 7.9% over the RE-DETR model. During the testing phase, the proposed approach attained an accuracy of 75.9%, demonstrating its reliability. Future work can explore strategies such as applying contrast enhancement techniques to better detect shallow craters. Morphological post-processing can be used to reduce noise and refine crater boundaries. Detailed error analysis can be performed using confusion matrices and class-wise metrics to guide model refinement.  Additionally, the proposed approach can be tested and evaluated by collecting recent real-time data from various space organisations like ISRO and DRDO. REFERENCES [1] A. Baronia and Dr. Sarup, "Crater Detection on Moon Surface," International Journal of Innovative Technology and Exploring Engineering, vol. 9, pp. 1447-1451, Dec. 2019. doi: 10.35940/ijitee.B6187.129219.   [2] Indian Space Research Organisation (ISRO), "Chandrayaan-2 Science," [Online]. Available: https://www.isro.gov.in/Chandrayaan2_science.html. [Accessed: Apr. 3, 2025]. 
+(a) 
+(b) 
+Fig. 3.   Results of YOLOv11 model from the testing phase. (a) Craters and boulder detected images predicted by YOLOv11 model  (b) Confusion matrix of YOLOv11 model for testing phase 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:43:09 UTC from IEEE Xplore.  Restrictions apply. 
+--- Page 6 ---
+  [3] F. Latorre, D. Spiller, S. T. Sasidharan, S. Basheer, and F. Curti, "Transfer learning for real-time crater detection on asteroids using a Fully Convolutional Neural Network," Icarus, vol. 394, Apr. 2023, Art. no. 115434.  doi: 10.1016/j.icarus.2023.115434.   [4] M. Sinha, S. Paul, M. Ghosh, et al., "Automated Lunar Crater Identification with Chandrayaan-2 TMC-2 Images using Deep Convolutional Neural Networks," Scientific Reports, vol. 14, Art. no. 8231, 2024. doi: 10.1038/s41598-024-58438-4.   [5] Indian Space Science Data Centre (ISSDC), "PRADAN – Chandrayaan-2 Data Archive," [Online]. Available: https://pradan.issdc.gov.in/ch2/. [Accessed: Apr. 3, 2025].  [6] Y. Zhao, W. Lv, S. Xu, J. Wei, G. Wang, Q. Dang, Y. Liu, and J. Chen, "DETRs Beat YOLOs on Real-time Object Detection," arXiv preprint arXiv:2304.08069, Apr. 2024. doi: 10.48550/arXiv.2304.08069.  [7] Indian Space Research Organisation, "Launching of Bhartiya Antariksh Hackathon-2024," Jul. 5, 2024. [Online]. Available: https://www.isro.gov.in/LaunchingBhartiyaAntarikshHackathon2024.html. [Accessed: Apr. 4, 2025].   [8] D. Reis, J. Kupec, J. Hong, and A. Daoudi, "Real-Time Flying Object Detection with YOLOv8," arXiv preprint arXiv:2305.09972, May 2023. [Online]. Available: https://arxiv.org/abs/2305.09972. [Accessed: Apr. 12, 2025].                     
+                                                  
+ 
+Authorized licensed use limited to: SIES Graduate School of Technology. Downloaded on August 05,2026 at 04:43:09 UTC from IEEE Xplore.  Restrictions apply. 

@@ -1,9 +1,11 @@
 /**
- * MoonMap.jsx — OpenLayers map with real NASA WMTS tile layers.
- *
- * Key fix: Use ol/source/WMTS with REST encoding + proper WMTSTileGrid.
- * NASA Moon Trek tiles use {TileMatrix}/{TileRow}/{TileCol} (not {z}/{x}/{y}).
- * The view stays in EPSG:4326 (equirectangular lon/lat).
+ * MoonMap.jsx — OpenLayers interactive Lunar Map.
+ * Features:
+ * - NASA Moon Trek WMTS base layers (LRO WAC & LOLA color hillshade).
+ * - Chandrayaan-2 DFSAR CPR & Ice confidence heatmaps.
+ * - Interactive Robbins Lunar Crater & Benchmark vector layer with tooltips.
+ * - Seamless, glowing neon LineString rover route with zero-gap waypoint joining.
+ * - Smooth camera flyTo animations.
  */
 import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 
@@ -17,13 +19,11 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS';
 import ImageStatic  from 'ol/source/ImageStatic';
 import VectorSource from 'ol/source/Vector';
 import GeoJSON      from 'ol/format/GeoJSON';
-import { Style, Stroke, Circle as CircleStyle, Fill } from 'ol/style';
+import { Style, Stroke, Circle as CircleStyle, Fill, Text } from 'ol/style';
 import Feature      from 'ol/Feature';
 import Point        from 'ol/geom/Point';
 
-// ── NASA WMTS tile grid (derived from official WMTSCapabilities.xml) ──────
-// Level 0: 2 cols × 1 row, 256px tiles, origin top-left (-180, 90)
-// Resolution at level 0: 360° / (2 × 256px) = 0.703125 deg/px
+// ── NASA WMTS Tile Grid (EPSG:4326) ───────────────────────────────────────
 const MOON_RESOLUTIONS = Array.from({ length: 9 }, (_, z) => 0.703125 / Math.pow(2, z));
 const MOON_MATRIX_IDS  = MOON_RESOLUTIONS.map((_, z) => String(z));
 
@@ -34,9 +34,6 @@ const moonTileGrid = new WMTSTileGrid({
   tileSize:    256,
 });
 
-// ── NASA Moon Trek WMTS sources (REST encoding, no API key required) ──────
-// NOTE: The URL template MUST use {TileMatrix}/{TileRow}/{TileCol}
-// The double-slash (//) is required by the NASA WMTS REST endpoint.
 function makeNASASource(layerName, ext = 'jpg') {
   return new WMTS({
     url: `https://trek.nasa.gov/tiles/Moon/EQ/${layerName}/1.0.0//default/default028mm/{TileMatrix}/{TileRow}/{TileCol}.${ext}`,
@@ -48,12 +45,11 @@ function makeNASASource(layerName, ext = 'jpg') {
     style:     'default',
     crossOrigin: 'anonymous',
     requestEncoding: 'REST',
-    attributions: '© <a href="https://trek.nasa.gov/">NASA Moon Trek</a>',
+    attributions: '© NASA Moon Trek / LRO / LOLA',
   });
 }
 
-// ── Simulation overlay bounding box (South Pole region, in lon/lat) ───────
-// IMPORTANT: View is EPSG:4326, so coordinates ARE lon/lat — no reprojection!
+// ── Simulation Overlay Extent ─────────────────────────────────────────────
 const BBOX = { lonMin: -10, lonMax: 10, latMin: -90, latMax: -80 };
 const OVERLAY_EXTENT = [BBOX.lonMin, BBOX.latMin, BBOX.lonMax, BBOX.latMax];
 
@@ -63,35 +59,92 @@ export const LAYER_IDS = {
   LOLA:    'lola',
   ICE:     'ice',
   HAZARD:  'hazard',
+  CRATERS: 'craters',
+  CH2:     'ch2',
   PATH:    'path',
   MARKERS: 'markers',
-  CH2:     'ch2',
 };
 
 // ── Styles ────────────────────────────────────────────────────────────────
 const START_STYLE = new Style({
-  image: new CircleStyle({ radius: 9, fill: new Fill({ color: '#00e676' }), stroke: new Stroke({ color: '#fff', width: 2 }) }),
+  image: new CircleStyle({
+    radius: 9,
+    fill: new Fill({ color: '#00e676' }),
+    stroke: new Stroke({ color: '#ffffff', width: 2.5 })
+  }),
 });
+
 const GOAL_STYLE = new Style({
-  image: new CircleStyle({ radius: 9, fill: new Fill({ color: '#29b6f6' }), stroke: new Stroke({ color: '#fff', width: 2 }) }),
+  image: new CircleStyle({
+    radius: 9,
+    fill: new Fill({ color: '#00ffcc' }),
+    stroke: new Stroke({ color: '#ffffff', width: 2.5 })
+  }),
 });
-const PATH_STYLE = new Style({
-  stroke: new Stroke({ color: '#69ff47', width: 3, lineDash: [8, 4] }),
+
+// Dual Glowing Route Line Styles
+const PATH_GLOW_STYLE = new Style({
+  stroke: new Stroke({
+    color: 'rgba(0, 255, 204, 0.45)',
+    width: 7,
+  }),
 });
+
+const PATH_CORE_STYLE = new Style({
+  stroke: new Stroke({
+    color: '#00ffcc',
+    width: 3.5,
+    lineCap: 'round',
+    lineJoin: 'round',
+  }),
+});
+
 const CH2_STYLE = new Style({
-  stroke: new Stroke({ color: 'rgba(255,107,0,0.7)', width: 1.5 }),
-  fill:   new Fill({  color: 'rgba(255,107,0,0.08)' }),
+  stroke: new Stroke({ color: 'rgba(255, 107, 0, 0.75)', width: 1.8 }),
+  fill:   new Fill({  color: 'rgba(255, 107, 0, 0.08)' }),
 });
+
+function craterStyleFunction(feature) {
+  const props = feature.getProperties();
+  const isBenchmark = Boolean(props.status);
+  const isPositive = props.status === 'positive';
+  const color = isPositive ? '#00ffcc' : (props.status === 'partial' ? '#ffd740' : (isBenchmark ? '#ff5252' : '#29b6f6'));
+  const radius = Math.min(18, Math.max(5, (props.diam_km || 2.0) * 2.5));
+
+  return new Style({
+    image: new CircleStyle({
+      radius: radius,
+      fill: new Fill({ color: isBenchmark ? `${color}33` : 'rgba(41, 182, 246, 0.15)' }),
+      stroke: new Stroke({ color: color, width: isBenchmark ? 2.5 : 1.2 })
+    }),
+    text: isBenchmark ? new Text({
+      text: props.crater_id || props.name,
+      font: 'bold 11px Orbitron, sans-serif',
+      fill: new Fill({ color: '#ffffff' }),
+      stroke: new Stroke({ color: '#050811', width: 3 }),
+      offsetY: -radius - 8
+    }) : null
+  });
+}
 
 // ─────────────────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────────────────
-const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick }, ref) {
+const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, onSelectCrater }, ref) {
   const mapEl   = useRef(null);
   const mapRef  = useRef(null);
   const layerMap = useRef({});
 
   useImperativeHandle(ref, () => ({
+    flyTo(coords, zoom = 6) {
+      if (!mapRef.current) return;
+      mapRef.current.getView().animate({
+        center: coords,
+        zoom: zoom,
+        duration: 1200
+      });
+    },
+
     addPathLayer(geojson) {
       const src = layerMap.current[LAYER_IDS.PATH]?.getSource();
       if (!src) return;
@@ -101,8 +154,20 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
           featureProjection: 'EPSG:4326',
           dataProjection:    'EPSG:4326',
         });
+        feat.setStyle([PATH_GLOW_STYLE, PATH_CORE_STYLE]);
         src.addFeature(feat);
       }
+    },
+
+    addCratersLayer(fc) {
+      const src = layerMap.current[LAYER_IDS.CRATERS]?.getSource();
+      if (!src || !fc?.features?.length) return;
+      src.clear();
+      const feats = new GeoJSON().readFeatures(fc, {
+        featureProjection: 'EPSG:4326',
+        dataProjection:    'EPSG:4326',
+      });
+      src.addFeatures(feats);
     },
 
     addCH2Footprints(fc) {
@@ -120,7 +185,6 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
       const src = layerMap.current[LAYER_IDS.MARKERS]?.getSource();
       if (!src) return;
       src.clear();
-      // View is EPSG:4326 — coordinates are already [lon, lat]
       if (start) { const f = new Feature(new Point(start)); f.setStyle(START_STYLE); src.addFeature(f); }
       if (goal)  { const f = new Feature(new Point(goal));  f.setStyle(GOAL_STYLE);  src.addFeature(f); }
     },
@@ -138,9 +202,11 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
 
   const onCoordMoveRef = useRef(onCoordMove);
   const onMapClickRef  = useRef(onMapClick);
+  const onSelectCraterRef = useRef(onSelectCrater);
 
   useEffect(() => { onCoordMoveRef.current = onCoordMove; }, [onCoordMove]);
   useEffect(() => { onMapClickRef.current  = onMapClick;  }, [onMapClick]);
+  useEffect(() => { onSelectCraterRef.current = onSelectCrater; }, [onSelectCrater]);
 
   // ── Build map once on mount ─────────────────────────────────────────
   useEffect(() => {
@@ -160,24 +226,30 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
 
     // ── Image overlays ─────────────────────────────────────────────
     const makeImgLayer = (url, opacity, visible = true) => {
-      const lyr = new ImageLayer({
+      return new ImageLayer({
         source: new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }),
         opacity,
         visible,
       });
-      return lyr;
     };
 
-    const iceLayer    = makeImgLayer('/api/ice-detection', 0.65, true);
+    const iceLayer    = makeImgLayer('/api/ice-detection', 0.70, true);
     const hazardLayer = makeImgLayer('/api/hazard-map',    0.55, false);
     iceLayer.set('id',    LAYER_IDS.ICE);
     hazardLayer.set('id', LAYER_IDS.HAZARD);
 
     // ── Vector layers ──────────────────────────────────────────────
+    const craterLayer = new VectorLayer({
+      source: new VectorSource(),
+      style: craterStyleFunction,
+      visible: true
+    });
+    craterLayer.set('id', LAYER_IDS.CRATERS);
+
     const ch2Layer = new VectorLayer({ source: new VectorSource(), style: CH2_STYLE, visible: false });
     ch2Layer.set('id', LAYER_IDS.CH2);
 
-    const pathLayer = new VectorLayer({ source: new VectorSource(), style: PATH_STYLE });
+    const pathLayer = new VectorLayer({ source: new VectorSource() });
     pathLayer.set('id', LAYER_IDS.PATH);
 
     const markerLayer = new VectorLayer({ source: new VectorSource() });
@@ -186,13 +258,13 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
     // ── Map ───────────────────────────────────────────────────────
     const map = new Map({
       target: mapEl.current,
-      layers: [wacLayer, lolaLayer, hazardLayer, iceLayer, ch2Layer, pathLayer, markerLayer],
+      layers: [wacLayer, lolaLayer, hazardLayer, iceLayer, craterLayer, ch2Layer, pathLayer, markerLayer],
       view: new View({
         projection: 'EPSG:4326',
         center: [0, -85],   // Lunar South Pole in lon/lat
         zoom: 4,
         minZoom: 1,
-        maxZoom: 8,
+        maxZoom: 9,
         extent: [-180, -90, 180, 90],
       }),
     });
@@ -203,6 +275,7 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
       [LAYER_IDS.LOLA]:    lolaLayer,
       [LAYER_IDS.ICE]:     iceLayer,
       [LAYER_IDS.HAZARD]:  hazardLayer,
+      [LAYER_IDS.CRATERS]: craterLayer,
       [LAYER_IDS.CH2]:     ch2Layer,
       [LAYER_IDS.PATH]:    pathLayer,
       [LAYER_IDS.MARKERS]: markerLayer,
@@ -210,11 +283,27 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
 
     map.on('pointermove', (e) => {
       const [lon, lat] = e.coordinate;
-      onCoordMoveRef.current?.({ lon: lon.toFixed(4), lat: lat.toFixed(4) });
+      // Convert to Polar Stereographic X, Y (km offset)
+      const rPolar = (90.0 + lat) * 30.32; // km per deg
+      const thPolar = (lon * Math.PI) / 180.0;
+      const xKm = (rPolar * Math.cos(thPolar)).toFixed(1);
+      const yKm = (rPolar * Math.sin(thPolar)).toFixed(1);
+
+      onCoordMoveRef.current?.({
+        lon: lon.toFixed(4),
+        lat: lat.toFixed(4),
+        polarX: xKm,
+        polarY: yKm
+      });
     });
 
     map.on('singleclick', (e) => {
-      onMapClickRef.current?.(e.coordinate);   // [lon, lat] directly (EPSG:4326 view)
+      // Check if user clicked a crater feature
+      const feature = map.forEachFeatureAtPixel(e.pixel, (f) => f);
+      if (feature && feature.get('crater_id')) {
+        onSelectCraterRef.current?.(feature.getProperties());
+      }
+      onMapClickRef.current?.(e.coordinate);
     });
 
     return () => { map.setTarget(null); mapRef.current = null; };
@@ -226,7 +315,7 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick },
     Object.entries(layers).forEach(([id, visible]) => {
       const lyr = layerMap.current[id];
       if (!lyr) return;
-      if (id === LAYER_IDS.LOLA) lyr.setOpacity(visible ? 0.5 : 0);
+      if (id === LAYER_IDS.LOLA) lyr.setOpacity(visible ? 0.55 : 0);
       else lyr.setVisible(visible);
     });
   }, [layers]);

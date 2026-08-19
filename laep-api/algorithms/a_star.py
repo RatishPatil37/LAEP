@@ -9,14 +9,14 @@ Two-phase approach:
 Movement model: 8-connected grid (cardinal + diagonal).
 Diagonal moves incur a 1.414× distance penalty.
 Includes automatic snap-to-nearest-navigable-cell for edge-case point selections.
+Guarantees seamless line connection from exact start coordinate to exact goal coordinate.
 """
 import heapq
 import numpy as np
 from collections import deque
-from config import GRID_SIZE, SOUTH_POLE_BBOX
+from config import GRID_SIZE, SOUTH_POLE_BBOX, PIXEL_SIZE_M
 
 _NEIGHBORS_8 = [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(-1,1),(1,-1),(1,1)]
-
 
 def find_nearest_navigable_cell(cost_grid: np.ndarray, cell: tuple[int, int], max_radius: int = 15) -> tuple[int, int]:
     """
@@ -42,7 +42,6 @@ def find_nearest_navigable_cell(cost_grid: np.ndarray, cell: tuple[int, int], ma
 
     return best_cell
 
-
 def bfs_reachable(cost_grid: np.ndarray, start: tuple[int, int]) -> np.ndarray:
     """
     BFS flood-fill from start through all finite-cost cells.
@@ -67,11 +66,9 @@ def bfs_reachable(cost_grid: np.ndarray, start: tuple[int, int]) -> np.ndarray:
 
     return visited
 
-
 def _heuristic(a: tuple, b: tuple) -> float:
     """Euclidean distance heuristic (admissible for 8-connected grid)."""
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
-
 
 def a_star_search(
     cost_grid: np.ndarray,
@@ -147,14 +144,12 @@ def a_star_search(
     path.reverse()
     return path
 
-
 def grid_to_lonlat(
     row: int, col: int, grid_size: int = GRID_SIZE, bbox: dict = SOUTH_POLE_BBOX
 ) -> tuple[float, float]:
     lon = bbox["lon_min"] + (col / grid_size) * (bbox["lon_max"] - bbox["lon_min"])
     lat = bbox["lat_max"] - (row / grid_size) * (bbox["lat_max"] - bbox["lat_min"])
     return round(lon, 6), round(lat, 6)
-
 
 def lonlat_to_grid(
     lon: float, lat: float, grid_size: int = GRID_SIZE, bbox: dict = SOUTH_POLE_BBOX
@@ -165,11 +160,15 @@ def lonlat_to_grid(
     row = max(0, min(row, grid_size - 1))
     return row, col
 
-
 def path_to_geojson(
     path: list[tuple[int, int]],
+    dem: np.ndarray = None,
+    slope_grid: np.ndarray = None,
+    exact_start: tuple[float, float] = None,
+    exact_goal: tuple[float, float] = None,
     grid_size: int = GRID_SIZE,
     bbox: dict = SOUTH_POLE_BBOX,
+    pixel_size_m: float = PIXEL_SIZE_M,
 ) -> dict:
     if not path:
         return {"type": "Feature", "geometry": None, "properties": {}}
@@ -177,6 +176,40 @@ def path_to_geojson(
     coordinates = [
         list(grid_to_lonlat(r, c, grid_size, bbox)) for r, c in path
     ]
+    
+    # Prepend exact start and append exact goal to guarantee seamless line join
+    if exact_start is not None:
+        coordinates[0] = [round(exact_start[0], 6), round(exact_start[1], 6)]
+    if exact_goal is not None:
+        coordinates[-1] = [round(exact_goal[0], 6), round(exact_goal[1], 6)]
+
+    # Compute path metrics & elevation slice profile
+    elevation_profile = []
+    slopes = []
+    total_dist_km = 0.0
+    
+    for i, (r, c) in enumerate(path):
+        elev = float(dem[r, c]) if dem is not None and _in_bounds((r, c), *dem.shape) else 0.0
+        slp = float(slope_grid[r, c]) if slope_grid is not None and _in_bounds((r, c), *slope_grid.shape) else 0.0
+        slopes.append(slp)
+        elevation_profile.append({
+            "step": i,
+            "lon": coordinates[i][0],
+            "lat": coordinates[i][1],
+            "elevation_m": round(elev, 1),
+            "slope_deg": round(slp, 1)
+        })
+        if i > 0:
+            dr = abs(path[i][0] - path[i-1][0])
+            dc = abs(path[i][1] - path[i-1][1])
+            step_m = (1.4142 if dr != 0 and dc != 0 else 1.0) * pixel_size_m
+            total_dist_km += step_m / 1000.0
+
+    max_slope = float(np.max(slopes)) if slopes else 0.0
+    mean_slope = float(np.mean(slopes)) if slopes else 0.0
+    # Estimated energy consumption: 15W baseline rover motor + 8W per deg slope per km
+    est_energy_wh = round(total_dist_km * (15.0 + mean_slope * 8.0), 1)
+
     return {
         "type": "Feature",
         "geometry": {
@@ -184,12 +217,16 @@ def path_to_geojson(
             "coordinates": coordinates,
         },
         "properties": {
-            "waypoints": len(path),
+            "waypoints": len(coordinates),
+            "distance_km": round(total_dist_km, 3),
+            "max_slope_deg": round(max_slope, 1),
+            "mean_slope_deg": round(mean_slope, 1),
+            "est_energy_wh": est_energy_wh,
             "start_lonlat": coordinates[0],
-            "goal_lonlat":  coordinates[-1],
+            "goal_lonlat": coordinates[-1],
+            "elevation_profile": elevation_profile
         },
     }
-
 
 def _in_bounds(cell: tuple[int, int], H: int, W: int) -> bool:
     r, c = cell

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 
-from routers import dem, ice_detection, pathfinding
+from routers import dem, ice_detection, pathfinding, craters
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("laep-api")
@@ -15,7 +15,7 @@ logger = logging.getLogger("laep-api")
 app = FastAPI(
     title="LAEP API — Lunar Autonomous Exploration Pipeline",
     description="Backend for the LAEP web dashboard. Provides ice detection, terrain analysis, and rover pathfinding for the Lunar South Pole.",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # ── CORS Middleware ────────────────────────────────────────────────────────
@@ -28,7 +28,6 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-
 # ── Global Exception Handler ───────────────────────────────────────────────
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -38,12 +37,11 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": f"Internal Server Error: {str(exc)}", "status": "error"}
     )
 
-
 # ── Register Routers ───────────────────────────────────────────────────────
 app.include_router(dem.router,           prefix="/api", tags=["Terrain"])
 app.include_router(ice_detection.router, prefix="/api", tags=["Ice Detection"])
 app.include_router(pathfinding.router,   prefix="/api", tags=["Pathfinding"])
-
+app.include_router(craters.router,       prefix="/api", tags=["Craters & Volumetrics"])
 
 # ── Health & Root ──────────────────────────────────────────────────────────
 @app.get("/", tags=["Health"])
@@ -51,6 +49,7 @@ app.include_router(pathfinding.router,   prefix="/api", tags=["Pathfinding"])
 def root():
     return {
         "service": "LAEP API",
+        "version": "2.0.0",
         "status": "operational",
         "docs": "/docs",
         "endpoints": [
@@ -61,12 +60,14 @@ def root():
             "GET  /api/ch2-footprints",
             "POST /api/pathfind",
             "GET  /api/landing-sites",
+            "GET  /api/craters/benchmarks",
+            "GET  /api/craters/subcraters",
+            "POST /api/craters/custom_region_ice",
             "GET  /health",
         ],
     }
 
-
 @app.get("/health", tags=["Health"])
 @app.get("/api/health", tags=["Health"])
 def health():
-    return {"status": "ok", "service": "laep-api"}
+    return {"status": "ok", "service": "laep-api", "version": "2.0.0"}
