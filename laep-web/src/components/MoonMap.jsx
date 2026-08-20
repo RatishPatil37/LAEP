@@ -68,61 +68,61 @@ export const LAYER_IDS = {
 // ── Styles ────────────────────────────────────────────────────────────────
 const START_STYLE = new Style({
   image: new CircleStyle({
-    radius: 9,
-    fill: new Fill({ color: '#00e676' }),
-    stroke: new Stroke({ color: '#ffffff', width: 2.5 })
+    radius: 8,
+    fill: new Fill({ color: '#34d399' }),
+    stroke: new Stroke({ color: '#ffffff', width: 2 })
   }),
 });
 
 const GOAL_STYLE = new Style({
   image: new CircleStyle({
-    radius: 9,
-    fill: new Fill({ color: '#00ffcc' }),
-    stroke: new Stroke({ color: '#ffffff', width: 2.5 })
+    radius: 8,
+    fill: new Fill({ color: '#2dd4bf' }),
+    stroke: new Stroke({ color: '#ffffff', width: 2 })
   }),
 });
 
-// Dual Glowing Route Line Styles
+// Dual Route Line Styles
 const PATH_GLOW_STYLE = new Style({
   stroke: new Stroke({
-    color: 'rgba(0, 255, 204, 0.45)',
-    width: 7,
+    color: 'rgba(45, 212, 191, 0.35)',
+    width: 6,
   }),
 });
 
 const PATH_CORE_STYLE = new Style({
   stroke: new Stroke({
-    color: '#00ffcc',
-    width: 3.5,
+    color: '#2dd4bf',
+    width: 3,
     lineCap: 'round',
     lineJoin: 'round',
   }),
 });
 
 const CH2_STYLE = new Style({
-  stroke: new Stroke({ color: 'rgba(255, 107, 0, 0.75)', width: 1.8 }),
-  fill:   new Fill({  color: 'rgba(255, 107, 0, 0.08)' }),
+  stroke: new Stroke({ color: 'rgba(232, 97, 0, 0.75)', width: 1.5 }),
+  fill:   new Fill({  color: 'rgba(232, 97, 0, 0.06)' }),
 });
 
 function craterStyleFunction(feature) {
   const props = feature.getProperties();
   const isBenchmark = Boolean(props.status);
   const isPositive = props.status === 'positive';
-  const color = isPositive ? '#00ffcc' : (props.status === 'partial' ? '#ffd740' : (isBenchmark ? '#ff5252' : '#29b6f6'));
-  const radius = Math.min(18, Math.max(5, (props.diam_km || 2.0) * 2.5));
+  const color = isPositive ? '#2dd4bf' : (props.status === 'partial' ? '#f59e0b' : (isBenchmark ? '#f43f5e' : '#38bdf8'));
+  const radius = Math.min(16, Math.max(5, (props.diam_km || 2.0) * 2.5));
 
   return new Style({
     image: new CircleStyle({
       radius: radius,
-      fill: new Fill({ color: isBenchmark ? `${color}33` : 'rgba(41, 182, 246, 0.15)' }),
-      stroke: new Stroke({ color: color, width: isBenchmark ? 2.5 : 1.2 })
+      fill: new Fill({ color: isBenchmark ? `${color}33` : 'rgba(56, 189, 248, 0.12)' }),
+      stroke: new Stroke({ color: color, width: isBenchmark ? 2 : 1 })
     }),
     text: isBenchmark ? new Text({
       text: props.crater_id || props.name,
-      font: 'bold 11px Orbitron, sans-serif',
+      font: '600 11px "IBM Plex Mono", "Inter", sans-serif',
       fill: new Fill({ color: '#ffffff' }),
-      stroke: new Stroke({ color: '#050811', width: 3 }),
-      offsetY: -radius - 8
+      stroke: new Stroke({ color: '#070b14', width: 3 }),
+      offsetY: -radius - 7
     }) : null
   });
 }

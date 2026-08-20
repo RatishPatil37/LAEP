@@ -25,10 +25,10 @@ export default function Methodology() {
         <p>
           In May 2026, the Physical Research Laboratory (PRL, ISRO Ahmedabad) published the definitive empirical radar study on lunar polar water ice in <em>npj Space Exploration</em> (Nature Publishing Group):
         </p>
-        <div style={{ background: 'var(--c-surface3)', border: '1px solid var(--c-neon-cyan)', borderRadius: 'var(--r-sm)', padding: '16px 20px', color: 'var(--c-text)', fontSize: '0.88rem', margin: '16px 0' }}>
+        <div style={{ background: 'var(--c-surface2)', border: '1px solid var(--c-border2)', borderLeft: '3px solid var(--c-accent)', borderRadius: 'var(--r-sm)', padding: '14px 18px', color: 'var(--c-text)', fontSize: '0.86rem', margin: '14px 0', lineHeight: 1.6 }}>
           <strong>Citation:</strong> Sinha, R. K., Bharti, R. R., Acharyya, K., Mishra, S. K., Srivastava, N., & Bhardwaj, A. (2026). 
-          <em>"Subsurface ice in doubly shadowed craters as revealed by Chandrayaan-2 dual frequency synthetic aperture radar."</em> 
-          <strong>npj Space Exploration</strong>, 2(22). DOI: <code>10.1038/s44453-026-00038-9</code>.
+          <em> "Subsurface ice in doubly shadowed craters as revealed by Chandrayaan-2 dual frequency synthetic aperture radar."</em> 
+          <strong> npj Space Exploration</strong>, 2(22). DOI: <code>10.1038/s44453-026-00038-9</code>.
         </div>
         <p>
           Small craters (700m – 3000m) nested inside major host Permanently Shadowed Regions (PSRs) have raised rims that shield their interiors from reflected sunlight and wall thermal emissions. Internal equilibrium temperatures drop to <strong>≈ 25 K</strong>, providing cold-trap preservation for volatile ice sheets over billions of years.

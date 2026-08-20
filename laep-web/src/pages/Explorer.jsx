@@ -1,10 +1,10 @@
 /**
- * Explorer.jsx — Aerospace Mission Control & South Pole Lunar Navigator.
+ * Explorer.jsx — Mission Planner & South Pole Lunar Navigator.
  * Integrates:
  * - 8 Peer-Reviewed Ground Truth Benchmark Craters (Sinha et al. 2026).
  * - Custom Lat/Lon coordinate input boxes for dynamic pathfinding and regional ice analysis.
  * - 3D Volumetric Ice & Mass Estimation (2D Simpson's Rule).
- * - Kinematic elevation profile & energy HUD.
+ * - Kinematic elevation profile & energy readout.
  * - Full multi-format export (GeoJSON, KML, CSV).
  */
 import { useRef, useState, useCallback, useEffect } from 'react';
@@ -24,11 +24,11 @@ import '../styles/map.css';
 const LAYER_DEFS = [
   { id: LAYER_IDS.WAC,     label: 'LRO WAC Optical Basemap', color: '#e8eaf6', defaultOn: true  },
   { id: LAYER_IDS.LOLA,    label: 'LOLA Elevation Hillshade', color: '#ffd740', defaultOn: false },
-  { id: LAYER_IDS.ICE,     label: 'CH-2 DFSAR Ice Heatmap',   color: '#00ffcc', defaultOn: true  },
-  { id: LAYER_IDS.HAZARD,  label: 'Multi-Modal Hazard Grid', color: '#ffab00', defaultOn: false },
-  { id: LAYER_IDS.CRATERS, label: 'Robbins Polar Craters',   color: '#29b6f6', defaultOn: true  },
-  { id: LAYER_IDS.CH2,     label: 'CH-2 SAR Footprints',     color: '#ff6b00', defaultOn: false },
-  { id: LAYER_IDS.PATH,    label: 'Autonomous Rover Route',  color: '#00ffcc', defaultOn: true  },
+  { id: LAYER_IDS.ICE,     label: 'CH-2 DFSAR Ice Heatmap',   color: '#2dd4bf', defaultOn: true  },
+  { id: LAYER_IDS.HAZARD,  label: 'Multi-Modal Hazard Grid', color: '#f59e0b', defaultOn: false },
+  { id: LAYER_IDS.CRATERS, label: 'Robbins Polar Craters',   color: '#38bdf8', defaultOn: true  },
+  { id: LAYER_IDS.CH2,     label: 'CH-2 SAR Footprints',     color: '#e86100', defaultOn: false },
+  { id: LAYER_IDS.PATH,    label: 'Autonomous Rover Route',  color: '#2dd4bf', defaultOn: true  },
 ];
 
 const DEFAULT_LAYERS = Object.fromEntries(LAYER_DEFS.map(l => [l.id, l.defaultOn]));
@@ -142,7 +142,7 @@ export default function Explorer() {
       const maxLon = Math.max(sPt[0], gPt[0]) + 0.5;
       const minLat = Math.min(sPt[1], gPt[1]) - 0.2;
       const maxLat = Math.max(sPt[1], gPt[1]) + 0.2;
-      
+
       calculateCustomRegionIce({ lonMin: minLon, lonMax: maxLon, latMin: minLat, latMax: maxLat })
         .then(res => setVolumetricResult(res.volumetric))
         .catch(() => {});
@@ -285,18 +285,18 @@ export default function Explorer() {
   };
 
   const modeLabel =
-    mode === MODE.START ? '🟢 Click map to set START waypoint' :
-    mode === MODE.GOAL  ? '🔵 Click map to set GOAL ice target'  :
-    '🛰️ Select waypoints on map or choose a Ground Truth Crater below';
+    mode === MODE.START ? 'Click map to set START waypoint' :
+    mode === MODE.GOAL  ? 'Click map to set GOAL ice target'  :
+    'Select waypoints on map or choose a Ground Truth Crater below';
 
   return (
     <div className="explorer-layout">
       {/* ── Mission Control Sidebar ───────────────────────────────────── */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="sidebar-title">Mission Control HUD</div>
+          <div className="sidebar-title">Mission Control</div>
           <div className="sidebar-subtitle">
-            <span className="status-dot" /> ISRO DFSAR Polarimetry Engine · Active
+            <span className="status-dot" /> DFSAR Polarimetry Engine — Active
           </div>
         </div>
 
@@ -330,8 +330,8 @@ export default function Explorer() {
 
         <div className="sidebar-body">
           {error && (
-            <div style={{ background: 'rgba(255,23,68,0.15)', border: '1px solid var(--c-danger)', padding: '10px 12px', borderRadius: 'var(--r-sm)', color: '#ff5252', fontSize: '0.8rem' }}>
-              ⚠️ {error}
+            <div style={{ background: 'rgba(244,63,94,0.1)', border: '1px solid var(--c-danger)', padding: '9px 11px', borderRadius: 'var(--r-sm)', color: '#fb7185', fontSize: '0.78rem' }}>
+              {error}
             </div>
           )}
 
@@ -342,7 +342,7 @@ export default function Explorer() {
                 <div className="ctrl-group-title">
                   <span>Navigation Points</span>
                   {start && goal && (
-                    <span style={{ fontSize: '0.65rem', color: 'var(--c-safe)' }}>✓ LOCKED</span>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--c-safe)' }}>LOCKED</span>
                   )}
                 </div>
                 <div className="point-selector">
@@ -350,9 +350,9 @@ export default function Explorer() {
                     className={`point-btn ${mode === MODE.START ? 'active-start' : ''}`}
                     onClick={() => setMode(m => m === MODE.START ? MODE.NONE : MODE.START)}
                   >
-                    <span className="point-btn-label start">▶ Start (Rim)</span>
+                    <span className="point-btn-label start">Start (Rim)</span>
                     <span className="point-btn-coords">
-                      {start ? `${start[0]}°, ${start[1]}°` : 'Click map to set'}
+                      {start ? `${start[0]}\u00b0, ${start[1]}\u00b0` : 'Click map to set'}
                     </span>
                   </button>
 
@@ -360,9 +360,9 @@ export default function Explorer() {
                     className={`point-btn ${mode === MODE.GOAL ? 'active-goal' : ''}`}
                     onClick={() => setMode(m => m === MODE.GOAL ? MODE.NONE : MODE.GOAL)}
                   >
-                    <span className="point-btn-label goal">🎯 Goal (Ice)</span>
+                    <span className="point-btn-label goal">Goal (Ice)</span>
                     <span className="point-btn-coords">
-                      {goal ? `${goal[0]}°, ${goal[1]}°` : 'Click map to set'}
+                      {goal ? `${goal[0]}\u00b0, ${goal[1]}\u00b0` : 'Click map to set'}
                     </span>
                   </button>
                 </div>
@@ -372,65 +372,65 @@ export default function Explorer() {
               <div className="ctrl-group">
                 <div className="ctrl-group-title">Traversal Cost Weights</div>
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--c-text-dim)', marginBottom: 4 }}>
-                    <span>Slope Penalty (W₁):</span>
-                    <span style={{ color: 'var(--c-neon-cyan)', fontFamily: 'var(--font-mono)' }}>{wSlope.toFixed(1)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--c-text-dim)', marginBottom: 4 }}>
+                    <span>Slope Penalty (W1):</span>
+                    <span style={{ color: 'var(--c-cyan)', fontFamily: 'var(--font-mono)' }}>{wSlope.toFixed(1)}</span>
                   </div>
-                  <input type="range" min="0" max="5" step="0.1" value={wSlope} onChange={e => setWSlope(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--c-neon-cyan)' }} />
+                  <input type="range" min="0" max="5" step="0.1" value={wSlope} onChange={e => setWSlope(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--c-cyan)' }} />
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--c-text-dim)', marginBottom: 4 }}>
-                    <span>Shadow Battery Drain (W₂):</span>
-                    <span style={{ color: 'var(--c-neon-cyan)', fontFamily: 'var(--font-mono)' }}>{wShadow.toFixed(1)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--c-text-dim)', marginBottom: 4 }}>
+                    <span>Shadow Battery Drain (W2):</span>
+                    <span style={{ color: 'var(--c-cyan)', fontFamily: 'var(--font-mono)' }}>{wShadow.toFixed(1)}</span>
                   </div>
-                  <input type="range" min="0" max="5" step="0.1" value={wShadow} onChange={e => setWShadow(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--c-neon-cyan)' }} />
+                  <input type="range" min="0" max="5" step="0.1" value={wShadow} onChange={e => setWShadow(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--c-cyan)' }} />
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--c-text-dim)', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--c-text-dim)', marginBottom: 4 }}>
                     <span>Max Rover Tilt Limit:</span>
-                    <span style={{ color: 'var(--c-warning)', fontFamily: 'var(--font-mono)' }}>{maxSlope}°</span>
+                    <span style={{ color: 'var(--c-warning)', fontFamily: 'var(--font-mono)' }}>{maxSlope}&deg;</span>
                   </div>
                   <input type="range" min="5" max="30" step="1" value={maxSlope} onChange={e => setMaxSlope(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--c-warning)' }} />
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
                 <button
                   className="btn btn-primary"
                   style={{ flex: 1 }}
                   onClick={() => handlePathfind()}
                   disabled={!start || !goal || loading}
                 >
-                  {loading ? '⚡ Computing Path...' : '🚀 Plot Rover Route'}
+                  {loading ? 'Computing...' : 'Plot Rover Route'}
                 </button>
                 <button className="btn btn-ghost" onClick={handleReset}>
                   Reset
                 </button>
               </div>
 
-              {/* Pathfinding Results HUD */}
+              {/* Pathfinding Results */}
               {pathResult && (
                 <div className="ctrl-group" style={{ borderColor: 'var(--c-ice)' }}>
                   <div className="ctrl-group-title" style={{ color: 'var(--c-ice)' }}>
                     <span>Rover Kinematic Telemetry</span>
-                    <span style={{ fontSize: '0.65rem' }}>A* OPTIMAL</span>
+                    <span style={{ fontSize: '0.62rem' }}>A* OPTIMAL</span>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
                     <div className="vol-stat-card">
                       <div className="vol-stat-label">Traverse Distance</div>
-                      <div className="vol-stat-val highlight">{pathResult.distance_km} <span style={{ fontSize: '0.75rem' }}>km</span></div>
+                      <div className="vol-stat-val highlight">{pathResult.distance_km} <span style={{ fontSize: '0.72rem' }}>km</span></div>
                     </div>
                     <div className="vol-stat-card">
                       <div className="vol-stat-label">Estimated Energy</div>
-                      <div className="vol-stat-val">{pathResult.est_energy_wh || 120} <span style={{ fontSize: '0.75rem' }}>Wh</span></div>
+                      <div className="vol-stat-val">{pathResult.est_energy_wh || 120} <span style={{ fontSize: '0.72rem' }}>Wh</span></div>
                     </div>
                     <div className="vol-stat-card">
                       <div className="vol-stat-label">Max Slope</div>
                       <div className="vol-stat-val" style={{ color: pathResult.max_slope_deg > 15 ? 'var(--c-danger)' : 'var(--c-safe)' }}>
-                        {pathResult.max_slope_deg}°
+                        {pathResult.max_slope_deg}&deg;
                       </div>
                     </div>
                     <div className="vol-stat-card">
@@ -439,23 +439,23 @@ export default function Explorer() {
                     </div>
                   </div>
 
-                  {/* Elevation Profile Slice */}
+                  {/* Elevation Profile */}
                   {pathResult.elevation_profile && pathResult.elevation_profile.length > 0 && (
                     <div className="elevation-profile-container">
-                      <div style={{ fontSize: '0.68rem', fontFamily: 'var(--font-mono)', color: 'var(--c-text-muted)', textTransform: 'uppercase' }}>
-                        Elevation Profile Along Route ({pathResult.waypoints} Waypoints)
+                      <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: 'var(--c-text-muted)', textTransform: 'uppercase' }}>
+                        Elevation Profile — {pathResult.waypoints} Waypoints
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'flex-end', height: 45, gap: 2, background: 'var(--c-surface3)', padding: 4, borderRadius: 4 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', height: 40, gap: 1, background: 'var(--c-surface3)', padding: 3, borderRadius: 3 }}>
                         {pathResult.elevation_profile.filter((_, i) => i % Math.max(1, Math.floor(pathResult.elevation_profile.length / 30)) === 0).map((p, idx) => {
-                          const h = Math.max(5, Math.min(40, ((p.elevation_m + 200) / 300) * 40));
+                          const h = Math.max(4, Math.min(36, ((p.elevation_m + 200) / 300) * 36));
                           return (
                             <div
                               key={idx}
-                              title={`Step ${p.step}: Elev ${p.elevation_m}m, Slope ${p.slope_deg}°`}
+                              title={`Step ${p.step}: Elev ${p.elevation_m}m, Slope ${p.slope_deg}\u00b0`}
                               style={{
                                 flex: 1,
                                 height: `${h}px`,
-                                background: p.slope_deg > 15 ? 'var(--c-danger)' : 'var(--c-neon-cyan)',
+                                background: p.slope_deg > 15 ? 'var(--c-danger)' : 'var(--c-cyan)',
                                 borderRadius: 1
                               }}
                             />
@@ -466,12 +466,12 @@ export default function Explorer() {
                   )}
 
                   {/* Export Toolbar */}
-                  <div className="export-btn-group" style={{ marginTop: 6 }}>
+                  <div className="export-btn-group" style={{ marginTop: 4 }}>
                     <button className="btn-export" onClick={handleExportGeoJSON}>
-                      💾 GeoJSON Route
+                      Export GeoJSON
                     </button>
                     <button className="btn-export" onClick={handleExportCSV}>
-                      📊 Telemetry CSV
+                      Export CSV
                     </button>
                   </div>
                 </div>
@@ -484,9 +484,9 @@ export default function Explorer() {
             <div className="ctrl-group">
               <div className="ctrl-group-title">
                 <span>Peer-Reviewed Craters (2026)</span>
-                <span style={{ fontSize: '0.65rem', color: 'var(--c-neon-cyan)' }}>PRL / ISRO</span>
+                <span style={{ fontSize: '0.62rem', color: 'var(--c-cyan)' }}>PRL / ISRO</span>
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--c-text-dim)', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.73rem', color: 'var(--c-text-dim)', lineHeight: 1.5 }}>
                 Click any crater to center camera, view validated polarimetric metrics, and plot the rim-to-ice route:
               </p>
               <div className="preset-list">
@@ -494,13 +494,13 @@ export default function Explorer() {
                   <div
                     key={c.id}
                     className="preset-item"
-                    style={{ borderLeft: `3px solid ${c.color || 'var(--c-neon-cyan)'}` }}
+                    style={{ borderLeft: `3px solid ${c.color || 'var(--c-cyan)'}` }}
                     onClick={() => handleSelectBenchmark(c)}
                   >
                     <div>
                       <div className="preset-name">{c.name}</div>
                       <div className="preset-meta">
-                        {c.lon}°, {c.lat}° · Diam: {c.diameter_km}km · Peak CPR: {c.peak_cpr}
+                        {c.lon}&deg;, {c.lat}&deg; | Diam: {c.diameter_km}km | Peak CPR: {c.peak_cpr}
                       </div>
                     </div>
                     <span className={`benchmark-badge ${c.status}`}>
@@ -511,14 +511,14 @@ export default function Explorer() {
               </div>
 
               {selectedCrater && (
-                <div style={{ background: 'var(--c-surface3)', padding: 10, borderRadius: 'var(--r-sm)', marginTop: 8 }}>
-                  <div style={{ fontFamily: 'var(--font-hud)', fontSize: '0.78rem', color: selectedCrater.color, fontWeight: 700 }}>
+                <div style={{ background: 'var(--c-surface3)', padding: 9, borderRadius: 'var(--r-sm)', marginTop: 6 }}>
+                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.76rem', color: selectedCrater.color, fontWeight: 600 }}>
                     {selectedCrater.name}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--c-text-dim)', marginTop: 4, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: '0.73rem', color: 'var(--c-text-dim)', marginTop: 3, lineHeight: 1.5 }}>
                     {selectedCrater.summary}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: '0.68rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, marginTop: 6, fontFamily: 'var(--font-mono)', fontSize: '0.65rem' }}>
                     <div>DOP: <strong>{selectedCrater.dop}</strong></div>
                     <div>Wall: <strong>{selectedCrater.wall_slope_deg}</strong></div>
                     <div>Lobate: <strong>{selectedCrater.lobate_rim ? 'YES' : 'NO'}</strong></div>
@@ -533,57 +533,57 @@ export default function Explorer() {
             <>
               <div className="ctrl-group">
                 <div className="ctrl-group-title">Custom Waypoint Input</div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--c-text-dim)' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--c-text-dim)' }}>
                   Enter custom coordinate points to navigate:
                 </div>
                 <div className="custom-coords-grid">
                   <div className="input-field">
-                    <label>Start Lon (°)</label>
+                    <label>Start Lon (&deg;)</label>
                     <input type="text" value={inputStartLon} onChange={e => setInputStartLon(e.target.value)} />
                   </div>
                   <div className="input-field">
-                    <label>Start Lat (°)</label>
+                    <label>Start Lat (&deg;)</label>
                     <input type="text" value={inputStartLat} onChange={e => setInputStartLat(e.target.value)} />
                   </div>
                   <div className="input-field">
-                    <label>Goal Lon (°)</label>
+                    <label>Goal Lon (&deg;)</label>
                     <input type="text" value={inputGoalLon} onChange={e => setInputGoalLon(e.target.value)} />
                   </div>
                   <div className="input-field">
-                    <label>Goal Lat (°)</label>
+                    <label>Goal Lat (&deg;)</label>
                     <input type="text" value={inputGoalLat} onChange={e => setInputGoalLat(e.target.value)} />
                   </div>
                 </div>
-                <button className="btn btn-primary" onClick={handleApplyCustomCoords} style={{ marginTop: 6 }}>
-                  📍 Set & Plot Custom Route
+                <button className="btn btn-primary" onClick={handleApplyCustomCoords} style={{ marginTop: 4 }}>
+                  Set & Plot Custom Route
                 </button>
               </div>
 
               <div className="ctrl-group">
                 <div className="ctrl-group-title">Regional Bounding Box (Ice Volumetrics)</div>
-                <div style={{ fontSize: '0.74rem', color: 'var(--c-text-dim)' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--c-text-dim)' }}>
                   Compute 2D Simpson Rule Ice Tonnage for any Lat/Lon region:
                 </div>
                 <div className="custom-coords-grid">
                   <div className="input-field">
-                    <label>Lon Min (°)</label>
+                    <label>Lon Min (&deg;)</label>
                     <input type="text" value={bboxLonMin} onChange={e => setBboxLonMin(e.target.value)} />
                   </div>
                   <div className="input-field">
-                    <label>Lon Max (°)</label>
+                    <label>Lon Max (&deg;)</label>
                     <input type="text" value={bboxLonMax} onChange={e => setBboxLonMax(e.target.value)} />
                   </div>
                   <div className="input-field">
-                    <label>Lat Min (°)</label>
+                    <label>Lat Min (&deg;)</label>
                     <input type="text" value={bboxLatMin} onChange={e => setBboxLatMin(e.target.value)} />
                   </div>
                   <div className="input-field">
-                    <label>Lat Max (°)</label>
+                    <label>Lat Max (&deg;)</label>
                     <input type="text" value={bboxLatMax} onChange={e => setBboxLatMax(e.target.value)} />
                   </div>
                 </div>
-                <button className="btn btn-accent" onClick={handleCalculateRegionIce} style={{ marginTop: 6 }}>
-                  💧 Calculate 3D Ice Volume
+                <button className="btn btn-accent" onClick={handleCalculateRegionIce} style={{ marginTop: 4 }}>
+                  Calculate 3D Ice Volume
                 </button>
               </div>
             </>
@@ -609,35 +609,35 @@ export default function Explorer() {
             </div>
           )}
 
-          {/* ════════ 3D VOLUMETRIC READOUT (ALWAYS ACCESSIBLE) ════════ */}
+          {/* ════════ 3D VOLUMETRIC READOUT ════════ */}
           {volumetricResult && (
             <div className="volumetric-panel">
               <div className="vol-header">
                 <span className="vol-title">3D Volumetric Deposit Model</span>
-                <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: 'var(--c-ice)' }}>
-                  SIMPSON 2D · ~{volumetricResult.psr_equilibrium_temp_k}K
+                <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--c-ice)' }}>
+                  SIMPSON 2D | ~{volumetricResult.psr_equilibrium_temp_k}K
                 </span>
               </div>
               <div className="vol-grid">
                 <div className="vol-stat-card">
                   <div className="vol-stat-label">Accessible Water Mass</div>
                   <div className="vol-stat-val highlight">
-                    {volumetricResult.total_mass_metric_tons?.toLocaleString()} <span style={{ fontSize: '0.75rem' }}>Tons</span>
+                    {volumetricResult.total_mass_metric_tons?.toLocaleString()} <span style={{ fontSize: '0.72rem' }}>Tons</span>
                   </div>
                 </div>
                 <div className="vol-stat-card">
                   <div className="vol-stat-label">Pure Ice Volume</div>
                   <div className="vol-stat-val">
-                    {(volumetricResult.pure_ice_volume_m3 / 1e6)?.toFixed(2)} <span style={{ fontSize: '0.75rem' }}>M m³</span>
+                    {(volumetricResult.pure_ice_volume_m3 / 1e6)?.toFixed(2)} <span style={{ fontSize: '0.72rem' }}>M m&sup3;</span>
                   </div>
                 </div>
                 <div className="vol-stat-card">
                   <div className="vol-stat-label">Ice Footprint Area</div>
-                  <div className="vol-stat-val">{volumetricResult.ice_area_km2} <span style={{ fontSize: '0.75rem' }}>km²</span></div>
+                  <div className="vol-stat-val">{volumetricResult.ice_area_km2} <span style={{ fontSize: '0.72rem' }}>km&sup2;</span></div>
                 </div>
                 <div className="vol-stat-card">
                   <div className="vol-stat-label">Regolith WEH Fraction</div>
-                  <div className="vol-stat-val highlight">{volumetricResult.weh_fraction_pct}% <span style={{ fontSize: '0.75rem' }}>wt</span></div>
+                  <div className="vol-stat-val highlight">{volumetricResult.weh_fraction_pct}% <span style={{ fontSize: '0.72rem' }}>wt</span></div>
                 </div>
               </div>
             </div>
@@ -647,15 +647,15 @@ export default function Explorer() {
 
       {/* ── Map Container ─────────────────────────────────────────────── */}
       <div className="map-container">
-        {/* Live Coordinate Overlay HUD */}
+        {/* Live Coordinate Overlay */}
         <div className="coords-overlay">
           <div className="coords-item">
             <span className="coords-label">LON:</span>
-            <span className="coords-val">{coords.lon}°</span>
+            <span className="coords-val">{coords.lon}&deg;</span>
           </div>
           <div className="coords-item">
             <span className="coords-label">LAT:</span>
-            <span className="coords-val">{coords.lat}°</span>
+            <span className="coords-val">{coords.lat}&deg;</span>
           </div>
           <div className="coords-item">
             <span className="coords-label">POLAR X,Y:</span>
@@ -663,7 +663,7 @@ export default function Explorer() {
           </div>
         </div>
 
-        {/* Map Interactive Mode Pill */}
+        {/* Map Mode Pill */}
         <div className={`map-mode-pill ${mode === MODE.START ? 'start-mode' : (mode === MODE.GOAL ? 'goal-mode' : '')}`}>
           {modeLabel}
         </div>

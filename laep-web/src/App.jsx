@@ -7,22 +7,39 @@ export default function App() {
       {/* ── Topbar ─────────────────────────────────────────────────── */}
       <header className="topbar">
         <div className="topbar-logo">
-          <span style={{ fontSize: '1.2rem' }}>🌕</span>
+          <span className="topbar-logo-icon">L</span>
           <span>LAEP</span>
           <span className="topbar-logo-badge">ISRO</span>
         </div>
 
         <nav className="topbar-nav">
-          <NavLink to="/"           className={({isActive}) => isActive ? 'active' : ''} end>
-            <span>🏠</span><span>Overview</span>
+          <NavLink
+            to="/"
+            className={({isActive}) => `topbar-link ${isActive ? 'active' : ''}`}
+            end
+          >
+            Overview
           </NavLink>
-          <NavLink to="/explorer"   className={({isActive}) => isActive ? 'active' : ''}>
-            <span>🗺️</span><span>Mission Planner</span>
+          <NavLink
+            to="/explorer"
+            className={({isActive}) => `topbar-link ${isActive ? 'active' : ''}`}
+          >
+            Mission Planner
           </NavLink>
-          <NavLink to="/methodology" className={({isActive}) => isActive ? 'active' : ''}>
-            <span>📖</span><span>Methodology</span>
+          <NavLink
+            to="/methodology"
+            className={({isActive}) => `topbar-link ${isActive ? 'active' : ''}`}
+          >
+            Methodology
           </NavLink>
         </nav>
+
+        <div className="topbar-status">
+          <div className="status-indicator">
+            <span className="status-dot" />
+            System Online
+          </div>
+        </div>
       </header>
 
       {/* ── Page content ──────────────────────────────────────────── */}
