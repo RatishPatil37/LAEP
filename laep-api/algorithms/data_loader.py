@@ -23,14 +23,16 @@ from config import (
 # ──────────────────────────────────────────────────────────────────────────────
 _cache: dict = {}
 
-def generate_synthetic_scene() -> dict:
+def generate_synthetic_scene(force_refresh: bool = False) -> dict:
     """
     Generates a scientifically plausible south-pole crater scene as numpy arrays.
-    Called once and cached in memory.
+    Called once and cached in memory (seed=42 for determinism).
+    Args:
+        force_refresh: if True, bypass cache and regenerate (for testing)
     Returns: {dem, shadow_map, ice_score, cpr_map, dop_map}
     """
     global _cache
-    if _cache:
+    if _cache and not force_refresh:
         return _cache
 
     rng = np.random.default_rng(42)

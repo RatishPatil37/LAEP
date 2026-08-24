@@ -36,6 +36,6 @@ def get_hazard_map(w_slope: float = 1.0, w_shadow: float = 2.0, max_slope: float
     dem = scene["dem"]
     slope = compute_slope(dem)
     shadow = scene["shadow_map"]
-    cost_grid = build_cost_grid(slope, shadow, w_slope, w_shadow, max_slope)
+    cost_grid = build_cost_grid(slope, shadow, roughness=None, w_slope=w_slope, w_shadow=w_shadow, max_slope=max_slope)
     png_bytes = cost_grid_to_rgba_png(cost_grid)
     return Response(content=png_bytes, media_type="image/png")

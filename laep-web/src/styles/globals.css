@@ -234,10 +234,6 @@ input, select { font-family: inherit; }
   100% { transform: rotate(360deg); }
 }
 
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(1000%); }
-}
 
 /* ── Buttons ───────────────────────────────────────────────────────────── */
 .btn {

@@ -24,12 +24,14 @@ def compute_ics(cpr: np.ndarray, dop: np.ndarray) -> np.ndarray:
         ics: 2D float array in [0, 1]
     """
     # Normalised CPR confidence: how far above threshold?
-    # Clipped to [0, 1]: 0 if CPR<=1, 1 if CPR>=2
-    cpr_conf = np.clip((cpr - ICE_CPR_THRESHOLD) / ICE_CPR_THRESHOLD, 0, 1)
+    # Range [1.0, 2.0]: 0 if CPR <= 1.0, 1.0 if CPR >= 2.0
+    cpr_conf = np.clip((cpr - ICE_CPR_THRESHOLD) / 1.0, 0.0, 1.0)
 
     # Normalised DOP confidence: how far below threshold?
-    # Clipped to [0, 1]: 0 if DOP>=0.13, 1 if DOP<=0
-    dop_conf = np.clip((ICE_DOP_THRESHOLD - dop) / ICE_DOP_THRESHOLD, 0, 1)
+    # Range [0.13, 0.05]: 1.0 at DOP <= 0.05 (very low polarization = volume scatter)
+    #                     0.0 at DOP >= 0.13 (threshold)
+    # Normalization span = 0.08 (empirical from Sinha et al. 2026 benchmark)
+    dop_conf = np.clip((ICE_DOP_THRESHOLD - dop) / 0.08, 0.0, 1.0)
 
     # Both conditions must be satisfied — geometric mean gives joint confidence
     ics = np.sqrt(cpr_conf * dop_conf)

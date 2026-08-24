@@ -49,9 +49,10 @@ function makeNASASource(layerName, ext = 'jpg') {
   });
 }
 
-// ── Simulation Overlay Extent ─────────────────────────────────────────────
-const BBOX = { lonMin: -10, lonMax: 10, latMin: -90, latMax: -80 };
-const OVERLAY_EXTENT = [BBOX.lonMin, BBOX.latMin, BBOX.lonMax, BBOX.latMax];
+// ── Simulation Overlay Extent ──────────────────────────────────────────────
+// BUG-19 fix: Use full south-polar band so overlay is visible at any crater longitude.
+// Cabeus (lon=324°), Shackleton (lon=129°) etc. were invisible before.
+const OVERLAY_EXTENT = [-180, -90, 180, -80];
 
 // ── Layer IDs ─────────────────────────────────────────────────────────────
 export const LAYER_IDS = {
@@ -302,8 +303,10 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, o
     map.on('singleclick', (e) => {
       if (!e.coordinate || isNaN(e.coordinate[0]) || isNaN(e.coordinate[1])) return;
       // Check if user clicked a crater feature
+      // BUG-20 fix: only trigger detail panel for benchmark craters (they have 'status' property).
+      // Robbins sub-craters also have crater_id but lack peak_cpr, dop, color etc. causing crashes.
       const feature = map.forEachFeatureAtPixel(e.pixel, (f) => f);
-      if (feature && feature.get('crater_id')) {
+      if (feature && feature.get('crater_id') && feature.get('status') !== undefined) {
         onSelectCraterRef.current?.(feature.getProperties());
         return;
       }

@@ -3,17 +3,20 @@ polarimetry.py — Full-polarimetric radar backscatter decomposition and ice sco
 Implements Chandrayaan-2 DFSAR polarimetric physics per Sinha et al. (May 2026, PRL Ahmedabad).
 """
 import numpy as np
+from algorithms.ice_confidence import compute_ics as _canonical_ics
 
 def compute_stokes_parameters(shh: np.ndarray, svv: np.ndarray, shv: np.ndarray = None):
     """
-    Computes 4-element Stokes vector S = [S0, S1, S2, S3] from complex/linear radar cross-sections.
+    Computes 4-element Stokes vector S = [S0, S1, S2, S3] from real power radar cross-sections.
+    Inputs must be real-valued power (intensity) arrays, not complex amplitudes.
     """
     # Total power S0
     s0 = shh + svv
     s1 = shh - svv
     
     if shv is not None:
-        s2 = 2.0 * np.real(np.sqrt(np.maximum(shh * svv, 0.0)))
+        # S2 = 2 * sqrt(Shh) * sqrt(Svv) for real power inputs (geometric mean of amplitudes)
+        s2 = 2.0 * np.sqrt(np.maximum(shh, 0.0)) * np.sqrt(np.maximum(svv, 0.0))
         s3 = 2.0 * np.imag(shv)
     else:
         # In compact/hybrid polarimetry approximation
@@ -49,15 +52,8 @@ def m_chi_decomposition(s0: np.ndarray, s3: np.ndarray, dop: np.ndarray, eps: fl
 
 def compute_ice_confidence_score(cpr: np.ndarray, dop: np.ndarray) -> np.ndarray:
     """
-    Computes continuous Ice Confidence Score (ICS in [0, 1]) based on Sinha et al. (2026):
-    Criteria: CPR > 1.0 AND DOP < 0.13
+    Computes continuous Ice Confidence Score (ICS in [0, 1]) based on Sinha et al. (2026).
+    Delegates to the single canonical implementation in ice_confidence.py to avoid
+    divergent normalization constants across the codebase.
     """
-    # Normalized CPR confidence (0 at CPR=1.0, 1.0 at CPR >= 2.0)
-    cpr_conf = np.clip((cpr - 1.0) / 1.0, 0.0, 1.0)
-    
-    # Normalized DOP confidence (1.0 at DOP <= 0.05, 0.0 at DOP >= 0.13)
-    dop_conf = np.clip((0.13 - dop) / 0.08, 0.0, 1.0)
-    
-    # Combined geometric mean confidence
-    ics = np.sqrt(cpr_conf * dop_conf)
-    return np.clip(ics, 0.0, 1.0)
+    return _canonical_ics(cpr, dop)

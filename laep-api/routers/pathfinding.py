@@ -45,7 +45,9 @@ def compute_path(req: PathRequest):
         "lon_min": min_lon - pad_lon,
         "lon_max": max_lon + pad_lon,
         "lat_min": max(-90.0, min_lat - pad_lat),
-        "lat_max": min(-70.0, max_lat + pad_lat)
+        # South-polar bound: must stay between -90° and -60°
+        # Using max/min explicitly (negative latitudes make min/max semantics confusing)
+        "lat_max": max(-90.0, min(-60.0, max_lat + pad_lat))
     }
 
     # Calculate real pixel size in meters for this local ROI
@@ -121,6 +123,11 @@ def get_landing_sites():
     """
     Returns candidate landing sites: flat regions (slope < 10°) with
     good illumination (shadow < 0.3) near the safe rim area.
+    
+    NOTE: Coordinates are translated from the fixed 200x200 synthetic scene
+    and are in the simulation reference frame (lon in [-10°, 10°], lat in [-90°, -80°]).
+    These are scientifically valid slope/shadow metrics but absolute lon/lat should be
+    treated as relative offsets from the selected crater center.
     """
     scene = generate_synthetic_scene()
     dem = scene["dem"]
@@ -131,7 +138,7 @@ def get_landing_sites():
     rows, cols = np.where(safe_mask)
 
     if len(rows) == 0:
-        return {"sites": []}
+        return {"sites": [], "simulation_note": "Fixed simulation reference frame."}
 
     step = max(1, len(rows) // 5)
     sites = []
@@ -147,4 +154,7 @@ def get_landing_sites():
             "rank": len(sites) + 1,
             "name": f"Landing Zone LZ-{len(sites) + 1}"
         })
-    return {"sites": sites}
+    return {
+        "sites": sites,
+        "simulation_note": "Coordinates are from the fixed synthetic simulation frame (lon: -10° to 10°). Use as relative safety scores, not absolute crater lon/lat."
+    }

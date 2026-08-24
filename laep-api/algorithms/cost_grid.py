@@ -24,10 +24,6 @@ def compute_sar_geometric_roughness(sar_img: np.ndarray, window: int = 5, eps: f
     Computes Dual-Axis SAR Geometric Mean Roughness W_z = sqrt(|W_p * W_q|)
     with regularized denominator (eps = 1e-6) to prevent flat terrain singularities.
     """
-    ny, nx = sar_img.shape
-    w_p = np.zeros_like(sar_img, dtype=np.float32)
-    w_q = np.zeros_like(sar_img, dtype=np.float32)
-    
     # Range gradient (axis 1 / columns)
     diff_p = np.abs(np.diff(sar_img, axis=1, prepend=sar_img[:, :1]))
     sum_p = sar_img + np.roll(sar_img, 1, axis=1) + eps

@@ -77,7 +77,7 @@ export default function Home() {
           { label: 'Global Craters Mapped', value: '1,296,796', unit: 'Robbins DB' },
           { label: 'Screened Polar Targets', value: '6,625', unit: 'sub-craters' },
           { label: 'Peak Radar CPR', value: '1.95', unit: 'Faustini F2' },
-          { label: 'Est. Deposit Mass', value: stats ? `${(stats.ice_coverage_km2 * 1e5).toLocaleString()}` : '12,142,707', unit: 'Metric Tons' },
+          { label: 'Est. Deposit Mass', value: stats ? `${Math.round(stats.ice_coverage_km2 * 1e6 * 2.5 * 0.056 * 917 / 1000).toLocaleString()}` : '12,142,707', unit: 'Metric Tons' },
         ].map(s => (
           <div className="stat-card" key={s.label}>
             <div className="stat-label">{s.label}</div>

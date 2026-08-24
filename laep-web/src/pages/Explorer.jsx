@@ -93,22 +93,29 @@ export default function Explorer() {
       .catch(() => {});
   }, []);
 
-  // ── Map click handler (smart auto-advancing with exact join) ───────────
+  // ── Map click handler — explicit state machine ───────────────────────
   const handleMapClick = useCallback(([lon, lat]) => {
     const pt = [Number(lon.toFixed(4)), Number(lat.toFixed(4))];
-    if (mode === MODE.START || (!start && mode === MODE.NONE)) {
+    // Transition table:
+    //   START mode             → set start, advance to GOAL mode
+    //   GOAL mode              → set goal, return to NONE mode
+    //   NONE + no start        → set start, advance to GOAL mode
+    //   NONE + start, no goal  → set goal, return to NONE mode
+    //   NONE + both set        → reset cycle: set new start, clear goal, go to GOAL mode
+    if (mode === MODE.START || (mode === MODE.NONE && !start)) {
       setStart(pt);
       setInputStartLon(pt[0].toString());
       setInputStartLat(pt[1].toString());
       setMode(MODE.GOAL);
       mapRef.current?.setMarkers(pt, goal);
-    } else if (mode === MODE.GOAL || (start && !goal)) {
+    } else if (mode === MODE.GOAL || (mode === MODE.NONE && start && !goal)) {
       setGoal(pt);
       setInputGoalLon(pt[0].toString());
       setInputGoalLat(pt[1].toString());
       setMode(MODE.NONE);
       mapRef.current?.setMarkers(start, pt);
     } else {
+      // Both set, mode=NONE: reset cycle
       setStart(pt);
       setInputStartLon(pt[0].toString());
       setInputStartLat(pt[1].toString());
@@ -136,6 +143,11 @@ export default function Explorer() {
 
       mapRef.current?.addPathLayer(result.path);
       setPathResult(result.stats);
+      // BUG-21 fix: refresh overlays after weights may have changed
+      mapRef.current?.updateOverlays(
+        `/api/hazard-map?w_slope=${wSlope}&w_shadow=${wShadow}&max_slope=${maxSlope}`,
+        '/api/ice-detection'
+      );
 
       // Trigger automatic volumetric estimate for the trajectory bounding box
       const minLon = Math.min(sPt[0], gPt[0]) - 0.5;
@@ -163,6 +175,17 @@ export default function Explorer() {
 
     if (isNaN(sLon) || isNaN(sLat) || isNaN(gLon) || isNaN(gLat)) {
       setError('Please enter valid numeric coordinates.');
+      return;
+    }
+    // BUG-17: range validation for south-polar operations
+    const validLon = (v) => v >= -180 && v <= 360;
+    const validLat = (v) => v >= -90 && v <= -50;
+    if (!validLon(sLon) || !validLon(gLon)) {
+      setError('Longitude must be between -180° and 360°.');
+      return;
+    }
+    if (!validLat(sLat) || !validLat(gLat)) {
+      setError('Latitude must be between -90° and -50° (south polar operations only).');
       return;
     }
 
@@ -207,8 +230,11 @@ export default function Explorer() {
   // ── Select Ground Truth Benchmark Crater Preset ───────────────────────
   const handleSelectBenchmark = (crater) => {
     setSelectedCrater(crater);
-    const rimStart = [Number((crater.lon - 0.15).toFixed(3)), Number((crater.lat + 0.08).toFixed(3))];
-    const floorGoal = [Number(crater.lon.toFixed(3)), Number(crater.lat.toFixed(3))];
+    // BUG-16 fix: scale rim offset proportional to crater diameter
+    // Small craters (1-3 km): small offset; large craters (20-100 km): larger offset
+    const offsetDeg = Math.max(0.02, Math.min(1.5, crater.diameter_km / 111.1));
+    const rimStart = [Number((crater.lon - offsetDeg).toFixed(4)), Number((crater.lat + offsetDeg * 0.5).toFixed(4))];
+    const floorGoal = [Number(crater.lon.toFixed(4)), Number(crater.lat.toFixed(4))];
 
     setStart(rimStart);
     setGoal(floorGoal);
@@ -241,10 +267,15 @@ export default function Explorer() {
   // ── Export Mission Route Files ─────────────────────────────────────────
   const handleExportGeoJSON = () => {
     if (!pathResult) return;
-
+    // BUG-14: warn the user if elevation profile is missing (export degrades to 2-point line)
+    const hasFullProfile = pathResult.elevation_profile?.length > 2;
+    if (!hasFullProfile) {
+      setError('Warning: Route elevation data incomplete. GeoJSON will contain only start/goal coordinates. Re-plot the route to generate full telemetry.');
+    }
     const coordsList = pathResult.elevation_profile?.length
       ? pathResult.elevation_profile.map(p => [p.lon, p.lat])
       : [start, goal];
+
 
     const geojson = {
       type: "FeatureCollection",
@@ -448,7 +479,7 @@ export default function Explorer() {
                     </div>
                     <div className="vol-stat-card">
                       <div className="vol-stat-label">Estimated Energy</div>
-                      <div className="vol-stat-val">{pathResult.est_energy_wh || 120} <span style={{ fontSize: '0.72rem' }}>Wh</span></div>
+                      <div className="vol-stat-val">{pathResult.est_energy_wh != null ? pathResult.est_energy_wh : '—'} <span style={{ fontSize: '0.72rem' }}>Wh</span></div>
                     </div>
                     <div className="vol-stat-card">
                       <div className="vol-stat-label">Max Slope</div>

@@ -7,6 +7,9 @@
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
+// Fallback bounding box for the synthetic simulation reference frame
+const FALLBACK_BBOX = { lonMin: -10, lonMax: 10, latMin: -90, latMax: -80 };
+
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, options);
   if (!res.ok) {
@@ -192,7 +195,7 @@ function runClientSidePathfind({ startLon, startLat, goalLon, goalLat, wSlope = 
     lonMin: minLon - padLon,
     lonMax: maxLon + padLon,
     latMin: Math.max(-90.0, minLat - padLat),
-    latMax: Math.min(-70.0, maxLat + padLat),
+    latMax: Math.max(-90.0, Math.min(-60.0, maxLat + padLat)), // south-polar bound: stay between -90° and -60°
   };
 
   const lonlatToGrid = (lon, lat) => {
@@ -323,7 +326,15 @@ function runClientSidePathfind({ startLon, startLat, goalLon, goalLat, wSlope = 
   });
 
   const pathSlopes = elevationProfile.map(p => p.slope_deg);
-  const distKm = Number(((pathCoords.length * 25.0) / 1000).toFixed(3));
+  // Compute actual pixel size from dynamic bbox (matches backend local_pixel_size_m)
+  const R_moon_m = 1737400.0;
+  const dLonRad = (bbox.lonMax - bbox.lonMin) * (Math.PI / 180.0);
+  const dLatRad = (bbox.latMax - bbox.latMin) * (Math.PI / 180.0);
+  const meanLatRad = ((bbox.latMin + bbox.latMax) / 2.0) * (Math.PI / 180.0);
+  const dLonM = dLonRad * R_moon_m * Math.max(0.01, Math.abs(Math.cos(meanLatRad)));
+  const dLatM = dLatRad * R_moon_m;
+  const pixelSizeM = Math.max(5.0, Math.max(dLonM, dLatM) / GRID_SIZE);
+  const distKm = Number(((pathCoords.length * pixelSizeM) / 1000).toFixed(3));
   const maxSlopeDeg = Number(Math.max(...pathSlopes).toFixed(1));
   const meanSlopeDeg = Number((pathSlopes.reduce((a, b) => a + b, 0) / Math.max(1, pathSlopes.length)).toFixed(1));
 
@@ -358,5 +369,5 @@ function runClientSidePathfind({ startLon, startLat, goalLon, goalLat, wSlope = 
 function generateFallbackDEM() {
   const dem = [];
   for (let i = 0; i < 40000; i++) dem.push(100.0);
-  return { grid_size: 200, bbox: BBOX, dem };
+  return { grid_size: 200, bbox: FALLBACK_BBOX, dem };
 }

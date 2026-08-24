@@ -4,6 +4,7 @@ and dynamic 3D volumetric ice calculation for custom bounding boxes.
 """
 import os
 import json
+from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import numpy as np
@@ -185,13 +186,15 @@ def get_priority_subcraters():
     """
     Serves the screened high-priority South Pole sub-craters from Robbins Lunar Database.
     """
+    # Resolve only via relative paths from this file
+    base_dir = Path(__file__).resolve().parent.parent
     paths = [
-        "south_pole_priority_subcraters.geojson",
-        r"c:\Users\patil\OneDrive\ISRO\south_pole_priority_subcraters.geojson",
-        r"c:\Users\patil\OneDrive - South Indian Education Society\Desktop\ISRO\south_pole_priority_subcraters.geojson"
+        base_dir / "south_pole_priority_subcraters.geojson",
+        base_dir.parent / "south_pole_priority_subcraters.geojson",
+        Path("south_pole_priority_subcraters.geojson"),
     ]
     for p in paths:
-        if os.path.exists(p):
+        if p.exists():
             with open(p, "r", encoding="utf-8") as f:
                 return json.load(f)
                 
@@ -228,10 +231,11 @@ def calculate_custom_region_ice(req: RegionIceRequest):
 
     N = max(10, min(200, req.grid_res))
     
-    # Check proximity to known benchmark ice craters (Faustini, Haworth, Shoemaker)
-    # Generate synthetic/realistic polarimetric response for the custom ROI
-    dist_faustini = np.hypot(lon_min - 82.31, lat_min - (-87.39))
-    is_ice_zone = lat_min <= -85.0
+    # Check proximity to known benchmark ice craters using bbox CENTER, not corner
+    clon = (lon_min + lon_max) / 2.0
+    clat = (lat_min + lat_max) / 2.0
+    dist_faustini = np.hypot(clon - 82.31, clat - (-87.39))
+    is_ice_zone = clat <= -85.0
     
     # Base CPR & DOP grids
     if dist_faustini < 5.0 or (lat_min <= -86.5 and 70.0 <= lon_min <= 95.0):

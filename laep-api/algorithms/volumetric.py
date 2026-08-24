@@ -12,21 +12,21 @@ def integrate_ice_volume_2d(
     dy_m: float = 25.0,
     penetration_depth_m: float = 2.5,
     ice_volume_fraction: float = 0.056,
-    bulk_ice_density_g_cm3: float = 0.917
+    bulk_ice_density_kg_m3: float = 917.0   # kg/m³ — pure water ice (LCROSS calibrated)
 ) -> dict:
     """
     Computes 3D Ice Volume and Mass using 2D Composite Simpson's Rule.
     
     Formula:
-    V_ice = \iint_\Omega [ ICS(x, y) * H(x, y) * V_f ] dx dy
-    Mass_ice = V_ice * \rho_ice
+    V_ice = \\iint_\\Omega [ ICS(x, y) * H(x, y) * V_f ] dx dy
+    Mass_ice = V_ice * \\rho_ice
     
     Parameters:
     - ics_grid: 2D array of Ice Confidence Scores (0 to 1)
     - dx_m, dy_m: Ground sampling grid resolution in meters (default: 25.0m for CH2 DFSAR)
     - penetration_depth_m: Radar penetration depth in meters (default: 2.5m for L/S band)
     - ice_volume_fraction: Regolith ice volume fraction (default: 5.6 wt% WEH per LCROSS / Sinha et al.)
-    - bulk_ice_density_g_cm3: Pure/segregated ice density (default: 0.917 g/cm^3)
+    - bulk_ice_density_kg_m3: Pure/segregated ice density in kg/m3 (default: 917.0 = 0.917 g/cm3)
     
     Returns:
     - Dict with total_volume_m3, pure_ice_volume_m3, total_mass_metric_tons,
@@ -48,8 +48,10 @@ def integrate_ice_volume_2d(
 
     pure_volume_m3 = max(0.0, pure_volume_m3)
     
-    # Bulk ice density: 0.917 g/cm^3 = 917 kg/m^3 = 0.917 Metric Tons / m^3
-    total_mass_metric_tons = pure_volume_m3 * (bulk_ice_density_g_cm3 * 1.0)
+    # Unit chain: kg/m³ → Metric Ton/m³ (1 metric ton = 1000 kg)
+    # 917 kg/m³ / 1000 = 0.917 metric ton/m³
+    ice_density_ton_per_m3 = bulk_ice_density_kg_m3 / 1000.0
+    total_mass_metric_tons = pure_volume_m3 * ice_density_ton_per_m3
     
     # Area calculation
     valid_ice_mask = ics_grid > 0.2

@@ -241,9 +241,7 @@
 }
 
 .phase-icon {
-  font-size: 1.6rem;
   margin-bottom: 12px;
-  display: block;
   width: 36px;
   height: 36px;
   background: var(--c-surface2);
@@ -253,6 +251,9 @@
   align-items: center;
   justify-content: center;
   color: var(--c-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .phase-title {
