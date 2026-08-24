@@ -177,24 +177,36 @@ export async function findPath({ startLon, startLat, goalLon, goalLat, wSlope, w
 // Client-Side In-Browser A* Pathfinding Engine (Fallback)
 // ─────────────────────────────────────────────────────────────────────────────
 const GRID_SIZE = 200;
-const BBOX = { lonMin: -10, lonMax: 10, latMin: -90, latMax: -80 };
-
-function lonlatToGrid(lon, lat) {
-  const col = Math.floor(((lon - BBOX.lonMin) / (BBOX.lonMax - BBOX.lonMin)) * GRID_SIZE);
-  const row = Math.floor(((BBOX.latMax - lat) / (BBOX.latMax - BBOX.latMin)) * GRID_SIZE);
-  return [
-    Math.max(0, Math.min(GRID_SIZE - 1, row)),
-    Math.max(0, Math.min(GRID_SIZE - 1, col)),
-  ];
-}
-
-function gridToLonLat(row, col) {
-  const lon = BBOX.lonMin + (col / GRID_SIZE) * (BBOX.lonMax - BBOX.lonMin);
-  const lat = BBOX.latMax - (row / GRID_SIZE) * (BBOX.latMax - BBOX.latMin);
-  return [Number(lon.toFixed(6)), Number(lat.toFixed(6))];
-}
 
 function runClientSidePathfind({ startLon, startLat, goalLon, goalLat, wSlope = 1.0, wShadow = 2.0, maxSlope = 15.0 }) {
+  // 1. Dynamic ROI Bounding Box
+  const minLon = Math.min(startLon, goalLon);
+  const maxLon = Math.max(startLon, goalLon);
+  const minLat = Math.min(startLat, goalLat);
+  const maxLat = Math.max(startLat, goalLat);
+
+  const padLon = Math.max(0.06, (maxLon - minLon) * 0.35);
+  const padLat = Math.max(0.04, (maxLat - minLat) * 0.35);
+
+  const bbox = {
+    lonMin: minLon - padLon,
+    lonMax: maxLon + padLon,
+    latMin: Math.max(-90.0, minLat - padLat),
+    latMax: Math.min(-70.0, maxLat + padLat),
+  };
+
+  const lonlatToGrid = (lon, lat) => {
+    const col = Math.round(((lon - bbox.lonMin) / Math.max(1e-6, bbox.lonMax - bbox.lonMin)) * (GRID_SIZE - 1));
+    const row = Math.round(((bbox.latMax - lat) / Math.max(1e-6, bbox.latMax - bbox.latMin)) * (GRID_SIZE - 1));
+    return [Math.max(0, Math.min(GRID_SIZE - 1, row)), Math.max(0, Math.min(GRID_SIZE - 1, col))];
+  };
+
+  const gridToLonLat = (row, col) => {
+    const lon = bbox.lonMin + (col / (GRID_SIZE - 1)) * (bbox.lonMax - bbox.lonMin);
+    const lat = bbox.latMax - (row / (GRID_SIZE - 1)) * (bbox.latMax - bbox.latMin);
+    return [Number(lon.toFixed(6)), Number(lat.toFixed(6))];
+  };
+
   const [sRow, sCol] = lonlatToGrid(startLon, startLat);
   const [gRow, gCol] = lonlatToGrid(goalLon, goalLat);
 

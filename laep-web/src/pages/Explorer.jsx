@@ -241,24 +241,47 @@ export default function Explorer() {
   // ── Export Mission Route Files ─────────────────────────────────────────
   const handleExportGeoJSON = () => {
     if (!pathResult) return;
+
+    const coordsList = pathResult.elevation_profile?.length
+      ? pathResult.elevation_profile.map(p => [p.lon, p.lat])
+      : [start, goal];
+
     const geojson = {
       type: "FeatureCollection",
       metadata: {
         mission: "LAEP Lunar Autonomous Traversal Plan",
         distance_km: pathResult.distance_km,
         est_energy_wh: pathResult.est_energy_wh,
+        max_slope_deg: pathResult.max_slope_deg,
+        mean_slope_deg: pathResult.mean_slope_deg,
+        max_ics: pathResult.max_ics_along_path,
         timestamp: new Date().toISOString()
       },
       features: [
         {
           type: "Feature",
+          geometry: {
+            type: "LineString",
+            coordinates: coordsList
+          },
+          properties: {
+            name: "Rover Traversal Route",
+            type: "TRAJECTORY",
+            distance_km: pathResult.distance_km,
+            est_energy_wh: pathResult.est_energy_wh,
+            max_slope_deg: pathResult.max_slope_deg,
+            elevation_profile: pathResult.elevation_profile
+          }
+        },
+        {
+          type: "Feature",
           geometry: { type: "Point", coordinates: start },
-          properties: { name: "Start Waypoint", type: "START" }
+          properties: { name: "Start Waypoint (Rim)", type: "START" }
         },
         {
           type: "Feature",
           geometry: { type: "Point", coordinates: goal },
-          properties: { name: "Ice Target Goal", type: "GOAL" }
+          properties: { name: "Ice Target Goal (Floor)", type: "GOAL" }
         }
       ]
     };

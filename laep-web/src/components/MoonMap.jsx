@@ -282,7 +282,9 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, o
     };
 
     map.on('pointermove', (e) => {
+      if (!e.coordinate || e.coordinate.length < 2) return;
       const [lon, lat] = e.coordinate;
+      if (isNaN(lon) || isNaN(lat)) return;
       // Convert to Polar Stereographic X, Y (km offset)
       const rPolar = (90.0 + lat) * 30.32; // km per deg
       const thPolar = (lon * Math.PI) / 180.0;
@@ -298,10 +300,12 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, o
     });
 
     map.on('singleclick', (e) => {
+      if (!e.coordinate || isNaN(e.coordinate[0]) || isNaN(e.coordinate[1])) return;
       // Check if user clicked a crater feature
       const feature = map.forEachFeatureAtPixel(e.pixel, (f) => f);
       if (feature && feature.get('crater_id')) {
         onSelectCraterRef.current?.(feature.getProperties());
+        return;
       }
       onMapClickRef.current?.(e.coordinate);
     });

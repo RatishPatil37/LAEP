@@ -147,15 +147,15 @@ def a_star_search(
 def grid_to_lonlat(
     row: int, col: int, grid_size: int = GRID_SIZE, bbox: dict = SOUTH_POLE_BBOX
 ) -> tuple[float, float]:
-    lon = bbox["lon_min"] + (col / grid_size) * (bbox["lon_max"] - bbox["lon_min"])
-    lat = bbox["lat_max"] - (row / grid_size) * (bbox["lat_max"] - bbox["lat_min"])
+    lon = bbox["lon_min"] + (col / max(1, grid_size - 1)) * (bbox["lon_max"] - bbox["lon_min"])
+    lat = bbox["lat_max"] - (row / max(1, grid_size - 1)) * (bbox["lat_max"] - bbox["lat_min"])
     return round(lon, 6), round(lat, 6)
 
 def lonlat_to_grid(
     lon: float, lat: float, grid_size: int = GRID_SIZE, bbox: dict = SOUTH_POLE_BBOX
 ) -> tuple[int, int]:
-    col = int((lon - bbox["lon_min"]) / (bbox["lon_max"] - bbox["lon_min"]) * grid_size)
-    row = int((bbox["lat_max"] - lat) / (bbox["lat_max"] - bbox["lat_min"]) * grid_size)
+    col = int(round((lon - bbox["lon_min"]) / max(1e-6, bbox["lon_max"] - bbox["lon_min"]) * (grid_size - 1)))
+    row = int(round((bbox["lat_max"] - lat) / max(1e-6, bbox["lat_max"] - bbox["lat_min"]) * (grid_size - 1)))
     col = max(0, min(col, grid_size - 1))
     row = max(0, min(row, grid_size - 1))
     return row, col
