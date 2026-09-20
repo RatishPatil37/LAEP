@@ -131,7 +131,7 @@ function craterStyleFunction(feature) {
 // ─────────────────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────────────────
-const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, onSelectCrater }, ref) {
+const MoonMap = forwardRef(function MoonMap({ layers, overlayUrls = {}, onCoordMove, onMapClick, onSelectCrater }, ref) {
   const mapEl   = useRef(null);
   const mapRef  = useRef(null);
   const layerMap = useRef({});
@@ -192,9 +192,9 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, o
 
     updateOverlays(hazardUrl, iceUrl) {
       const updateImg = (id, url) => {
-        layerMap.current[id]?.setSource(new ImageStatic({
-          url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326',
-        }));
+        const layer = layerMap.current[id];
+        if (!layer) return;
+        layer.setSource(url ? new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }) : null);
       };
       updateImg(LAYER_IDS.HAZARD, hazardUrl);
       updateImg(LAYER_IDS.ICE,    iceUrl);
@@ -228,14 +228,14 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, o
     // ── Image overlays ─────────────────────────────────────────────
     const makeImgLayer = (url, opacity, visible = true) => {
       return new ImageLayer({
-        source: new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }),
+        source: url ? new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }) : null,
         opacity,
         visible,
       });
     };
 
-    const iceLayer    = makeImgLayer('/api/ice-detection', 0.70, true);
-    const hazardLayer = makeImgLayer('/api/hazard-map',    0.55, false);
+    const iceLayer    = makeImgLayer(overlayUrls.ice, 0.70, Boolean(overlayUrls.ice));
+    const hazardLayer = makeImgLayer(overlayUrls.hazard, 0.55, false);
     iceLayer.set('id',    LAYER_IDS.ICE);
     hazardLayer.set('id', LAYER_IDS.HAZARD);
 
@@ -313,7 +313,11 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, o
       onMapClickRef.current?.(e.coordinate);
     });
 
-    return () => { map.setTarget(null); mapRef.current = null; };
+    const resizeObserver = new ResizeObserver(() => map.updateSize());
+    resizeObserver.observe(mapEl.current);
+    requestAnimationFrame(() => map.updateSize());
+
+    return () => { resizeObserver.disconnect(); map.setTarget(null); mapRef.current = null; };
   }, []); // eslint-disable-line
 
   // ── Sync layer visibility ────────────────────────────────────────
@@ -326,6 +330,20 @@ const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, o
       else lyr.setVisible(visible);
     });
   }, [layers]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const hazard = overlayUrls.hazard;
+    const ice = overlayUrls.ice;
+    const update = (id, url) => {
+      const layer = layerMap.current[id];
+      if (!layer) return;
+      layer.setSource(url ? new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }) : null);
+      if (!url) layer.setVisible(false);
+    };
+    update(LAYER_IDS.HAZARD, hazard);
+    update(LAYER_IDS.ICE, ice);
+  }, [overlayUrls.hazard, overlayUrls.ice]);
 
   return <div id="moon-map" ref={mapEl} />;
 });

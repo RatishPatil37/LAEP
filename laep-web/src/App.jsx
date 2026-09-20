@@ -1,7 +1,16 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getApiStatus } from './api/laepApi';
+import DataStateBadge from './components/scientific/DataStateBadge';
 import './styles/globals.css';
 
 export default function App() {
+  const [api, setApi] = useState({ state: 'unavailable', message: 'Checking analysis API…' });
+
+  useEffect(() => {
+    getApiStatus().then(setApi);
+  }, []);
+
   return (
     <div className="app-shell">
       {/* ── Topbar ─────────────────────────────────────────────────── */}
@@ -9,7 +18,7 @@ export default function App() {
         <div className="topbar-logo">
           <span className="topbar-logo-icon">L</span>
           <span>LAEP</span>
-          <span className="topbar-logo-badge">ISRO</span>
+          <span className="topbar-logo-subtitle">Lunar exploration & planning</span>
         </div>
 
         <nav className="topbar-nav">
@@ -18,27 +27,24 @@ export default function App() {
             className={({isActive}) => `topbar-link ${isActive ? 'active' : ''}`}
             end
           >
-            Overview
+            Mission
           </NavLink>
           <NavLink
             to="/explorer"
             className={({isActive}) => `topbar-link ${isActive ? 'active' : ''}`}
           >
-            Mission Planner
+            Explorer
           </NavLink>
           <NavLink
             to="/methodology"
             className={({isActive}) => `topbar-link ${isActive ? 'active' : ''}`}
           >
-            Methodology
+            Research notes
           </NavLink>
         </nav>
 
-        <div className="topbar-status">
-          <div className="status-indicator">
-            <span className="status-dot" />
-            System Online
-          </div>
+        <div className="topbar-status" title={api.message}>
+          <DataStateBadge state={api.state} detail={api.message} />
         </div>
       </header>
 

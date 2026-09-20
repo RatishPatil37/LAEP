@@ -1,164 +1,88 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getIceStats, getBenchmarkCraters } from '../api/laepApi';
+import { getBenchmarkCraters } from '../api/laepApi';
+import DataStateBadge from '../components/scientific/DataStateBadge';
+import CraterInspector from '../components/scientific/CraterInspector';
+import MoonHero from '../scenes/MoonHero/MoonHero';
+import { displayCraterName } from '../lib/crater';
 import '../styles/components.css';
 
-const PHASES = [
-  {
-    num: '01',
-    title: 'Dual-Frequency SAR Polarimetry',
-    desc: 'Applies Sinha et al. (May 2026, PRL) physics filter (CPR > 1.0 AND DOP < 0.13) to Chandrayaan-2 DFSAR L/S-band data to isolate subsurface volume scattering from rocky surface reflection.'
-  },
-  {
-    num: '02',
-    title: 'YOLOv11 & Keypoint Detection',
-    desc: 'Processes Chandrayaan-2 OHRC 0.25m imagery to simultaneously segment micro-craters and sub-meter boulder hazards, combined with CenterNet anchor-free detection in shadowed PSRs.'
-  },
-  {
-    num: '03',
-    title: 'Multi-Modal Hazard Index (MHI)',
-    desc: 'Fuses DEM slope gradients, dual-axis SAR geometric mean roughness, and permanent shadow battery drain into a 3-class traversability cost grid.'
-  },
-  {
-    num: '04',
-    title: 'Reachability-Aware A* Pathfinder',
-    desc: 'Executes BFS flood-fill reachability pre-filtering and kinematically-constrained A* with 15-pixel auto-snapping to plot energy-optimal, tilt-safe routes into icy crater bowls.'
-  },
-  {
-    num: '05',
-    title: '2D Simpson Volumetric Estimation',
-    desc: 'Calculates continuous 3D volatile volume and accessible water mass in Metric Tons using 2D composite Simpson numerical integration over per-pixel Ice Confidence Scores.'
-  },
+const NARRATIVE_STEPS = [
+  ['01', 'Remote sensing', 'Polarimetric radar, optical imagery, and terrain products provide distinct observations of the south polar environment.'],
+  ['02', 'Evidence context', 'LAEP presents supporting observations and their limits together; it does not convert a signal into certainty.'],
+  ['03', 'Reachability', 'Terrain and illumination constraints are evaluated separately from resource-evidence interpretation.'],
+  ['04', 'Mission planning', 'The Explorer is where available data can be examined, compared, and used to construct an explicitly labelled route preview.'],
 ];
 
 export default function Home() {
-  const [stats, setStats] = useState(null);
-  const [benchmarks, setBenchmarks] = useState([]);
+  const [craterData, setCraterData] = useState({ craters: [], meta: { state: 'unavailable' } });
+  const [selectedCrater, setSelectedCrater] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getIceStats().then(setStats).catch(() => {});
-    getBenchmarkCraters().then(d => setBenchmarks(d.craters || [])).catch(() => {});
+    let active = true;
+    getBenchmarkCraters()
+      .then((data) => { if (active) setCraterData(data); })
+      .catch((requestError) => { if (active) setError(requestError.message); });
+    return () => { active = false; };
   }, []);
 
+  const status = craterData.meta?.state ?? 'unavailable';
+
   return (
-    <div className="home-page">
-      {/* ── Hero ────────────────────────────────────────────────────── */}
-      <section className="hero">
-        <div className="hero-bg" />
-        <div className="hero-radar-sweep" />
-
-        <p className="hero-eyebrow">
-          ISRO Chandrayaan-2 &middot; Lunar South Pole Mission
-        </p>
-
-        <h1 className="hero-title">
-          Lunar <span className="hero-title-highlight">Autonomous</span><br/>
-          Exploration Pipeline
-        </h1>
-
-        <p className="hero-subtitle">
-          Next-generation planetary intelligence system powered by Chandrayaan-2 DFSAR polarimetry,
-          OHRC deep learning hazard detection, and autonomous kinematic pathfinding.
-        </p>
-
-        <div className="hero-cta">
-          <Link to="/explorer" className="btn btn-primary">
-            Launch Mission Planner
-          </Link>
-          <Link to="/methodology" className="btn btn-ghost">
-            View Methodology
-          </Link>
+    <div className="mission-page">
+      <section className="mission-hero">
+        <div className="mission-hero__copy">
+          <p className="eyebrow">LAEP / Lunar Autonomous Exploration & Planning</p>
+          <h1>Read the terrain.<br /><em>Respect the uncertainty.</em></h1>
+          <p className="mission-hero__lede">A planetary intelligence interface for examining lunar south-polar reference targets, their supporting evidence, and operational constraints.</p>
+          <div className="mission-hero__actions">
+            <Link className="button button--primary" to="/explorer">Enter the Explorer <span aria-hidden="true">↓</span></Link>
+            <a className="button button--quiet" href="#evidence">Inspect reference evidence</a>
+          </div>
+          <div className="mission-hero__metadata">
+            <DataStateBadge state={status} detail={craterData.meta?.provenance} />
+            <span>South polar reference targets</span>
+          </div>
         </div>
+        <MoonHero craters={craterData.craters} selectedCrater={selectedCrater} onSelect={setSelectedCrater} />
       </section>
 
-      {/* ── Telemetry Strip ────────────────────────────────────────── */}
-      <div className="stats-strip">
-        {[
-          { label: 'Global Craters Mapped', value: '1,296,796', unit: 'Robbins DB' },
-          { label: 'Screened Polar Targets', value: '6,625', unit: 'sub-craters' },
-          { label: 'Peak Radar CPR', value: '1.95', unit: 'Faustini F2' },
-          { label: 'Est. Deposit Mass', value: stats ? `${Math.round(stats.ice_coverage_km2 * 1e6 * 2.5 * 0.056 * 917 / 1000).toLocaleString()}` : '12,142,707', unit: 'Metric Tons' },
-        ].map(s => (
-          <div className="stat-card" key={s.label}>
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value">{s.value}<span className="stat-unit">{s.unit}</span></div>
-          </div>
-        ))}
-      </div>
+      <section className="mission-statement" aria-labelledby="mission-statement-title">
+        <p className="eyebrow">A scientific interface, not a claim engine</p>
+        <h2 id="mission-statement-title">From remote sensing to <em>decision context.</em></h2>
+        <p>Every LAEP view must say what it knows, how it was produced, and what it cannot establish. The system separates curated reference data, derived analysis, simulations, and unavailable products.</p>
+      </section>
 
-      {/* ── Pipeline Phases ────────────────────────────────────────── */}
-      <div className="phases-section">
-        <h2 className="section-title">The 5-Stage Scientific Architecture</h2>
-        <p className="section-subtitle">
-          From raw Chandrayaan-2 polarimetric radar backscatter to an autonomous rover traversal trajectory.
-        </p>
-        <div className="phases-grid">
-          {PHASES.map(p => (
-            <div className="phase-card" key={p.num}>
-              <div className="phase-num">Stage {p.num}</div>
-              <div className="phase-icon">{p.num}</div>
-              <div className="phase-title">{p.title}</div>
-              <div className="phase-desc">{p.desc}</div>
+      <section className="crater-intelligence" id="evidence" aria-labelledby="crater-intelligence-title">
+        <div className="section-heading">
+          <div><p className="eyebrow">Reference targets</p><h2 id="crater-intelligence-title">Crater intelligence</h2></div>
+          <DataStateBadge state={status} detail={craterData.meta?.provenance} />
+        </div>
+        {error ? <div className="notice notice--error" role="alert">Reference targets could not be loaded: {error}</div> : (
+          <div className="crater-intelligence__layout">
+            <div className="target-list" role="list" aria-label="Available crater reference targets">
+              {craterData.craters.length === 0 ? <div className="notice" role="status">Loading available reference targets…</div> : craterData.craters.map((crater) => (
+                <button className={`target-list__item ${selectedCrater?.id === crater.id ? 'is-selected' : ''}`} type="button" key={crater.id} onClick={() => setSelectedCrater(crater)} role="listitem">
+                  <span className="target-list__index">{crater.id}</span>
+                  <span><strong>{displayCraterName(crater.name)}</strong><small>{Math.abs(crater.lat).toFixed(2)}° {crater.lat < 0 ? 'S' : 'N'} · {crater.lon.toFixed(2)}° E</small></span>
+                  <span aria-hidden="true">↗</span>
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-
-        {/* ── Benchmark Craters ─────────────────────────────────────── */}
-        <div style={{ marginTop: 56 }}>
-          <h2 className="section-title">Peer-Reviewed Ground Truth Benchmark Craters</h2>
-          <p className="section-subtitle">
-            Ground-truth craters verified by the Physical Research Laboratory (PRL, ISRO Ahmedabad) in <em>npj Space Exploration (May 2026)</em>.
-          </p>
-
-          <div className="benchmarks-grid">
-            {benchmarks.slice(0, 4).map(c => (
-              <div className="benchmark-card" key={c.id}>
-                <div className="benchmark-header">
-                  <span className="benchmark-title">{c.name}</span>
-                  <span className={`benchmark-badge ${c.status}`}>
-                    {c.status === 'positive' ? 'ICE VERIFIED' : (c.status === 'partial' ? 'CANDIDATE' : 'CONTROL')}
-                  </span>
-                </div>
-                <div className="benchmark-metrics">
-                  <div className="benchmark-metric-item">
-                    <span className="benchmark-metric-label">Peak CPR</span>
-                    <span className="benchmark-metric-value" style={{ color: 'var(--c-ice)' }}>{c.peak_cpr}</span>
-                  </div>
-                  <div className="benchmark-metric-item">
-                    <span className="benchmark-metric-label">DOP</span>
-                    <span className="benchmark-metric-value">{c.dop}</span>
-                  </div>
-                  <div className="benchmark-metric-item">
-                    <span className="benchmark-metric-label">Diameter</span>
-                    <span className="benchmark-metric-value">{c.diameter_km} km</span>
-                  </div>
-                </div>
-                <div className="benchmark-desc">{c.summary}</div>
-              </div>
-            ))}
+            <CraterInspector crater={selectedCrater} state={status} onExplore={() => { window.location.assign('/explorer'); }} />
           </div>
-        </div>
+        )}
+      </section>
 
-        {/* ── Sensor Suite ─────────────────────────────────────────── */}
-        <div style={{ marginTop: 48 }}>
-          <h2 className="section-title">Integrated Sensor Suite</h2>
-          <p className="section-subtitle">Multi-instrument data products from Chandrayaan-2 and NASA missions.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14 }}>
-            {[
-              { label: 'DFSAR (L & S Band)', note: 'Dual Frequency SAR, 2.5m - 25m', source: 'ISRO PRADAN', color: 'var(--c-ice)' },
-              { label: 'OHRC 0.25m Optical', note: 'Sub-meter boulder & crater mapping', source: 'ISRO PRADAN', color: 'var(--c-cyan)' },
-              { label: 'TMC-2 / LOLA DEM', note: 'High-precision stereo elevation', source: 'NASA / ISRO', color: 'var(--c-warning)' },
-              { label: 'IIRS Hyperspectral', note: '2.8 - 3.0 um H2O absorption cubes', source: 'ISRO PRADAN', color: 'var(--c-safe)' },
-            ].map(d => (
-              <div key={d.label} className="stat-card">
-                <div className="stat-label">{d.source}</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.88rem', color: d.color, margin: '5px 0' }}>{d.label}</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--c-text-muted)' }}>{d.note}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <section className="narrative-grid" aria-labelledby="narrative-title">
+        <div className="narrative-grid__intro"><p className="eyebrow">The LAEP sequence</p><h2 id="narrative-title">Observe. Interpret. Plan.</h2><p>A deliberate progression keeps observations, inferences, and operational choices legible rather than collapsing them into a single score.</p></div>
+        <ol>
+          {NARRATIVE_STEPS.map(([number, title, description]) => <li key={number}><span>{number}</span><div><h3>{title}</h3><p>{description}</p></div></li>)}
+        </ol>
+      </section>
+
+      <section className="mission-cta"><p className="eyebrow">Spatial workbench</p><h2>Move from an orbital reference to a working map.</h2><p>Use the Explorer to inspect layers, choose start and target coordinates, and generate a route only when its data state is explicit.</p><Link className="button button--primary" to="/explorer">Open South Polar Explorer <span aria-hidden="true">→</span></Link></section>
     </div>
   );
 }

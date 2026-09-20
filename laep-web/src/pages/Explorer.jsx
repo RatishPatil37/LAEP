@@ -1,13 +1,14 @@
 /**
  * Explorer.jsx — Mission Planner & South Pole Lunar Navigator.
  * Integrates:
- * - 8 Peer-Reviewed Ground Truth Benchmark Craters (Sinha et al. 2026).
+ * - Curated benchmark crater reference set.
  * - Custom Lat/Lon coordinate input boxes for dynamic pathfinding and regional ice analysis.
  * - 3D Volumetric Ice & Mass Estimation (2D Simpson's Rule).
  * - Kinematic elevation profile & energy readout.
  * - Full multi-format export (GeoJSON, KML, CSV).
  */
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { displayCraterName } from '../lib/crater';
 import MoonMap, { LAYER_IDS } from '../components/MoonMap';
 import {
   findPath,
@@ -19,6 +20,8 @@ import {
   getIceHeatmapUrl,
   getCH2Footprints
 } from '../api/laepApi';
+import { getApiStatus } from '../api/laepApi';
+import DataStateBadge from '../components/scientific/DataStateBadge';
 import '../styles/map.css';
 
 const LAYER_DEFS = [
@@ -72,9 +75,14 @@ export default function Explorer() {
   const [volumetricResult, setVolumetricResult] = useState(null);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState(null);
+  const [apiStatus, setApiStatus]       = useState({ state: 'unavailable', message: 'Checking analysis API…' });
+  const [simulationMode, setSimulationMode] = useState(false);
+  const [routeMeta, setRouteMeta]       = useState(null);
+  const [overlayUrls, setOverlayUrls]   = useState({ ice: null, hazard: null });
 
   // ── On mount: Load ground truth benchmarks & Robbins sub-craters ──────
   useEffect(() => {
+    getApiStatus().then(setApiStatus);
     getBenchmarkCraters()
       .then(res => setBenchmarks(res.craters || []))
       .catch(() => {});
@@ -88,10 +96,17 @@ export default function Explorer() {
       .catch(() => {});
 
     // Initial volumetric estimate for Faustini region
-    calculateCustomRegionIce({ lonMin: 80.0, lonMax: 85.0, latMin: -88.0, latMax: -87.0 })
-      .then(res => setVolumetricResult(res.volumetric))
-      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (apiStatus.state !== 'real') return;
+    const ice = getIceHeatmapUrl();
+    const hazard = getHazardMapUrl(wSlope, wShadow, maxSlope);
+    setOverlayUrls({ ice, hazard });
+    calculateCustomRegionIce({ lonMin: 80.0, lonMax: 85.0, latMin: -88.0, latMax: -87.0 })
+      .then(res => setVolumetricResult({ ...res.volumetric, meta: res.meta }))
+      .catch(() => {});
+  }, [apiStatus.state]); // Load derived initial analysis only when the API is confirmed reachable.
 
   // ── Map click handler — explicit state machine ───────────────────────
   const handleMapClick = useCallback(([lon, lat]) => {
@@ -138,16 +153,18 @@ export default function Explorer() {
       const result = await findPath({
         startLon: sPt[0], startLat: sPt[1],
         goalLon:  gPt[0],  goalLat:  gPt[1],
-        wSlope, wShadow, maxSlope,
+        wSlope, wShadow, maxSlope, simulationMode,
       });
 
       mapRef.current?.addPathLayer(result.path);
       setPathResult(result.stats);
+      setRouteMeta(result.meta);
       // BUG-21 fix: refresh overlays after weights may have changed
-      mapRef.current?.updateOverlays(
-        `/api/hazard-map?w_slope=${wSlope}&w_shadow=${wShadow}&max_slope=${maxSlope}`,
-        '/api/ice-detection'
-      );
+      if (apiStatus.state === 'real') {
+        const nextOverlays = { hazard: getHazardMapUrl(wSlope, wShadow, maxSlope), ice: getIceHeatmapUrl() };
+        setOverlayUrls(nextOverlays);
+        mapRef.current?.updateOverlays(nextOverlays.hazard, nextOverlays.ice);
+      }
 
       // Trigger automatic volumetric estimate for the trajectory bounding box
       const minLon = Math.min(sPt[0], gPt[0]) - 0.5;
@@ -156,7 +173,7 @@ export default function Explorer() {
       const maxLat = Math.max(sPt[1], gPt[1]) + 0.2;
 
       calculateCustomRegionIce({ lonMin: minLon, lonMax: maxLon, latMin: minLat, latMax: maxLat })
-        .then(res => setVolumetricResult(res.volumetric))
+        .then(res => setVolumetricResult({ ...res.volumetric, meta: res.meta }))
         .catch(() => {});
 
     } catch (e) {
@@ -164,7 +181,7 @@ export default function Explorer() {
     } finally {
       setLoading(false);
     }
-  }, [start, goal, wSlope, wShadow, maxSlope]);
+  }, [start, goal, wSlope, wShadow, maxSlope, simulationMode, apiStatus.state]);
 
   // ── Apply Custom Coordinates ──────────────────────────────────────────
   const handleApplyCustomCoords = () => {
@@ -213,12 +230,16 @@ export default function Explorer() {
       setError('Please enter valid bounding box coordinates.');
       return;
     }
+    if (apiStatus?.state !== 'real' && !simulationMode) {
+      setError('Regional estimation requires an available analysis API. Enable simulation preview to generate a clearly labelled preview.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
     try {
       const res = await calculateCustomRegionIce({ lonMin: loMin, lonMax: loMax, latMin: laMin, latMax: laMax });
-      setVolumetricResult(res.volumetric);
+      setVolumetricResult({ ...res.volumetric, meta: res.meta });
       mapRef.current?.flyTo([(loMin + loMax) / 2, (laMin + laMax) / 2], 6);
     } catch (e) {
       setError(e.message);
@@ -227,7 +248,7 @@ export default function Explorer() {
     }
   };
 
-  // ── Select Ground Truth Benchmark Crater Preset ───────────────────────
+  // ── Select benchmark crater preset ────────────────────────────────────
   const handleSelectBenchmark = (crater) => {
     setSelectedCrater(crater);
     // BUG-16 fix: scale rim offset proportional to crater diameter
@@ -246,7 +267,11 @@ export default function Explorer() {
 
     mapRef.current?.setMarkers(rimStart, floorGoal);
     mapRef.current?.flyTo([crater.lon, crater.lat], 7);
-    handlePathfind(rimStart, floorGoal);
+    if (apiStatus?.state === 'real' || simulationMode) {
+      handlePathfind(rimStart, floorGoal);
+    } else {
+      setError('Waypoints set. Enable simulation preview to generate a labelled route preview, or configure the analysis API.');
+    }
   };
 
   // ── Layer toggle ───────────────────────────────────────────────────────
@@ -259,6 +284,7 @@ export default function Explorer() {
     setStart(null); setGoal(null);
     setMode(MODE.NONE);
     setPathResult(null); setError(null);
+    setRouteMeta(null);
     setSelectedCrater(null);
     mapRef.current?.setMarkers(null, null);
     mapRef.current?.addPathLayer(null);
@@ -341,16 +367,17 @@ export default function Explorer() {
   const modeLabel =
     mode === MODE.START ? 'Click map to set START waypoint' :
     mode === MODE.GOAL  ? 'Click map to set GOAL ice target'  :
-    'Select waypoints on map or choose a Ground Truth Crater below';
+    'Select waypoints on map or choose a reference crater below';
 
   return (
     <div className="explorer-layout">
       {/* ── Mission Control Sidebar ───────────────────────────────────── */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <div className="sidebar-title">Mission Control</div>
+          <div className="sidebar-title">South Polar Explorer</div>
           <div className="sidebar-subtitle">
-            <span className="status-dot" /> DFSAR Polarimetry Engine — Active
+            <DataStateBadge state={apiStatus.state} detail={apiStatus.message} />
+            <span>{apiStatus.message}</span>
           </div>
         </div>
 
@@ -392,6 +419,11 @@ export default function Explorer() {
           {/* ════════ TAB 1: WAYPOINTS & ROVER TRAVERSAL ════════ */}
           {activeTab === TABS.WAYPOINTS && (
             <>
+              <div className="data-disclosure">
+                <div><span>Route engine</span><DataStateBadge state={routeMeta?.state ?? apiStatus.state} detail={routeMeta?.provenance || apiStatus.message} /></div>
+                <p>{simulationMode ? 'Simulation preview uses synthetic terrain and must not be treated as a mission result.' : 'A route requires the analysis API. Simulation preview is opt-in when that service is unavailable.'}</p>
+                <label className="simulation-toggle"><input type="checkbox" checked={simulationMode} onChange={(event) => setSimulationMode(event.target.checked)} /> <span>Enable simulation preview</span></label>
+              </div>
               <div className="ctrl-group">
                 <div className="ctrl-group-title">
                   <span>Navigation Points</span>
@@ -458,7 +490,7 @@ export default function Explorer() {
                   onClick={() => handlePathfind()}
                   disabled={!start || !goal || loading}
                 >
-                  {loading ? 'Computing...' : 'Plot Rover Route'}
+                    {loading ? 'Computing…' : simulationMode ? 'Generate simulated route' : 'Generate route'}
                 </button>
                 <button className="btn btn-ghost" onClick={handleReset}>
                   Reset
@@ -470,7 +502,7 @@ export default function Explorer() {
                 <div className="ctrl-group" style={{ borderColor: 'var(--c-ice)' }}>
                   <div className="ctrl-group-title" style={{ color: 'var(--c-ice)' }}>
                     <span>Rover Kinematic Telemetry</span>
-                    <span style={{ fontSize: '0.62rem' }}>A* OPTIMAL</span>
+                    <DataStateBadge state={routeMeta?.state ?? 'unavailable'} detail={routeMeta?.provenance} />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
                     <div className="vol-stat-card">
@@ -552,7 +584,7 @@ export default function Explorer() {
                     onClick={() => handleSelectBenchmark(c)}
                   >
                     <div>
-                      <div className="preset-name">{c.name}</div>
+                      <div className="preset-name">{displayCraterName(c.name)}</div>
                       <div className="preset-meta">
                         {c.lon}&deg;, {c.lat}&deg; | Diam: {c.diameter_km}km | Peak CPR: {c.peak_cpr}
                       </div>
@@ -567,7 +599,7 @@ export default function Explorer() {
               {selectedCrater && (
                 <div style={{ background: 'var(--c-surface3)', padding: 9, borderRadius: 'var(--r-sm)', marginTop: 6 }}>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.76rem', color: selectedCrater.color, fontWeight: 600 }}>
-                    {selectedCrater.name}
+                    {displayCraterName(selectedCrater.name)}
                   </div>
                   <div style={{ fontSize: '0.73rem', color: 'var(--c-text-dim)', marginTop: 3, lineHeight: 1.5 }}>
                     {selectedCrater.summary}
@@ -665,12 +697,10 @@ export default function Explorer() {
 
           {/* ════════ 3D VOLUMETRIC READOUT ════════ */}
           {volumetricResult && (
-            <div className="volumetric-panel">
-              <div className="vol-header">
-                <span className="vol-title">3D Volumetric Deposit Model</span>
-                <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--c-ice)' }}>
-                  SIMPSON 2D | ~{volumetricResult.psr_equilibrium_temp_k}K
-                </span>
+              <div className="volumetric-panel">
+                <div className="vol-header">
+                  <span className="vol-title">3D Volumetric Deposit Model</span>
+                  <DataStateBadge state={volumetricResult.meta?.state ?? apiStatus.state} detail={volumetricResult.meta?.provenance} />
               </div>
               <div className="vol-grid">
                 <div className="vol-stat-card">
@@ -723,9 +753,10 @@ export default function Explorer() {
         </div>
 
         {/* OpenLayers Map */}
-        <MoonMap
-          ref={mapRef}
-          layers={layers}
+          <MoonMap
+            ref={mapRef}
+            layers={layers}
+            overlayUrls={overlayUrls}
           onCoordMove={setCoords}
           onMapClick={handleMapClick}
           onSelectCrater={(crater) => {
