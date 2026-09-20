@@ -1,105 +1,103 @@
 import { OrbitControls } from '@react-three/drei';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-function positionFromLunarCoordinates(longitude, latitude, radius = 2.05) {
+const MOON_RADIUS = 2;
+const SOUTH_POLE = new THREE.Vector3(0, -1, 0);
+
+export function positionFromLunarCoordinates(longitude, latitude, radius = MOON_RADIUS) {
   const phi = THREE.MathUtils.degToRad(90 - latitude);
   const theta = THREE.MathUtils.degToRad(longitude + 180);
-  return new THREE.Vector3(
-    -radius * Math.sin(phi) * Math.cos(theta),
-    radius * Math.cos(phi),
-    radius * Math.sin(phi) * Math.sin(theta),
-  );
+  return new THREE.Vector3(-radius * Math.sin(phi) * Math.cos(theta), radius * Math.cos(phi), radius * Math.sin(phi) * Math.sin(theta));
 }
 
-function Moon({ craters, selectedCrater, onSelect }) {
-  const group = useRef();
-  const targetRotation = useRef(0.18);
-  const [hoveredId, setHoveredId] = useState(null);
+function seededRandom(seed) {
+  let value = seed;
+  return () => { value = (value * 1664525 + 1013904223) % 4294967296; return value / 4294967296; };
+}
 
-  useEffect(() => {
-    if (selectedCrater) {
-      targetRotation.current = THREE.MathUtils.degToRad(-selectedCrater.lon + 90);
-    }
-  }, [selectedCrater]);
+// This compact, deterministic texture is visual orientation only; it is not lunar science imagery.
+function createLunarSurfaceMaps() {
+  const size = 512;
+  const colorCanvas = document.createElement('canvas');
+  const reliefCanvas = document.createElement('canvas');
+  colorCanvas.width = reliefCanvas.width = size;
+  colorCanvas.height = reliefCanvas.height = size;
+  const color = colorCanvas.getContext('2d');
+  const relief = reliefCanvas.getContext('2d');
+  const random = seededRandom(24071969);
+  color.fillStyle = '#84847f'; color.fillRect(0, 0, size, size);
+  relief.fillStyle = '#6f6f6f'; relief.fillRect(0, 0, size, size);
+  for (let i = 0; i < 4800; i += 1) {
+    const x = random() * size; const y = random() * size; const shade = 105 + Math.floor(random() * 48);
+    color.fillStyle = `rgba(${shade},${shade},${Math.max(90, shade - 5)},${0.02 + random() * 0.07})`;
+    color.fillRect(x, y, 1 + random() * 2, 1 + random() * 2);
+  }
+  for (let i = 0; i < 180; i += 1) {
+    const x = random() * size; const y = random() * size; const radius = 2 + Math.pow(random(), 2.6) * 31;
+    const crater = color.createRadialGradient(x - radius * 0.25, y - radius * 0.25, radius * 0.08, x, y, radius);
+    crater.addColorStop(0, 'rgba(182,181,174,.22)'); crater.addColorStop(.45, 'rgba(94,94,91,.08)'); crater.addColorStop(.78, 'rgba(48,48,47,.22)'); crater.addColorStop(1, 'rgba(151,150,144,.08)');
+    color.fillStyle = crater; color.beginPath(); color.ellipse(x, y, radius, radius * (.72 + random() * .28), random() * Math.PI, 0, Math.PI * 2); color.fill();
+    const bump = relief.createRadialGradient(x, y, radius * .1, x, y, radius);
+    bump.addColorStop(0, 'rgb(48,48,48)'); bump.addColorStop(.65, 'rgb(96,96,96)'); bump.addColorStop(.82, 'rgb(170,170,170)'); bump.addColorStop(1, 'rgb(112,112,112)');
+    relief.fillStyle = bump; relief.beginPath(); relief.ellipse(x, y, radius, radius * .78, 0, 0, Math.PI * 2); relief.fill();
+  }
+  const map = new THREE.CanvasTexture(colorCanvas); const bumpMap = new THREE.CanvasTexture(reliefCanvas);
+  map.colorSpace = THREE.SRGBColorSpace; map.wrapS = bumpMap.wrapS = THREE.RepeatWrapping; map.wrapT = bumpMap.wrapT = THREE.ClampToEdgeWrapping; map.anisotropy = bumpMap.anisotropy = 2;
+  return { map, bumpMap };
+}
 
+function CameraRig({ activeFocus, controlsRef, reducedMotion }) {
+  const { camera } = useThree();
+  const destination = useMemo(() => new THREE.Vector3(), []);
+  const lookAt = useMemo(() => new THREE.Vector3(), []);
   useFrame((_, delta) => {
-    if (!group.current) return;
-    const idleRotation = selectedCrater ? targetRotation.current : group.current.rotation.y + delta * 0.022;
-    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, idleRotation, 2.5, delta);
+    const focus = activeFocus?.type === 'crater' ? positionFromLunarCoordinates(activeFocus.crater.lon, activeFocus.crater.lat) : activeFocus?.type === 'south-pole' ? SOUTH_POLE.clone().multiplyScalar(MOON_RADIUS) : new THREE.Vector3();
+    const isGlobal = !activeFocus || activeFocus.type === 'global';
+    destination.copy(focus).normalize().multiplyScalar(isGlobal ? 6.15 : 4.75);
+    if (isGlobal) destination.set(.7, .45, 6.05);
+    lookAt.copy(focus).multiplyScalar(isGlobal ? 0 : .83);
+    const damping = reducedMotion ? 1 : 1 - Math.exp(-delta * 3.5);
+    camera.position.lerp(destination, damping);
+    controlsRef.current?.target.lerp(lookAt, damping);
+    controlsRef.current?.update();
   });
-
-  return (
-    <group ref={group} rotation={[THREE.MathUtils.degToRad(-12), 0.18, 0]}>
-      <mesh castShadow receiveShadow>
-        <sphereGeometry args={[2, 96, 64]} />
-        <meshStandardMaterial color="#a7a6a0" roughness={0.96} metalness={0.02} />
-      </mesh>
-      <mesh scale={1.004}>
-        <sphereGeometry args={[2, 96, 64]} />
-        <meshBasicMaterial color="#f4f4f0" transparent opacity={0.035} side={THREE.BackSide} />
-      </mesh>
-      {craters.map((crater) => {
-        const position = positionFromLunarCoordinates(crater.lon, crater.lat);
-        const isSelected = selectedCrater?.id === crater.id;
-        const isHovered = hoveredId === crater.id;
-        return (
-          <group key={crater.id} position={position}>
-            <mesh
-              onClick={(event) => { event.stopPropagation(); onSelect(crater); }}
-              onPointerOver={(event) => { event.stopPropagation(); setHoveredId(crater.id); document.body.style.cursor = 'crosshair'; }}
-              onPointerOut={() => { setHoveredId(null); document.body.style.cursor = 'auto'; }}
-              scale={isSelected || isHovered ? 1.5 : 1}
-            >
-              <sphereGeometry args={[0.045, 20, 20]} />
-              <meshBasicMaterial color={crater.status === 'negative' ? '#ff6b5e' : '#b8f0ff'} />
-            </mesh>
-            {(isSelected || isHovered) && (
-              <mesh rotation={[Math.PI / 2, 0, 0]}>
-                <ringGeometry args={[0.075, 0.09, 32]} />
-                <meshBasicMaterial color="#ffc857" transparent opacity={0.9} side={THREE.DoubleSide} />
-              </mesh>
-            )}
-          </group>
-        );
-      })}
-      <group position={[0, -2.03, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.018, 0.018, 0.28, 16]} />
-          <meshBasicMaterial color="#ffc857" />
-        </mesh>
-      </group>
-    </group>
-  );
+  return null;
 }
 
-function Scene({ craters, selectedCrater, onSelect }) {
-  return (
-    <>
-      <color attach="background" args={['#050608']} />
-      <ambientLight intensity={0.16} />
-      <directionalLight position={[4, 3, 5]} intensity={2.8} color="#fff7df" castShadow />
-      <directionalLight position={[-5, -1, -3]} intensity={0.18} color="#7dd3fc" />
-      <Moon craters={craters} selectedCrater={selectedCrater} onSelect={onSelect} />
-      <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={0.65} maxPolarAngle={2.5} rotateSpeed={0.35} />
-    </>
-  );
+function Reticle({ position, selected, hovered, color, onClick, onHover, onBlur, size = .085 }) {
+  const normal = position.clone().normalize();
+  const quaternion = useMemo(() => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal), [normal.x, normal.y, normal.z]);
+  return <group position={position.clone().addScaledVector(normal, .028)} quaternion={quaternion} scale={selected ? 1.35 : hovered ? 1.18 : 1}>
+    <mesh onClick={onClick} onPointerOver={onHover} onPointerOut={onBlur}><circleGeometry args={[size * 1.5, 20]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} /></mesh>
+    <mesh><ringGeometry args={[size * .72, size, 28]} /><meshBasicMaterial color={color} transparent opacity={selected ? .95 : hovered ? .82 : .54} side={THREE.DoubleSide} depthWrite={false} /></mesh>
+    <mesh position={[0, 0, .002]}><circleGeometry args={[size * .13, 16]} /><meshBasicMaterial color={color} transparent opacity={.9} side={THREE.DoubleSide} depthWrite={false} /></mesh>
+  </group>;
 }
 
-function WebGLFallback() {
-  return <div className="moon-webgl-fallback">3D lunar context is unavailable on this device. Use the target list to inspect reference craters.</div>;
+function Moon({ craters, activeFocus, onFocus, onHoverFocus, reducedMotion }) {
+  const moon = useRef(); const [hovered, setHovered] = useState(null); const { map, bumpMap } = useMemo(createLunarSurfaceMaps, []);
+  useFrame((_, delta) => {
+    if (!moon.current) return;
+    if (activeFocus?.type === 'global' && !reducedMotion) moon.current.rotation.y += delta * .006;
+    else moon.current.rotation.y = THREE.MathUtils.damp(moon.current.rotation.y, 0, 4, delta);
+  });
+  const cursor = (value) => { document.body.style.cursor = value; };
+  return <group ref={moon}>
+    <mesh onClick={() => onFocus({ type: 'global' })} receiveShadow><sphereGeometry args={[MOON_RADIUS, 144, 96]} /><meshStandardMaterial map={map} bumpMap={bumpMap} bumpScale={.075} roughness={.98} metalness={0} color="#deddd5" /></mesh>
+    {craters.map((crater) => { const selected = activeFocus?.type === 'crater' && activeFocus.crater.id === crater.id; const isHovered = hovered === crater.id; return <Reticle key={crater.id} position={positionFromLunarCoordinates(crater.lon, crater.lat)} selected={selected} hovered={isHovered} color={crater.status === 'negative' ? '#f29b8d' : '#b8f0ff'} size={crater.id === 'CABEUS' ? .115 : .075} onClick={(event) => { event.stopPropagation(); onFocus({ type: 'crater', crater }); }} onHover={(event) => { event.stopPropagation(); setHovered(crater.id); onHoverFocus?.({ type: 'crater', crater }); cursor('pointer'); }} onBlur={() => { setHovered(null); onHoverFocus?.(null); cursor('auto'); }} />; })}
+    <Reticle position={SOUTH_POLE.clone().multiplyScalar(MOON_RADIUS)} selected={activeFocus?.type === 'south-pole'} hovered={hovered === 'south-pole'} color="#ffc857" size={.11} onClick={(event) => { event.stopPropagation(); onFocus({ type: 'south-pole' }); }} onHover={(event) => { event.stopPropagation(); setHovered('south-pole'); onHoverFocus?.({ type: 'south-pole' }); cursor('pointer'); }} onBlur={() => { setHovered(null); onHoverFocus?.(null); cursor('auto'); }} />
+  </group>;
 }
 
-export default function MoonScene(props) {
-  return (
-    <Canvas
-      dpr={[1, 1.5]}
-      camera={{ position: [0, 0.05, 5.5], fov: 35 }}
-      fallback={<WebGLFallback />}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
-    >
-      <Scene {...props} />
-    </Canvas>
-  );
+function Scene({ craters, activeFocus, onFocus, onHoverFocus, reducedMotion, onReady }) {
+  const controlsRef = useRef(); useEffect(() => { onReady?.(); }, [onReady]);
+  return <><color attach="background" args={['#050608']} /><hemisphereLight args={['#e8eef2', '#121416', .26]} /><directionalLight position={[5.5, 3.5, 4.5]} intensity={2.15} color="#fff1d7" /><directionalLight position={[-4, -1.5, -3]} intensity={.08} color="#9fc7db" /><Moon craters={craters} activeFocus={activeFocus} onFocus={onFocus} onHoverFocus={onHoverFocus} reducedMotion={reducedMotion} /><CameraRig activeFocus={activeFocus} controlsRef={controlsRef} reducedMotion={reducedMotion} /><OrbitControls ref={controlsRef} enablePan={false} enableZoom minDistance={4.25} maxDistance={7.4} minPolarAngle={.3} maxPolarAngle={2.82} rotateSpeed={.3} zoomSpeed={.55} enableDamping dampingFactor={.08} /></>;
+}
+
+function WebGLFallback() { return <div className="moon-webgl-fallback" role="status"><strong>Spatial preview unavailable</strong><span>This browser cannot create the lunar WebGL scene. The reference target list remains available below.</span></div>; }
+
+export default function MoonScene({ craters, activeFocus, onFocus, onHoverFocus, reducedMotion, onReady, mobile }) {
+  return <Canvas dpr={mobile ? [1, 1.15] : [1, 1.65]} camera={{ position: [.7, .45, 6.05], fov: mobile ? 38 : 34 }} fallback={<WebGLFallback />} gl={{ antialias: !mobile, powerPreference: 'high-performance', alpha: false }}><Scene craters={craters} activeFocus={activeFocus} onFocus={onFocus} onHoverFocus={onHoverFocus} reducedMotion={reducedMotion} onReady={onReady} /></Canvas>;
 }

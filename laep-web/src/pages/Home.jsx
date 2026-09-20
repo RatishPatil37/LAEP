@@ -45,7 +45,7 @@ export default function Home() {
             <span>South polar reference targets</span>
           </div>
         </div>
-        <MoonHero craters={craterData.craters} selectedCrater={selectedCrater} onSelect={setSelectedCrater} />
+        <MoonHero craters={craterData.craters} selectedCrater={selectedCrater} onSelect={setSelectedCrater} state={status} />
       </section>
 
       <section className="mission-statement" aria-labelledby="mission-statement-title">
