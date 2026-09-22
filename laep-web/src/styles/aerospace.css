@@ -1,0 +1,363 @@
+/* ── aerospace.css — Futuristic Planetary Mission UI Systems ── */
+
+/* ── Technical Grid & Reticle Systems ── */
+.aerospace-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.hud-corner-bracket {
+  position: relative;
+}
+
+.hud-corner-bracket::before,
+.hud-corner-bracket::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+}
+
+.hud-corner-bracket::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--c-ice);
+  border-left: 2px solid var(--c-ice);
+}
+
+.hud-corner-bracket::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--c-ice);
+  border-right: 2px solid var(--c-ice);
+}
+
+/* ── Radar Sweep Effect ── */
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.radar-sweep-cone {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 0deg, rgba(125, 211, 252, 0) 0deg, rgba(125, 211, 252, 0.25) 60deg, rgba(125, 211, 252, 0.45) 61deg, transparent 62deg);
+  animation: radarSweep 4s linear infinite;
+}
+
+/* ── Wavefront Pulse Animation for Route Generation ── */
+@keyframes wavefrontPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(45, 212, 191, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(45, 212, 191, 0);
+  }
+}
+
+.wavefront-pulse {
+  animation: wavefrontPulse 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+/* ── Giant Number Telemetry ── */
+.giant-number {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 8vw, 6.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--c-text);
+}
+
+.giant-number-unit {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--c-ice);
+  text-transform: uppercase;
+  margin-left: 0.35rem;
+}
+
+/* ── Scientific Evidence Stack ── */
+.evidence-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.evidence-card {
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  transition: var(--t-fast);
+}
+
+.evidence-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(184, 240, 255, 0.3);
+}
+
+.evidence-card__index {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--c-ice);
+  padding: 0.15rem 0.4rem;
+  background: rgba(184, 240, 255, 0.08);
+  border-radius: var(--r-sm);
+}
+
+.evidence-card__title {
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.evidence-card__desc {
+  font-size: 0.76rem;
+  color: var(--c-text-dim);
+}
+
+.evidence-card__status {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--c-success);
+}
+
+/* ── Live Operational Status Banner ── */
+.operational-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(11, 13, 16, 0.85);
+  border-bottom: 1px solid var(--c-border);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: var(--c-text-dim);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.operational-banner__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.operational-banner__val {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.operational-banner__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-success);
+  box-shadow: 0 0 6px var(--c-success);
+}
+
+/* ── Artificial Horizon / Inclinometer Dial ── */
+.inclinometer-dial {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 1px solid var(--c-border2);
+  background: radial-gradient(circle at center, rgba(18, 21, 26, 0.8), rgba(5, 6, 8, 0.95));
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+}
+
+.inclinometer-crosshair {
+  position: absolute;
+  width: 80%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.inclinometer-crosshair--v {
+  width: 1px;
+  height: 80%;
+}
+
+.inclinometer-bubble {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--c-ice);
+  box-shadow: 0 0 8px var(--c-ice);
+  transition: transform 0.1s linear;
+}
+
+/* ── Split-Screen Comparison Curtain Slider ── */
+.comparison-curtain {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+
+.comparison-curtain__divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--c-ice);
+  box-shadow: 0 0 10px var(--c-ice);
+  cursor: ew-resize;
+  z-index: 10;
+}
+
+.comparison-curtain__handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--c-surface);
+  border: 2px solid var(--c-ice);
+  color: var(--c-ice);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  box-shadow: 0 0 12px rgba(184, 240, 255, 0.4);
+}
+
+/* ── Command Palette (Ctrl+K) ── */
+.command-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 8, 0.75);
+  backdrop-filter: blur(12px);
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+}
+
+.command-palette-modal {
+  width: 100%;
+  max-width: 620px;
+  background: rgba(14, 17, 22, 0.95);
+  border: 1px solid var(--c-border2);
+  border-radius: var(--r-md);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(125, 211, 252, 0.12);
+  overflow: hidden;
+}
+
+.command-palette-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.command-palette-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  outline: none;
+}
+
+.command-palette-input::placeholder {
+  color: var(--c-text-muted);
+}
+
+.command-palette-results {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.command-palette-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--r-sm);
+  color: var(--c-text-dim);
+  font-size: 0.82rem;
+  transition: var(--t-fast);
+  text-align: left;
+}
+
+.command-palette-item:hover,
+.command-palette-item.is-focused {
+  background: rgba(184, 240, 255, 0.08);
+  color: var(--c-text);
+  border-left: 2px solid var(--c-ice);
+}
+
+.command-palette-item__icon {
+  color: var(--c-ice);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.command-palette-item__meta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--c-text-muted);
+}
+
+/* ── Deep Zoom Continuum Widget ── */
+.deep-zoom-widget {
+  display: flex;
+  align-items: center;
+  background: rgba(11, 13, 16, 0.85);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  padding: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+.deep-zoom-step {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--r-sm);
+  color: var(--c-text-dim);
+  transition: var(--t-fast);
+}
+
+.deep-zoom-step:hover {
+  color: var(--c-text);
+}
+
+.deep-zoom-step.is-active {
+  background: var(--c-ice);
+  color: #050608;
+  font-weight: 600;
+}

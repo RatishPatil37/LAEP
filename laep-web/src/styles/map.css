@@ -198,19 +198,6 @@
   gap: 14px;
 }
 
-.data-disclosure {
-  padding: 11px 12px;
-  border: 1px solid var(--c-border);
-  border-left: 2px solid var(--c-warning);
-  background: rgba(255, 200, 87, 0.035);
-}
-
-.data-disclosure > div { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-.data-disclosure > div > span { color: var(--c-text); font: 600 .67rem var(--font-mono); text-transform: uppercase; letter-spacing: .07em; }
-.data-disclosure p { margin: 8px 0; color: var(--c-text-dim); font-size: .73rem; line-height: 1.45; }
-.simulation-toggle { display: flex; gap: 7px; align-items: center; color: var(--c-text); font-size: .72rem; cursor: pointer; }
-.simulation-toggle input { accent-color: var(--c-warning); }
-
 /* ── Control Group Panels ──────────────────────────────────────────────── */
 .ctrl-group {
   background: var(--c-surface2);
@@ -548,7 +535,6 @@
   .map-container {
     min-height: 380px;
     height: 52vh;
-    flex: none;
   }
 
   .coords-overlay {
@@ -563,11 +549,4 @@
     padding: 5px 12px;
     font-size: 0.68rem;
   }
-}
-
-@media (max-width: 420px) {
-  .sidebar { max-height: none; }
-  .sidebar-body { padding: 12px; }
-  .coords-overlay { max-width: calc(100% - 20px); gap: 5px; overflow: hidden; white-space: nowrap; }
-  .coords-item:last-child { display: none; }
 }

@@ -1,30 +1,267 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import DataStateBadge from '../../components/scientific/DataStateBadge';
-import { displayCraterName } from '../../lib/crater';
+import { lazy, Suspense, useCallback, useState } from 'react';
+import MoonScene from './MoonScene';
+import CraterScanDrawer from '../../components/scientific/CraterScanDrawer';
+import { useMissionStore, LAYER_IDS } from '../../stores/useMissionStore';
+import { soundEngine } from '../../lib/soundEffects';
 
-const MoonScene = lazy(() => import('./MoonScene'));
-
-function useMediaQuery(query) {
-  const [matches, setMatches] = useState(() => window.matchMedia?.(query)?.matches ?? false);
-  useEffect(() => { const media = window.matchMedia(query); const update = () => setMatches(media.matches); update(); media.addEventListener('change', update); return () => media.removeEventListener('change', update); }, [query]);
-  return matches;
+function MoonLoading() {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        height: '100%',
+        color: '#9aa0a6',
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontSize: '0.8rem',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div
+          style={{
+            width: '18px',
+            height: '18px',
+            border: '2px solid rgba(184, 240, 255, 0.2)',
+            borderTopColor: '#b8f0ff',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }}
+        />
+        <span>SYNCHRONIZING 3D LUNAR MCMF REFERENCE SPHERE...</span>
+      </div>
+    </div>
+  );
 }
 
-function MoonLoading() { return <div className="moon-loading" role="status"><span>Preparing lunar spatial context</span><i /></div>; }
+export default function MoonHero({ craters = [] }) {
+  const selectedCrater = useMissionStore((s) => s.selectedCrater);
+  const selectCrater = useMissionStore((s) => s.selectCrater);
+  const solarElevation = useMissionStore((s) => s.solarElevation);
+  const setSolarElevation = useMissionStore((s) => s.setSolarElevation);
+  const activeLayer = useMissionStore((s) => s.activeLayer);
+  const setActiveLayer = useMissionStore((s) => s.setActiveLayer);
 
-function FocusPanel({ focus, state, onGlobal }) {
-  if (!focus || focus.type === 'global') return null;
-  const crater = focus.crater; const southPole = focus.type === 'south-pole';
-  const evidence = crater?.status === 'negative' ? 'No supporting evidence in this reference record' : crater?.status === 'partial' ? 'Candidate signal — interpretation remains uncertain' : 'Reference evidence — interpretation remains conditional';
-  return <aside className="moon-focus-panel" aria-live="polite"><button type="button" className="moon-focus-panel__close" onClick={onGlobal} aria-label="Return to global Moon view">×</button><p className="eyebrow">{southPole ? 'Polar reference' : 'Reference target'}</p><h2>{southPole ? 'Lunar South Pole' : displayCraterName(crater.name)}</h2><div className="moon-focus-panel__location"><span>Location</span><strong>{southPole ? '90.00° S · all longitudes' : `${Math.abs(crater.lat).toFixed(2)}° ${crater.lat < 0 ? 'S' : 'N'} · ${crater.lon.toFixed(2)}° E`}</strong></div><DataStateBadge state={southPole ? 'unavailable' : state} detail={southPole ? 'No illumination or terrain product is loaded in this view' : 'Bundled curated reference-crater attributes'} /><dl><div><dt>Evidence</dt><dd>{southPole ? 'Reference targets are shown where their mapped coordinates are available.' : evidence}</dd></div><div><dt>Uncertainty</dt><dd>{southPole ? 'No illumination or terrain layer is available in this hero scene.' : 'Reference attributes do not establish resource quantity or operational suitability.'}</dd></div><div><dt>Provenance</dt><dd>{southPole ? 'Lunar geographic coordinate; target positions from the bundled crater reference set.' : 'Bundled curated benchmark-crater reference set.'}</dd></div><div><dt>Limitations</dt><dd>Surface appearance is visual orientation only, not a scientific terrain or illumination product.</dd></div></dl></aside>;
-}
+  const [focus, setFocus] = useState({ type: 'global' });
+  const [hovered, setHovered] = useState(null);
+  const [ready, setReady] = useState(false);
 
-export default function MoonHero({ craters, selectedCrater, onSelect, state = 'derived' }) {
-  const mobile = useMediaQuery('(max-width: 800px)'); const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const [focus, setFocus] = useState({ type: 'global' }); const [hovered, setHovered] = useState(null); const [ready, setReady] = useState(false);
-  useEffect(() => { if (selectedCrater) setFocus({ type: 'crater', crater: selectedCrater }); }, [selectedCrater]);
-  const setGlobal = useCallback(() => { setFocus({ type: 'global' }); onSelect?.(null); }, [onSelect]);
-  const handleFocus = useCallback((next) => { setFocus(next); if (next.type === 'crater') onSelect?.(next.crater); if (next.type === 'global') onSelect?.(null); }, [onSelect]);
-  const handleHover = useCallback((next) => setHovered(next), []);
-  return <div className={`moon-canvas ${ready ? 'is-ready' : ''}`} aria-label="Interactive lunar reference globe. Select a crater marker or the South Pole reference to inspect available context."><Suspense fallback={<MoonLoading />}><MoonScene craters={craters} activeFocus={focus} onFocus={handleFocus} onHoverFocus={handleHover} reducedMotion={reducedMotion} onReady={() => setReady(true)} mobile={mobile} /></Suspense><div className="moon-canvas__label"><span>{focus.type === 'south-pole' ? 'South Pole focus' : focus.type === 'crater' ? 'Crater focus' : 'Global reference view'}</span><small>Visual orientation only · not a scientific surface product</small></div><div className="moon-canvas__controls" aria-label="Lunar view controls"><button type="button" className={focus.type === 'global' ? 'is-active' : ''} onClick={setGlobal}>Global view</button><button type="button" className={focus.type === 'south-pole' ? 'is-active' : ''} onClick={() => handleFocus({ type: 'south-pole' })}>South Pole</button></div>{hovered && focus.type === 'global' && <div className="moon-canvas__hover" role="status">{hovered.type === 'south-pole' ? 'South Pole · 90.00° S' : `${hovered.crater.id} · ${displayCraterName(hovered.crater.name)}`}</div>}<FocusPanel focus={focus} state={state} onGlobal={setGlobal} /><p className="moon-canvas__a11y">For a fully accessible target list, use the reference-target controls below the Moon.</p></div>;
+  const handleSetGlobal = useCallback(() => {
+    soundEngine.playTelemetryClick();
+    setFocus({ type: 'global' });
+    selectCrater(null);
+  }, [selectCrater]);
+
+  const handleFocus = useCallback(
+    (next) => {
+      setFocus(next);
+      if (next.type === 'crater') selectCrater(next.crater);
+      if (next.type === 'global') selectCrater(null);
+    },
+    [selectCrater]
+  );
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        minHeight: '680px',
+        backgroundColor: '#050608',
+        borderRadius: '4px',
+        overflow: 'hidden',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+      }}
+    >
+      {/* 3D R3F Moon Scene */}
+      <Suspense fallback={<MoonLoading />}>
+        <MoonScene
+          craters={craters}
+          activeFocus={selectedCrater ? { type: 'crater', crater: selectedCrater } : focus}
+          onFocus={handleFocus}
+          onHoverFocus={setHovered}
+          onReady={() => setReady(true)}
+          mobile={false}
+        />
+      </Suspense>
+
+      {/* Top HUD: Spatial Coordinates & View Mode */}
+      <div
+        className="glass-instrument-subtle"
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          padding: '0.5rem 0.85rem',
+          borderRadius: '3px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '0.7rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.2rem',
+          color: '#f4f4f0',
+          pointerEvents: 'none',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#7be495' }} />
+          <span style={{ color: '#7dd3fc', fontWeight: 600 }}>
+            {focus.type === 'south-pole' ? 'POLAR PERSPECTIVE (90.00° S)' : selectedCrater ? `ORBITAL LOCK: ${selectedCrater.name.toUpperCase()}` : 'GLOBAL LUNAR SPHERE (1737.4 km)'}
+          </span>
+        </div>
+        <div style={{ color: '#9aa0a6', fontSize: '0.62rem' }}>
+          CHANDRAYAAN-2 DFSAR INCLINATION 90.0° · ORBIT 100 KM
+        </div>
+      </div>
+
+      {/* Top Right: Camera Presets */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: selectedCrater ? '420px' : '20px',
+          display: 'flex',
+          gap: '0.35rem',
+          zIndex: 10,
+          transition: 'right 250ms ease',
+        }}
+      >
+        <button
+          type="button"
+          className="btn-aerospace"
+          onClick={handleSetGlobal}
+          style={{
+            borderColor: focus.type === 'global' && !selectedCrater ? '#b8f0ff' : 'rgba(255,255,255,0.12)',
+            color: focus.type === 'global' && !selectedCrater ? '#b8f0ff' : '#9aa0a6',
+          }}
+        >
+          GLOBAL ORBIT
+        </button>
+        <button
+          type="button"
+          className="btn-aerospace"
+          onClick={() => handleFocus({ type: 'south-pole' })}
+          style={{
+            borderColor: focus.type === 'south-pole' ? '#ffc857' : 'rgba(255,255,255,0.12)',
+            color: focus.type === 'south-pole' ? '#ffc857' : '#9aa0a6',
+          }}
+        >
+          SOUTH POLE (-90°S)
+        </button>
+      </div>
+
+      {/* Bottom Left: Interactive Solar Terminator Controller */}
+      <div
+        className="glass-instrument"
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          left: '20px',
+          padding: '0.75rem 1rem',
+          borderRadius: '3px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.4rem',
+          width: '260px',
+          fontFamily: "'IBM Plex Mono', monospace",
+          zIndex: 10,
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem' }}>
+          <span style={{ color: '#ffc857' }}>SOLAR ELEVATION:</span>
+          <span style={{ color: '#f4f4f0', fontWeight: 600 }}>{solarElevation.toFixed(1)}°</span>
+        </div>
+        <input
+          type="range"
+          min="0.5"
+          max="12.0"
+          step="0.1"
+          value={solarElevation}
+          onChange={(e) => setSolarElevation(parseFloat(e.target.value))}
+          style={{
+            width: '100%',
+            accentColor: '#ffc857',
+            cursor: 'ew-resize',
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.58rem', color: '#6b7280' }}>
+          <span>POLAR HORIZON (0.5°)</span>
+          <span>HIGH SUN (12.0°)</span>
+        </div>
+      </div>
+
+      {/* Bottom Center: Scientific Layer Filter (Optical / CPR / DOP / Ice) */}
+      <div
+        className="glass-instrument"
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '0.35rem',
+          borderRadius: '3px',
+          display: 'flex',
+          gap: '0.35rem',
+          fontFamily: "'IBM Plex Mono', monospace",
+          fontSize: '0.68rem',
+          zIndex: 10,
+        }}
+      >
+        {[
+          { id: LAYER_IDS.OPTICAL, label: 'OPTICAL' },
+          { id: LAYER_IDS.CPR, label: 'RADAR CPR' },
+          { id: LAYER_IDS.DOP, label: 'DOP MATRIX' },
+          { id: LAYER_IDS.ICE, label: 'ICE CONSISTENCY' },
+        ].map((layer) => (
+          <button
+            key={layer.id}
+            type="button"
+            onClick={() => setActiveLayer(layer.id)}
+            style={{
+              padding: '0.4rem 0.75rem',
+              borderRadius: '2px',
+              border: '1px solid',
+              borderColor: activeLayer === layer.id ? '#b8f0ff' : 'transparent',
+              backgroundColor: activeLayer === layer.id ? 'rgba(184, 240, 255, 0.12)' : 'transparent',
+              color: activeLayer === layer.id ? '#b8f0ff' : '#9aa0a6',
+              cursor: 'pointer',
+              fontWeight: activeLayer === layer.id ? 600 : 400,
+            }}
+          >
+            {layer.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Hover Tooltip (When hovering a crater hotspot) */}
+      {hovered && !selectedCrater && (
+        <div
+          className="glass-instrument"
+          style={{
+            position: 'absolute',
+            bottom: '85px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '0.4rem 0.85rem',
+            borderRadius: '2px',
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: '0.72rem',
+            color: '#b8f0ff',
+            pointerEvents: 'none',
+            border: '1px solid rgba(184, 240, 255, 0.4)',
+            boxShadow: '0 0 12px rgba(184, 240, 255, 0.25)',
+          }}
+        >
+          {hovered.type === 'south-pole' ? (
+            'LUNAR SOUTH POLE · 90.00° S · ALL LONGITUDES'
+          ) : (
+            `TARGET // ${hovered.crater.id} · ${hovered.crater.name.toUpperCase()} · ${Math.abs(hovered.crater.lat).toFixed(1)}°S`
+          )}
+        </div>
+      )}
+
+      {/* Slide-out Crater Evidence Drawer */}
+      <CraterScanDrawer crater={selectedCrater} onClose={() => selectCrater(null)} />
+    </div>
+  );
 }

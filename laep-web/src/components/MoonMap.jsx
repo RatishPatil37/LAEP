@@ -34,6 +34,51 @@ const moonTileGrid = new WMTSTileGrid({
   tileSize:    256,
 });
 
+// ── Intelligent Browser Cache for NASA Moon Trek Tiles ────────────────────
+const TILE_CACHE_NAME = 'nasa-moon-tiles-v1';
+
+function cachedTileLoadFunction(imageTile, src) {
+  const img = imageTile.getImage();
+  if (typeof window !== 'undefined' && 'caches' in window) {
+    caches.open(TILE_CACHE_NAME).then((cache) => {
+      cache.match(src).then((cachedResponse) => {
+        if (cachedResponse) {
+          cachedResponse.blob().then((blob) => {
+            const blobUrl = URL.createObjectURL(blob);
+            img.addEventListener('load', () => URL.revokeObjectURL(blobUrl), { once: true });
+            img.src = blobUrl;
+          }).catch(() => {
+            img.src = src;
+          });
+        } else {
+          fetch(src, { mode: 'cors' })
+            .then((res) => {
+              if (res.ok) {
+                cache.put(src, res.clone()).catch(() => {});
+                return res.blob();
+              }
+              throw new Error('Tile fetch error');
+            })
+            .then((blob) => {
+              const blobUrl = URL.createObjectURL(blob);
+              img.addEventListener('load', () => URL.revokeObjectURL(blobUrl), { once: true });
+              img.src = blobUrl;
+            })
+            .catch(() => {
+              img.src = src;
+            });
+        }
+      }).catch(() => {
+        img.src = src;
+      });
+    }).catch(() => {
+      img.src = src;
+    });
+  } else {
+    img.src = src;
+  }
+}
+
 function makeNASASource(layerName, ext = 'jpg') {
   return new WMTS({
     url: `https://trek.nasa.gov/tiles/Moon/EQ/${layerName}/1.0.0//default/default028mm/{TileMatrix}/{TileRow}/{TileCol}.${ext}`,
@@ -46,6 +91,9 @@ function makeNASASource(layerName, ext = 'jpg') {
     crossOrigin: 'anonymous',
     requestEncoding: 'REST',
     attributions: '© NASA Moon Trek / LRO / LOLA',
+    tileLoadFunction: cachedTileLoadFunction,
+    transition: 0, // Eliminate 250ms CSS fade-in lag on tile load
+    wrapX: true,
   });
 }
 
@@ -131,7 +179,7 @@ function craterStyleFunction(feature) {
 // ─────────────────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────────────────
-const MoonMap = forwardRef(function MoonMap({ layers, overlayUrls = {}, onCoordMove, onMapClick, onSelectCrater }, ref) {
+const MoonMap = forwardRef(function MoonMap({ layers, onCoordMove, onMapClick, onSelectCrater }, ref) {
   const mapEl   = useRef(null);
   const mapRef  = useRef(null);
   const layerMap = useRef({});
@@ -192,9 +240,9 @@ const MoonMap = forwardRef(function MoonMap({ layers, overlayUrls = {}, onCoordM
 
     updateOverlays(hazardUrl, iceUrl) {
       const updateImg = (id, url) => {
-        const layer = layerMap.current[id];
-        if (!layer) return;
-        layer.setSource(url ? new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }) : null);
+        layerMap.current[id]?.setSource(new ImageStatic({
+          url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326',
+        }));
       };
       updateImg(LAYER_IDS.HAZARD, hazardUrl);
       updateImg(LAYER_IDS.ICE,    iceUrl);
@@ -216,26 +264,31 @@ const MoonMap = forwardRef(function MoonMap({ layers, overlayUrls = {}, onCoordM
     // ── Tile layers (NASA WMTS) ────────────────────────────────────
     const wacLayer = new TileLayer({
       source: makeNASASource('LRO_WAC_Mosaic_Global_303ppd_v02', 'jpg'),
+      preload: 2,       // Render parent zoom tiles during zoom to prevent grey voids
+      cacheSize: 4096,  // Keep up to 4096 tiles in memory for instantaneous panning
     });
     wacLayer.set('id', LAYER_IDS.WAC);
 
     const lolaLayer = new TileLayer({
       source:  makeNASASource('LRO_LOLA_ClrShade_Global_128ppd_v04', 'png'),
-      opacity: 0,
+      opacity: 0.55,
+      visible: false,   // CRITICAL FIX: Do NOT download heavy LOLA PNG tiles when hidden!
+      preload: 1,
+      cacheSize: 2048,
     });
     lolaLayer.set('id', LAYER_IDS.LOLA);
 
     // ── Image overlays ─────────────────────────────────────────────
     const makeImgLayer = (url, opacity, visible = true) => {
       return new ImageLayer({
-        source: url ? new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }) : null,
+        source: new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }),
         opacity,
         visible,
       });
     };
 
-    const iceLayer    = makeImgLayer(overlayUrls.ice, 0.70, Boolean(overlayUrls.ice));
-    const hazardLayer = makeImgLayer(overlayUrls.hazard, 0.55, false);
+    const iceLayer    = makeImgLayer('/api/ice-detection', 0.70, true);
+    const hazardLayer = makeImgLayer('/api/hazard-map',    0.55, false);
     iceLayer.set('id',    LAYER_IDS.ICE);
     hazardLayer.set('id', LAYER_IDS.HAZARD);
 
@@ -265,8 +318,11 @@ const MoonMap = forwardRef(function MoonMap({ layers, overlayUrls = {}, onCoordM
         center: [0, -85],   // Lunar South Pole in lon/lat
         zoom: 4,
         minZoom: 1,
-        maxZoom: 9,
+        maxZoom: 8,         // Align with 9-level matrix (0-8)
         extent: [-180, -90, 180, 90],
+        smoothResolutionConstraint: true, // Silky smooth mouse wheel / touchpad zoom
+        smoothExtentConstraint: true,
+        enableRotation: false,            // Avoid rotational matrix recalculation
       }),
     });
 
@@ -313,11 +369,7 @@ const MoonMap = forwardRef(function MoonMap({ layers, overlayUrls = {}, onCoordM
       onMapClickRef.current?.(e.coordinate);
     });
 
-    const resizeObserver = new ResizeObserver(() => map.updateSize());
-    resizeObserver.observe(mapEl.current);
-    requestAnimationFrame(() => map.updateSize());
-
-    return () => { resizeObserver.disconnect(); map.setTarget(null); mapRef.current = null; };
+    return () => { map.setTarget(null); mapRef.current = null; };
   }, []); // eslint-disable-line
 
   // ── Sync layer visibility ────────────────────────────────────────
@@ -326,24 +378,14 @@ const MoonMap = forwardRef(function MoonMap({ layers, overlayUrls = {}, onCoordM
     Object.entries(layers).forEach(([id, visible]) => {
       const lyr = layerMap.current[id];
       if (!lyr) return;
-      if (id === LAYER_IDS.LOLA) lyr.setOpacity(visible ? 0.55 : 0);
-      else lyr.setVisible(visible);
+      if (id === LAYER_IDS.LOLA) {
+        lyr.setVisible(visible);
+        lyr.setOpacity(visible ? 0.55 : 0);
+      } else {
+        lyr.setVisible(visible);
+      }
     });
   }, [layers]);
-
-  useEffect(() => {
-    if (!mapRef.current) return;
-    const hazard = overlayUrls.hazard;
-    const ice = overlayUrls.ice;
-    const update = (id, url) => {
-      const layer = layerMap.current[id];
-      if (!layer) return;
-      layer.setSource(url ? new ImageStatic({ url, imageExtent: OVERLAY_EXTENT, projection: 'EPSG:4326' }) : null);
-      if (!url) layer.setVisible(false);
-    };
-    update(LAYER_IDS.HAZARD, hazard);
-    update(LAYER_IDS.ICE, ice);
-  }, [overlayUrls.hazard, overlayUrls.ice]);
 
   return <div id="moon-map" ref={mapEl} />;
 });

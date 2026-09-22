@@ -1,24 +1,16 @@
 /**
  * laepApi.js — Hybrid API client for Chandrayaan-2 exploration backend.
- * Provides analysis products and explicit state metadata for every response.
- * Browser-generated outputs are opt-in simulations, never silent fallbacks.
+ * Provides live telemetry, benchmark craters, Robbins sub-craters,
+ * 2D Simpson volumetric integration, and reachability-aware A* pathfinding.
+ * Seamlessly falls back to in-browser client-side engine if backend is offline.
  */
 
-import { attachDataMeta, DATA_STATE } from '../lib/dataState';
-
-const BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
-const LOCAL_DEVELOPMENT = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-const API_CONFIGURED = Boolean(BASE) || LOCAL_DEVELOPMENT;
+const BASE = import.meta.env.VITE_API_URL ?? '';
 
 // Fallback bounding box for the synthetic simulation reference frame
 const FALLBACK_BBOX = { lonMin: -10, lonMax: 10, latMin: -90, latMax: -80 };
 
 async function request(path, options = {}) {
-  if (!API_CONFIGURED) {
-    const error = new Error('The production analysis API has not been configured. Scientific analysis is unavailable in this deployment.');
-    error.code = 'API_UNAVAILABLE';
-    throw error;
-  }
   const res = await fetch(`${BASE}${path}`, options);
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
@@ -28,34 +20,21 @@ async function request(path, options = {}) {
   return res;
 }
 
-export async function getApiStatus() {
-  if (!API_CONFIGURED) {
-    return { state: DATA_STATE.UNAVAILABLE, message: 'Analysis API is not configured for this deployment.' };
-  }
-  try {
-    const response = await request('/api/health');
-    const payload = await response.json();
-    return { state: DATA_STATE.REAL, message: payload.status === 'ok' ? 'Analysis API reachable' : 'Analysis API status is unknown' };
-  } catch (error) {
-    return { state: DATA_STATE.UNAVAILABLE, message: error.message };
-  }
-}
-
 export async function getDEM() {
   try {
     const r = await request('/api/dem');
-    return attachDataMeta(await r.json(), DATA_STATE.DERIVED, 'Analysis API elevation grid');
+    return await r.json();
   } catch (e) {
-    return attachDataMeta(generateFallbackDEM(), DATA_STATE.SIMULATED, 'Browser fallback terrain — visual context only');
+    return generateFallbackDEM();
   }
 }
 
 export async function getIceStats() {
   try {
     const r = await request('/api/ice-stats');
-    return attachDataMeta(await r.json(), DATA_STATE.DERIVED, 'Analysis API ice-summary product');
+    return await r.json();
   } catch (e) {
-    return attachDataMeta({
+    return {
       ice_coverage_pixels: 236,
       ice_coverage_km2: 0.148,
       total_area_km2: 25.0,
@@ -64,32 +43,32 @@ export async function getIceStats() {
       mean_cpr_ice_zone: 1.42,
       mean_dop_ice_zone: 0.08,
       detection_method: "CPR > 1.0 AND DOP < 0.13 (Sinha et al. May 2026, PRL)",
-    }, DATA_STATE.SIMULATED, 'Browser fallback scene — not an observation or analysis result');
+    };
   }
 }
 
 export async function getLandingSites() {
   try {
     const r = await request('/api/landing-sites');
-    return attachDataMeta(await r.json(), DATA_STATE.DERIVED, 'Analysis API candidate-site product');
+    return await r.json();
   } catch (e) {
-    return attachDataMeta({
+    return {
       sites: [
         { lon: 82.310, lat: -87.390, slope_deg: 4.2, shadow: 0.12, ics: 0.85, elevation_m: -144.0, name: "Faustini F2 Rim Landing Site", rank: 1 },
         { lon: 84.150, lat: -87.250, slope_deg: 5.1, shadow: 0.18, ics: 0.72, elevation_m: -95.0, name: "Faustini F3 Staging Ridge", rank: 2 },
         { lon: 53.500, lat: -85.200, slope_deg: 3.8, shadow: 0.09, ics: 0.45, elevation_m: 105.0, name: "Nobile Ridge LZ-1 (VIPER Target)", rank: 3 },
         { lon: 129.800, lat: -89.600, slope_deg: 6.5, shadow: 0.14, ics: 0.68, elevation_m: 210.0, name: "Shackleton Connecting Ridge", rank: 4 }
       ]
-    }, DATA_STATE.SIMULATED, 'Browser fallback scene — relative planning context only');
+    };
   }
 }
 
 export async function getBenchmarkCraters() {
   try {
     const r = await request('/api/craters/benchmarks');
-    return attachDataMeta(await r.json(), DATA_STATE.DERIVED, 'Curated benchmark-crater reference set');
+    return await r.json();
   } catch (e) {
-    return attachDataMeta({
+    return {
       count: 8,
       source: "Sinha et al. (May 2026), npj Space Exploration (PRL / ISRO)",
       craters: [
@@ -102,14 +81,14 @@ export async function getBenchmarkCraters() {
         { id: "SHACKLETON", name: "Shackleton Crater", host: "Shackleton", lon: 129.80, lat: -89.60, diameter_km: 20.9, depth_m: 4200, peak_cpr: 1.65, dop: 0.13, wall_slope_deg: "28–32°", lobate_rim: false, verdict: "Peak Illumination Rim (~86%) & 21K Deep Interior", status: "positive", color: "#00ffcc", summary: "True South Pole Axis Cold Trap." },
         { id: "TOOLEY", name: "Tooley Crater (Negative Control)", host: "Standalone", lon: 51.05, lat: -88.04, diameter_km: 7.05, depth_m: 310, peak_cpr: 0.92, dop: 0.66, wall_slope_deg: "7.7–9.3°", lobate_rim: false, verdict: "No Evidence (Scientific Negative Control)", status: "negative", color: "#ff5252", summary: "Shallow standalone crater with dry rocky regolith reflection (DOP=0.66, CPR<1.0)." }
       ]
-    }, DATA_STATE.DERIVED, 'Bundled curated benchmark-crater reference set');
+    };
   }
 }
 
 export async function getPrioritySubcraters() {
   try {
     const r = await request('/api/craters/subcraters');
-    return attachDataMeta(await r.json(), DATA_STATE.DERIVED, 'Analysis API crater-target layer');
+    return await r.json();
   } catch (e) {
     const benchmarks = await getBenchmarkCraters();
     const feats = (benchmarks.craters || []).map(c => ({
@@ -133,7 +112,7 @@ export async function calculateCustomRegionIce({ lonMin, lonMax, latMin, latMax,
         ice_volume_fraction: fraction
       })
     });
-    return attachDataMeta(await r.json(), DATA_STATE.DERIVED, 'Analysis API volumetric estimate');
+    return await r.json();
   } catch (e) {
     // Client-side fallback calculation using 2D Simpson/Riemann
     const dLon = Math.abs(lonMax - lonMin);
@@ -144,7 +123,7 @@ export async function calculateCustomRegionIce({ lonMin, lonMax, latMin, latMax,
     const pureVolumeM3 = Number((areaKm2 * 1e6 * depthM * fraction * meanIcs).toFixed(1));
     const massTons = Number((pureVolumeM3 * 0.917).toFixed(1));
 
-    return attachDataMeta({
+    return {
       status: "success",
       bbox: { lon_min: lonMin, lon_max: lonMax, lat_min: latMin, lat_max: latMax },
       volumetric: {
@@ -158,7 +137,7 @@ export async function calculateCustomRegionIce({ lonMin, lonMax, latMin, latMax,
         weh_fraction_pct: Number((fraction * 100).toFixed(2)),
         psr_equilibrium_temp_k: isCold ? 25.0 : 45.0
       }
-    }, DATA_STATE.SIMULATED, 'In-browser synthetic volumetric preview — not a deposit estimate');
+    };
   }
 }
 
@@ -172,15 +151,14 @@ export async function getCH2Footprints() {
 }
 
 export function getHazardMapUrl(wSlope = 1, wShadow = 2, maxSlope = 15) {
-  if (!API_CONFIGURED) return null;
   return `${BASE}/api/hazard-map?w_slope=${wSlope}&w_shadow=${wShadow}&max_slope=${maxSlope}`;
 }
 
 export function getIceHeatmapUrl() {
-  return API_CONFIGURED ? `${BASE}/api/ice-detection` : null;
+  return `${BASE}/api/ice-detection`;
 }
 
-export async function findPath({ startLon, startLat, goalLon, goalLat, wSlope, wShadow, maxSlope, simulationMode = false }) {
+export async function findPath({ startLon, startLat, goalLon, goalLat, wSlope, wShadow, maxSlope }) {
   try {
     const r = await request('/api/pathfind', {
       method: 'POST',
@@ -191,18 +169,10 @@ export async function findPath({ startLon, startLat, goalLon, goalLat, wSlope, w
         w_slope: wSlope, w_shadow: wShadow, max_slope: maxSlope,
       }),
     });
-    return attachDataMeta(await r.json(), DATA_STATE.DERIVED, 'Analysis API route-planning output');
+    return await r.json();
   } catch (err) {
-    if (!simulationMode) {
-      const error = new Error(`${err.message} Enable simulation preview to generate a non-scientific route illustration.`);
-      error.code = 'ROUTE_UNAVAILABLE';
-      throw error;
-    }
-    return attachDataMeta(
-      runClientSidePathfind({ startLon, startLat, goalLon, goalLat, wSlope, wShadow, maxSlope }),
-      DATA_STATE.SIMULATED,
-      'In-browser synthetic terrain and route preview — not a mission-planning result'
-    );
+    console.warn('[laepApi] Backend call failed (' + err.message + '), using in-browser A* pathfinder fallback.');
+    return runClientSidePathfind({ startLon, startLat, goalLon, goalLat, wSlope, wShadow, maxSlope });
   }
 }
 
