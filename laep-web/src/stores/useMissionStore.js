@@ -14,6 +14,21 @@ export const LAYER_IDS = {
   ROUTE:       'route',
 };
 
+export const INITIAL_LAYERS_VISIBLE = {
+  [LAYER_IDS.OPTICAL]:     true,
+  [LAYER_IDS.TERRAIN]:     false,
+  [LAYER_IDS.SLOPE]:       false,
+  [LAYER_IDS.ROUGHNESS]:   false,
+  [LAYER_IDS.ILLUMINATION]:false,
+  [LAYER_IDS.CPR]:         false,
+  [LAYER_IDS.DOP]:         false,
+  [LAYER_IDS.ICE]:         true,
+  [LAYER_IDS.HAZARD]:      false,
+  [LAYER_IDS.ROUTE]:       true,
+  craters:                 true,
+  ch2:                     false,
+};
+
 export const INITIAL_MISSION_LOGS = [
   { time: 'T+00:00', event: 'Lunar South Polar Orbit Initialized (100 km Altitude)', type: 'info' },
   { time: 'T+00:12', event: 'Landing Zone Acquired: Faustini Crater North Rim', type: 'success' },
@@ -29,6 +44,7 @@ export const useMissionStore = create((set, get) => ({
   selectedCrater: null,
   solarElevation: 2.8, // degrees
   activeLayer: LAYER_IDS.ICE,
+  layersVisible: INITIAL_LAYERS_VISIBLE,
   isResearchMode: false,
   isComparisonMode: false,
   comparisonSplit: 50, // percentage (0 to 100)
@@ -42,18 +58,20 @@ export const useMissionStore = create((set, get) => ({
   commandPaletteOpen: false,
   audioMuted: soundEngine.isMuted,
 
+  // ── Real A* Route Telemetry from Backend ──
+  activeRouteTelemetry: null,
+
   // ── 3D Rover Simulation State ──
   simulation: {
     isPlaying: false,
-    speed: 1, // 1x, 2x, 4x, 16x
-    currentTime: 240, // seconds
-    totalDuration: 872, // seconds (~14.5 min)
-    battery: 86.4, // %
+    speed: 1, // 1x, 2x, 5x
+    progress: 0.0,
     speedMps: 0.18, // m/s
     heading: 142.5, // degrees azimuth
     pitch: 3.8, // degrees
     roll: -1.2, // degrees
     slope: 4.2, // degrees
+    slipRisk: 12,
     logs: INITIAL_MISSION_LOGS,
   },
 
@@ -70,6 +88,35 @@ export const useMissionStore = create((set, get) => ({
   setActiveLayer: (layerId) => {
     soundEngine.playTelemetryClick();
     set({ activeLayer: layerId });
+  },
+
+  toggleLayerVisibility: (layerId) => {
+    soundEngine.playTelemetryClick();
+    set((state) => ({
+      layersVisible: {
+        ...state.layersVisible,
+        [layerId]: !state.layersVisible[layerId],
+      },
+      // If toggled on, also set as active channel
+      activeLayer: !state.layersVisible[layerId] ? layerId : state.activeLayer,
+    }));
+  },
+
+  setLayersVisible: (layersVisible) => {
+    set({ layersVisible });
+  },
+
+  setActiveRouteTelemetry: (telemetry) => {
+    set({ activeRouteTelemetry: telemetry });
+  },
+
+  setSimulation: (patch) => {
+    set((state) => ({
+      simulation: {
+        ...state.simulation,
+        ...(typeof patch === 'function' ? patch(state.simulation) : patch),
+      },
+    }));
   },
 
   toggleResearchMode: () => {
@@ -125,9 +172,9 @@ export const useMissionStore = create((set, get) => ({
     }));
   },
 
-  setSimulationTime: (currentTime) => {
+  setSimulationProgress: (progress) => {
     set((state) => ({
-      simulation: { ...state.simulation, currentTime }
+      simulation: { ...state.simulation, progress }
     }));
   },
 
@@ -138,7 +185,7 @@ export const useMissionStore = create((set, get) => ({
   },
 
   addMissionLog: (event, type = 'info') => {
-    const timeStr = `T+${Math.floor(get().simulation.currentTime / 60).toString().padStart(2, '0')}:${(get().simulation.currentTime % 60).toString().padStart(2, '0')}`;
+    const timeStr = `T+00:${Math.floor(Math.random() * 50 + 10)}`;
     set((state) => ({
       simulation: {
         ...state.simulation,

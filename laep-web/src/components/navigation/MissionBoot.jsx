@@ -13,15 +13,19 @@ const BOOT_STEPS = [
 export default function MissionBoot({ onComplete }) {
   const [completedIndex, setCompletedIndex] = useState(-1);
   const [done, setDone] = useState(false);
+  const [isFading, setIsFading] = useState(false);
 
   useEffect(() => {
-    // Check if user already completed boot in this session
-    if (sessionStorage.getItem('laep_boot_completed') === 'true') {
-      onComplete?.();
-      return;
-    }
-
     soundEngine.playRadarSweep();
+
+    // Escape key listener to skip intro
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        handleSkip();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     const interval = setInterval(() => {
       setCompletedIndex((prev) => {
         const next = prev + 1;
@@ -32,23 +36,30 @@ export default function MissionBoot({ onComplete }) {
           clearInterval(interval);
           setTimeout(() => {
             soundEngine.playRouteLock();
-            sessionStorage.setItem('laep_boot_completed', 'true');
-            setDone(true);
-            setTimeout(() => onComplete?.(), 450);
-          }, 350);
+            setIsFading(true);
+            setTimeout(() => {
+              setDone(true);
+              onComplete?.();
+            }, 300);
+          }, 250);
           return prev;
         }
       });
-    }, 180);
+    }, 160);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [onComplete]);
 
   const handleSkip = () => {
     soundEngine.playTelemetryClick();
-    sessionStorage.setItem('laep_boot_completed', 'true');
-    setDone(true);
-    onComplete?.();
+    setIsFading(true);
+    setTimeout(() => {
+      setDone(true);
+      onComplete?.();
+    }, 150);
   };
 
   if (done) return null;
@@ -67,6 +78,9 @@ export default function MissionBoot({ onComplete }) {
         padding: '2rem',
         fontFamily: "'IBM Plex Mono', monospace",
         color: '#f4f4f0',
+        opacity: isFading ? 0 : 1,
+        transition: 'opacity 250ms ease-out',
+        pointerEvents: isFading ? 'none' : 'auto',
       }}
     >
       <div style={{ maxWidth: '640px', width: '100%' }}>
@@ -103,51 +117,37 @@ export default function MissionBoot({ onComplete }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  fontSize: '0.74rem',
-                  opacity: isFinished ? 1 : isCurrent ? 0.75 : 0.25,
-                  transition: 'opacity 150ms ease',
+                  padding: '0.6rem 0.85rem',
+                  borderRadius: '2px',
+                  backgroundColor: isCurrent ? 'rgba(184, 240, 255, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid',
+                  borderColor: isFinished ? 'rgba(123, 228, 149, 0.3)' : isCurrent ? 'rgba(184, 240, 255, 0.4)' : 'rgba(255, 255, 255, 0.05)',
+                  fontSize: '0.72rem',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ color: isFinished ? '#7be495' : '#7dd3fc' }}>[{step.id}]</span>
-                  <span>{step.label}</span>
+                  <span style={{ color: '#7dd3fc', fontWeight: 600 }}>{step.id}</span>
+                  <span style={{ color: isFinished ? '#f4f4f0' : isCurrent ? '#b8f0ff' : '#6b7280' }}>
+                    {step.label}
+                  </span>
                 </div>
-                <span
-                  style={{
-                    color: isFinished ? '#7be495' : isCurrent ? '#ffc857' : '#6b7280',
-                    fontWeight: 600,
-                  }}
-                >
-                  {isFinished ? `[ ${step.status} ]` : isCurrent ? '[ CHECKING... ]' : '[ PENDING ]'}
-                </span>
+                <div>
+                  {isFinished ? (
+                    <span style={{ color: '#7be495', fontWeight: 600 }}>[{step.status}]</span>
+                  ) : isCurrent ? (
+                    <span style={{ color: '#ffc857', animation: 'wavefrontPulse 1s infinite' }}>[TESTING...]</span>
+                  ) : (
+                    <span style={{ color: '#4b5563' }}>[PENDING]</span>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
 
-        <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div
-            style={{
-              height: '3px',
-              flex: 1,
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              borderRadius: '2px',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${Math.min(100, Math.round(((completedIndex + 1) / BOOT_STEPS.length) * 100))}%`,
-                backgroundColor: '#b8f0ff',
-                boxShadow: '0 0 10px #b8f0ff',
-                transition: 'width 180ms ease',
-              }}
-            />
-          </div>
-          <span style={{ fontSize: '0.68rem', color: '#b8f0ff' }}>
-            {Math.min(100, Math.round(((completedIndex + 1) / BOOT_STEPS.length) * 100))}%
-          </span>
+        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', color: '#6b7280' }}>
+          <span>ISRO CHANDRAYAAN-2 SCIENCE OPERATIONS</span>
+          <span>BUILD: 2026.09-REV4</span>
         </div>
       </div>
     </div>

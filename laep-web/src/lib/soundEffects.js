@@ -2,12 +2,15 @@
  * soundEffects.js — Procedural Zero-Dependency Aerospace Web Audio Synthesizer.
  * Synthesizes crisp telemetry blips, radar sweeps, and route lock confirmation chimes
  * in pure code via the native Web Audio API (0 KB network download overhead).
+ *
+ * Includes automatic first-gesture AudioContext unlock to eliminate audio lag and dropped clicks.
  */
 
 class AerospaceAudioEngine {
   constructor() {
     this.ctx = null;
-    this.isMuted = typeof window !== 'undefined' ? localStorage.getItem('laep_audio_muted') === 'true' : true;
+    this.isMuted = typeof window !== 'undefined' ? localStorage.getItem('laep_audio_muted') === 'true' : false;
+    this.isUnlocked = false;
   }
 
   init() {
@@ -17,8 +20,18 @@ class AerospaceAudioEngine {
         this.ctx = new AudioCtx();
       }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
+  }
+
+  unlock() {
+    this.init();
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().then(() => {
+          this.isUnlocked = true;
+        }).catch(() => {});
+      } else {
+        this.isUnlocked = true;
+      }
     }
   }
 
@@ -34,145 +47,176 @@ class AerospaceAudioEngine {
     return this.isMuted;
   }
 
+  ensureRunning(cb) {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume().then(() => {
+        if (!this.isMuted && this.ctx && this.ctx.state === 'running') {
+          cb();
+        }
+      }).catch(() => {});
+    } else if (this.ctx.state === 'running') {
+      cb();
+    }
+  }
+
   // ── 1. Telemetry Click (Crisp 1.8kHz blip) ─────────────────────────
   playTelemetryClick() {
-    if (this.isMuted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1800, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.02);
-
-      gain.gain.setValueAtTime(0.045, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.025);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.025);
-    } catch {
-      // Ignore audio context errors
-    }
-  }
-
-  // ── 2. Radar Sweep Ping (880Hz spatial resonant chirp) ─────────────
-  playRadarSweep() {
-    if (this.isMuted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(880, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(440, this.ctx.currentTime + 0.18);
-
-      gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.22);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.22);
-    } catch {
-      // Ignore
-    }
-  }
-
-  // ── 3. Route Lock Confirmation (Dual-tone 520Hz + 1040Hz chime) ─────
-  playRouteLock() {
-    if (this.isMuted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-
-      const osc1 = this.ctx.createOscillator();
-      const osc2 = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-
-      osc1.type = 'sine';
-      osc2.type = 'sine';
-      osc1.frequency.setValueAtTime(520, now);
-      osc2.frequency.setValueAtTime(1040, now + 0.06);
-
-      gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc1.start(now);
-      osc1.stop(now + 0.35);
-      osc2.start(now + 0.06);
-      osc2.stop(now + 0.35);
-    } catch {
-      // Ignore
-    }
-  }
-
-  // ── 4. Target Acquired (3-Tone ascending scientific chime) ──────────
-  playTargetAcquired() {
-    if (this.isMuted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const freqs = [659.25, 830.61, 987.77]; // E5, G#5, B5 chord
-
-      freqs.forEach((freq, idx) => {
+    this.ensureRunning(() => {
+      try {
+        const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+        osc.frequency.setValueAtTime(2000, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.018);
 
-        gain.gain.setValueAtTime(0.04, now + idx * 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.05 + 0.25);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
-        osc.start(now + idx * 0.05);
-        osc.stop(now + idx * 0.05 + 0.25);
-      });
-    } catch {
-      // Ignore
-    }
+        osc.start(now);
+        osc.stop(now + 0.022);
+      } catch {
+        // Ignore
+      }
+    });
   }
 
-  // ── 5. Warning Alert (220Hz low hazard pulse) ───────────────────────
+  // ── 2. Radar Sweep Ping (880Hz spatial resonant chirp) ─────────────
+  playRadarSweep() {
+    this.ensureRunning(() => {
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(920, now);
+        osc.frequency.exponentialRampToValueAtTime(440, now + 0.16);
+
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } catch {
+        // Ignore
+      }
+    });
+  }
+
+  // ── 3. Route Lock Confirmation (Dual-tone 520Hz + 1040Hz chime) ─────
+  playRouteLock() {
+    this.ensureRunning(() => {
+      try {
+        const now = this.ctx.currentTime;
+
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(523.25, now); // C5
+        osc1.frequency.setValueAtTime(659.25, now + 0.08); // E5
+
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1046.5, now); // C6
+        osc2.frequency.setValueAtTime(1318.5, now + 0.08); // E6
+
+        gain.gain.setValueAtTime(0.065, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.38);
+        osc2.stop(now + 0.38);
+      } catch {
+        // Ignore
+      }
+    });
+  }
+
+  // ── 4. Target Acquisition Chord (Pentatonic Triad) ─────────────────
+  playTargetAcquired() {
+    this.ensureRunning(() => {
+      try {
+        const now = this.ctx.currentTime;
+        const freqs = [440, 554.37, 659.25]; // A4, C#5, E5
+
+        freqs.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.035);
+
+          gain.gain.setValueAtTime(0.045, now + idx * 0.035);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.035 + 0.3);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now + idx * 0.035);
+          osc.stop(now + idx * 0.035 + 0.3);
+        });
+      } catch {
+        // Ignore
+      }
+    });
+  }
+
+  // ── 5. Warning / Slope Limit Beep ─────────────────────────────────
   playWarningBeep() {
-    if (this.isMuted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+    this.ensureRunning(() => {
+      try {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
 
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(360, now);
+        osc.frequency.setValueAtTime(280, now + 0.08);
 
-      gain.gain.setValueAtTime(0.035, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
 
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
 
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.12);
-    } catch {
-      // Ignore
-    }
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } catch {
+        // Ignore
+      }
+    });
   }
 }
 
 export const soundEngine = new AerospaceAudioEngine();
+
+// Global first-gesture listener to immediately warm up and unlock Web Audio context
+if (typeof window !== 'undefined') {
+  const unlockAudio = () => {
+    soundEngine.unlock();
+    window.removeEventListener('pointerdown', unlockAudio);
+    window.removeEventListener('keydown', unlockAudio);
+    window.removeEventListener('touchstart', unlockAudio);
+  };
+  window.addEventListener('pointerdown', unlockAudio, { passive: true });
+  window.addEventListener('keydown', unlockAudio, { passive: true });
+  window.addEventListener('touchstart', unlockAudio, { passive: true });
+}

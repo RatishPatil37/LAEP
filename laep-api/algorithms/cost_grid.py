@@ -24,21 +24,18 @@ def compute_sar_geometric_roughness(sar_img: np.ndarray, window: int = 5, eps: f
     Computes Dual-Axis SAR Geometric Mean Roughness W_z = sqrt(|W_p * W_q|)
     with regularized denominator (eps = 1e-6) to prevent flat terrain singularities.
     """
-    # Range gradient (axis 1 / columns)
     diff_p = np.abs(np.diff(sar_img, axis=1, prepend=sar_img[:, :1]))
     sum_p = sar_img + np.roll(sar_img, 1, axis=1) + eps
     sim_p = np.clip(1.0 - (diff_p / sum_p), eps, 1.0 - eps)
     var_p = np.var(sar_img) + eps
     w_p = np.abs(np.log(var_p) / np.log(sim_p))
 
-    # Azimuth gradient (axis 0 / rows)
     diff_q = np.abs(np.diff(sar_img, axis=0, prepend=sar_img[:1, :]))
     sum_q = sar_img + np.roll(sar_img, 1, axis=0) + eps
     sim_q = np.clip(1.0 - (diff_q / sum_q), eps, 1.0 - eps)
     var_q = np.var(sar_img) + eps
     w_q = np.abs(np.log(var_q) / np.log(sim_q))
 
-    # Geometric mean roughness
     w_z = np.sqrt(np.abs(w_p * w_q))
     w_max = np.nanmax(w_z)
     if w_max > 0:
@@ -105,6 +102,81 @@ def cost_grid_to_rgba_png(cost_grid: np.ndarray) -> bytes:
         rgba[finite_mask, 3] = 160
 
     rgba[inf_mask] = [160, 0, 0, 200]
+
+    img = Image.fromarray(rgba, "RGBA")
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+def slope_to_rgba_png(slope: np.ndarray) -> bytes:
+    """
+    Render slope gradient: Green (0–7°), Amber/Orange (7–15°), Red (>15° cliff).
+    """
+    from PIL import Image
+    import io
+
+    H, W = slope.shape
+    rgba = np.zeros((H, W, 4), dtype=np.uint8)
+
+    # 0 to 25 deg normalization
+    norm = np.clip(slope / 22.0, 0.0, 1.0)
+    
+    # Red channel increases with slope
+    r = np.clip(norm * 2.0, 0, 1) * 240
+    # Green channel decreases with steep slope
+    g = np.clip((1.0 - norm) * 1.8, 0, 1) * 220
+    b = np.zeros_like(norm)
+    a = np.clip(norm * 140 + 50, 40, 190)
+
+    rgba[:, :, 0] = r.astype(np.uint8)
+    rgba[:, :, 1] = g.astype(np.uint8)
+    rgba[:, :, 2] = b.astype(np.uint8)
+    rgba[:, :, 3] = a.astype(np.uint8)
+
+    img = Image.fromarray(rgba, "RGBA")
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+def shadow_to_rgba_png(shadow_map: np.ndarray) -> bytes:
+    """
+    Render Permanent Shadow Regions (PSR cold traps) in translucent deep navy / cyan border.
+    """
+    from PIL import Image
+    import io
+
+    H, W = shadow_map.shape
+    rgba = np.zeros((H, W, 4), dtype=np.uint8)
+
+    mask = shadow_map > 0.3
+    rgba[mask, 0] = 12
+    rgba[mask, 1] = 28
+    rgba[mask, 2] = 88
+    rgba[mask, 3] = 165
+
+    img = Image.fromarray(rgba, "RGBA")
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+def roughness_to_rgba_png(roughness: np.ndarray) -> bytes:
+    """
+    Render SAR geometric roughness in high-contrast amber/copper.
+    """
+    from PIL import Image
+    import io
+
+    H, W = roughness.shape
+    rgba = np.zeros((H, W, 4), dtype=np.uint8)
+
+    norm = np.clip(roughness, 0.0, 1.0)
+    mask = norm > 0.1
+    v = norm[mask]
+
+    rgba[mask, 0] = np.clip(220 + v * 35, 200, 255).astype(np.uint8)
+    rgba[mask, 1] = (120 + v * 80).astype(np.uint8)
+    rgba[mask, 2] = (v * 40).astype(np.uint8)
+    rgba[mask, 3] = np.clip(v * 160 + 40, 40, 200).astype(np.uint8)
 
     img = Image.fromarray(rgba, "RGBA")
     buf = io.BytesIO()

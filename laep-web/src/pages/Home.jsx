@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getBenchmarkCraters } from '../api/laepApi';
 import MoonHero from '../scenes/MoonHero/MoonHero';
-import MissionBoot from '../components/navigation/MissionBoot';
 import { useMissionStore, LAYER_IDS } from '../stores/useMissionStore';
 import { soundEngine } from '../lib/soundEffects';
 import { displayCraterName } from '../lib/crater';
@@ -40,7 +39,6 @@ const NARRATIVE_PHASES = [
 
 export default function Home() {
   const [craters, setCraters] = useState([]);
-  const [bootDone, setBootDone] = useState(false);
   const selectCrater = useMissionStore((s) => s.selectCrater);
   const setActiveLayer = useMissionStore((s) => s.setActiveLayer);
   const deepZoomLevel = useMissionStore((s) => s.deepZoomLevel);
@@ -60,8 +58,6 @@ export default function Home() {
 
   return (
     <div style={{ backgroundColor: '#050608', color: '#f4f4f0', minHeight: '100vh', overflowX: 'hidden' }}>
-      {/* Cinematic Mission Diagnostic Boot Sequence (Runs once per session) */}
-      <MissionBoot onComplete={() => setBootDone(true)} />
 
       {/* ── 1. Hero Section: 3D Interactive Moon Flight Deck ── */}
       <section style={{ minHeight: 'calc(100vh - 60px)', padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>

@@ -14,7 +14,7 @@
  */
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MoonMap, { LAYER_IDS as BASE_LAYER_IDS } from '../components/MoonMap';
+import MoonMap from '../components/MoonMap';
 import {
   findPath,
   getBenchmarkCraters,
@@ -38,16 +38,20 @@ import '../styles/map.css';
 import '../styles/aerospace.css';
 
 const LAYER_DEFS = [
-  { id: BASE_LAYER_IDS.WAC,     label: 'LRO WAC Optical Basemap', color: '#e8eaf6', defaultOn: true  },
-  { id: BASE_LAYER_IDS.LOLA,    label: 'LOLA Elevation Hillshade', color: '#ffd740', defaultOn: false },
-  { id: BASE_LAYER_IDS.ICE,     label: 'CH-2 DFSAR Ice Heatmap',   color: '#2dd4bf', defaultOn: true  },
-  { id: BASE_LAYER_IDS.HAZARD,  label: 'Multi-Modal Hazard Grid', color: '#f59e0b', defaultOn: false },
-  { id: BASE_LAYER_IDS.CRATERS, label: 'Robbins Polar Craters',   color: '#38bdf8', defaultOn: true  },
-  { id: BASE_LAYER_IDS.CH2,     label: 'CH-2 SAR Footprints',     color: '#e86100', defaultOn: false },
-  { id: BASE_LAYER_IDS.PATH,    label: 'Autonomous Rover Route',  color: '#2dd4bf', defaultOn: true  },
+  { id: LAYER_IDS.OPTICAL,      label: 'LRO WAC Optical Basemap',     color: '#e8eaf6' },
+  { id: LAYER_IDS.TERRAIN,      label: 'LOLA Elevation Hillshade',   color: '#ffd740' },
+  { id: LAYER_IDS.SLOPE,        label: 'Slope Gradient Map',          color: '#ff6b5e' },
+  { id: LAYER_IDS.ROUGHNESS,    label: 'Surface Roughness (RMS)',      color: '#f59e0b' },
+  { id: LAYER_IDS.ILLUMINATION, label: 'PSR Shadow / Cold Traps',     color: '#818cf8' },
+  { id: LAYER_IDS.CPR,          label: 'CH-2 DFSAR CPR Anomaly',      color: '#38bdf8' },
+  { id: LAYER_IDS.DOP,          label: 'Degree of Polarization (DOP)',color: '#c084fc' },
+  { id: LAYER_IDS.ICE,          label: 'Multi-Sensor Ice Heatmap',    color: '#2dd4bf' },
+  { id: LAYER_IDS.HAZARD,       label: 'Multi-Modal Hazard Grid',     color: '#fb7185' },
+  { id: LAYER_IDS.ROUTE,        label: 'Autonomous Kinematic Route',  color: '#34d399' },
+  { id: 'craters',              label: 'Robbins Polar Craters',       color: '#38bdf8' },
+  { id: 'ch2',                  label: 'CH-2 SAR Coverage Footprints', color: '#e86100' },
 ];
 
-const DEFAULT_LAYERS = Object.fromEntries(LAYER_DEFS.map((l) => [l.id, l.defaultOn]));
 const MODE = { NONE: 'none', START: 'start', GOAL: 'goal' };
 const TABS = { WAYPOINTS: 'waypoints', CRATERS: 'craters', SENSORS: 'sensors', CUSTOM: 'custom', LAYERS: 'layers' };
 
@@ -63,6 +67,9 @@ export default function Explorer() {
   const isComparisonMode = useMissionStore((s) => s.isComparisonMode);
   const toggleComparisonMode = useMissionStore((s) => s.toggleComparisonMode);
   const setSimulation = useMissionStore((s) => s.setSimulation);
+  const layersVisible = useMissionStore((s) => s.layersVisible);
+  const toggleLayerVisibility = useMissionStore((s) => s.toggleLayerVisibility);
+  const setActiveRouteTelemetry = useMissionStore((s) => s.setActiveRouteTelemetry);
 
   // Active Sidebar Tab
   const [activeTab, setActiveTab] = useState(TABS.WAYPOINTS);
@@ -72,7 +79,6 @@ export default function Explorer() {
   const [start, setStart] = useState(null); // [lon, lat]
   const [goal, setGoal] = useState(null);
   const [coords, setCoords] = useState({ lon: '—', lat: '—', polarX: '—', polarY: '—' });
-  const [layers, setLayers] = useState(DEFAULT_LAYERS);
 
   // Modal / Drawers
   const [isProvenanceOpen, setIsProvenanceOpen] = useState(false);
@@ -121,49 +127,6 @@ export default function Explorer() {
       .catch(() => {});
   }, []);
 
-  // ── Map click handler — explicit state machine ───────────────────────
-  const handleMapClick = useCallback(
-    ([lon, lat]) => {
-      soundEngine.playTelemetryClick();
-      const pt = [Number(lon.toFixed(4)), Number(lat.toFixed(4))];
-
-      if (mode === MODE.START || (mode === MODE.NONE && !start)) {
-        setStart(pt);
-        setInputStartLon(pt[0].toString());
-        setInputStartLat(pt[1].toString());
-        setMode(MODE.GOAL);
-        mapRef.current?.setMarkers(pt, goal);
-      } else if (mode === MODE.GOAL || (mode === MODE.NONE && start && !goal)) {
-        setGoal(pt);
-        setInputGoalLon(pt[0].toString());
-        setInputGoalLat(pt[1].toString());
-        setMode(MODE.NONE);
-        mapRef.current?.setMarkers(start, pt);
-
-        // Compute direct distance for measurement tool
-        const dx = (pt[0] - start[0]) * 30.3 * Math.cos((start[1] * Math.PI) / 180);
-        const dy = (pt[1] - start[1]) * 30.3;
-        const distKm = Math.sqrt(dx * dx + dy * dy);
-        setMeasurementData({
-          distKm: distKm.toFixed(2),
-          elevDeltaM: 142,
-          slopeDeg: (Math.atan2(142, distKm * 1000) * (180 / Math.PI)).toFixed(1),
-        });
-      } else {
-        setStart(pt);
-        setInputStartLon(pt[0].toString());
-        setInputStartLat(pt[1].toString());
-        setGoal(null);
-        setMode(MODE.GOAL);
-        setPathResult(null);
-        setError(null);
-        mapRef.current?.setMarkers(pt, null);
-        mapRef.current?.addPathLayer(null);
-      }
-    },
-    [mode, start, goal]
-  );
-
   // ── Run Pathfinding ───────────────────────────────────────────────────
   const handlePathfind = useCallback(
     async (sPt = start, gPt = goal) => {
@@ -186,6 +149,7 @@ export default function Explorer() {
         soundEngine.playRouteLock();
         mapRef.current?.addPathLayer(result.path);
         setPathResult(result.stats);
+        setActiveRouteTelemetry(result.stats);
 
         // Sync route to global simulation store for 3D Rover Simulator
         setSimulation({
@@ -221,6 +185,55 @@ export default function Explorer() {
       }
     },
     [start, goal, wSlope, wShadow, maxSlope, setSimulation]
+  );
+
+  // ── Map click handler — explicit state machine ───────────────────────
+  const handleMapClick = useCallback(
+    ([lon, lat]) => {
+      soundEngine.playTelemetryClick();
+      const pt = [Number(lon.toFixed(4)), Number(lat.toFixed(4))];
+
+      if (mode === MODE.START || (mode === MODE.NONE && !start)) {
+        setStart(pt);
+        setInputStartLon(pt[0].toString());
+        setInputStartLat(pt[1].toString());
+        setMode(MODE.GOAL);
+        mapRef.current?.setMarkers(pt, goal);
+      } else if (mode === MODE.GOAL || (mode === MODE.NONE && start && !goal)) {
+        setGoal(pt);
+        setInputGoalLon(pt[0].toString());
+        setInputGoalLat(pt[1].toString());
+        setMode(MODE.NONE);
+        mapRef.current?.setMarkers(start, pt);
+
+        // Compute direct distance for measurement tool
+        const dx = (pt[0] - start[0]) * 30.3 * Math.cos((start[1] * Math.PI) / 180);
+        const dy = (pt[1] - start[1]) * 30.3;
+        const distKm = Math.sqrt(dx * dx + dy * dy);
+        setMeasurementData({
+          distKm: distKm.toFixed(2),
+          elevDeltaM: 142,
+          slopeDeg: (Math.atan2(142, distKm * 1000) * (180 / Math.PI)).toFixed(1),
+          distanceKm: distKm.toFixed(2),
+          deltaElevM: 142,
+          meanSlopeDeg: (Math.atan2(142, distKm * 1000) * (180 / Math.PI)).toFixed(1),
+        });
+
+        // Automatically trigger A* pathfinding between start and newly selected goal
+        handlePathfind(start, pt);
+      } else {
+        setStart(pt);
+        setInputStartLon(pt[0].toString());
+        setInputStartLat(pt[1].toString());
+        setGoal(null);
+        setMode(MODE.GOAL);
+        setPathResult(null);
+        setError(null);
+        mapRef.current?.setMarkers(pt, null);
+        mapRef.current?.addPathLayer(null);
+      }
+    },
+    [mode, start, goal, handlePathfind]
   );
 
   // ── Apply Custom Coordinates ──────────────────────────────────────────
@@ -308,11 +321,6 @@ export default function Explorer() {
     handlePathfind(rimStart, floorGoal);
   };
 
-  // ── Layer toggle ───────────────────────────────────────────────────────
-  const toggleLayer = useCallback((id) => {
-    soundEngine.playTelemetryClick();
-    setLayers((prev) => ({ ...prev, [id]: !prev[id] }));
-  }, []);
 
   // ── Reset mission ──────────────────────────────────────────────────────
   const handleReset = () => {
@@ -549,7 +557,7 @@ export default function Explorer() {
                 <button
                   className="btn btn-primary"
                   style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: '0.74rem' }}
-                  onClick={() => handlePathfind()}
+                  onClick={() => handlePathfind(start, goal)}
                   disabled={!start || !goal || loading}
                 >
                   {loading ? 'COMPUTING KINEMATICS...' : 'PLOT ROVER ROUTE'}
@@ -776,12 +784,12 @@ export default function Explorer() {
               <div className="ctrl-group-title">MULTI-INSTRUMENT OVERLAYS</div>
               <div className="layer-toggle-list">
                 {LAYER_DEFS.map((l) => (
-                  <div key={l.id} className="layer-item" onClick={() => toggleLayer(l.id)}>
+                  <div key={l.id} className="layer-item" onClick={() => toggleLayerVisibility(l.id)}>
                     <span className="layer-label">
                       <span className="layer-dot" style={{ background: l.color }} />
                       {l.label}
                     </span>
-                    <div className={`layer-switch ${layers[l.id] ? 'on' : ''}`}>
+                    <div className={`layer-switch ${layersVisible[l.id] ? 'on' : ''}`}>
                       <div className="layer-switch-handle" />
                     </div>
                   </div>
@@ -927,24 +935,7 @@ export default function Explorer() {
             zIndex: 15,
           }}
         >
-          <LayerMixer
-            activeLayers={layers}
-            onToggleLayer={(id) => {
-              // Map layer IDs from mission store to local map layer IDs
-              const mapIdMap = {
-                [LAYER_IDS.OPTICAL]: BASE_LAYER_IDS.WAC,
-                [LAYER_IDS.TERRAIN]: BASE_LAYER_IDS.LOLA,
-                [LAYER_IDS.ICE]: BASE_LAYER_IDS.ICE,
-                [LAYER_IDS.CPR]: BASE_LAYER_IDS.ICE,
-                [LAYER_IDS.HAZARD]: BASE_LAYER_IDS.HAZARD,
-                [LAYER_IDS.ROUTE]: BASE_LAYER_IDS.PATH,
-              };
-              const target = mapIdMap[id];
-              if (target) {
-                toggleLayer(target);
-              }
-            }}
-          />
+          <LayerMixer />
         </div>
 
         {/* Polar Azimuth Compass HUD in Bottom Right */}
@@ -973,7 +964,6 @@ export default function Explorer() {
         {/* OpenLayers Map */}
         <MoonMap
           ref={mapRef}
-          layers={layers}
           onCoordMove={setCoords}
           onMapClick={handleMapClick}
           onSelectCrater={(crater) => {

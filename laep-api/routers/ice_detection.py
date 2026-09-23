@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import Response
 from algorithms.data_loader import generate_synthetic_scene, load_ch2_shapefile_geojson
-from algorithms.ice_confidence import ics_to_rgba_png
+from algorithms.ice_confidence import ics_to_rgba_png, cpr_to_rgba_png, dop_to_rgba_png
 
 router = APIRouter()
 
@@ -11,6 +11,22 @@ def get_ice_heatmap():
     """Returns the Ice Confidence Score as a transparent RGBA PNG heatmap."""
     scene = generate_synthetic_scene()
     png_bytes = ics_to_rgba_png(scene["ice_score"])
+    return Response(content=png_bytes, media_type="image/png")
+
+
+@router.get("/cpr-map", response_class=Response)
+def get_cpr_map():
+    """Returns the Circular Polarization Ratio (CPR) as an RGBA PNG heatmap."""
+    scene = generate_synthetic_scene()
+    png_bytes = cpr_to_rgba_png(scene["cpr_map"])
+    return Response(content=png_bytes, media_type="image/png")
+
+
+@router.get("/dop-map", response_class=Response)
+def get_dop_map():
+    """Returns the Degree of Polarization (DOP) as an RGBA PNG heatmap."""
+    scene = generate_synthetic_scene()
+    png_bytes = dop_to_rgba_png(scene["dop_map"])
     return Response(content=png_bytes, media_type="image/png")
 
 

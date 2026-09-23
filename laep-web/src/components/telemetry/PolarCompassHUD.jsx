@@ -4,7 +4,7 @@ export default function PolarCompassHUD() {
   const simulation = useMissionStore((s) => s.simulation);
   const solarElevation = useMissionStore((s) => s.solarElevation);
 
-  const heading = simulation.heading || 142.5;
+  const heading = simulation?.heading != null ? Number(simulation.heading) : 142.5;
 
   return (
     <div
@@ -33,27 +33,51 @@ export default function PolarCompassHUD() {
         }}
       >
         {/* Cardinal Markers */}
-        <span style={{ position: 'absolute', top: '2px', fontSize: '0.48rem', color: '#7dd3fc' }}>N</span>
+        <span style={{ position: 'absolute', top: '2px', fontSize: '0.48rem', color: '#7dd3fc', fontWeight: 600 }}>N</span>
         <span style={{ position: 'absolute', bottom: '2px', fontSize: '0.48rem', color: '#6b7280' }}>S</span>
         <span style={{ position: 'absolute', left: '3px', fontSize: '0.48rem', color: '#6b7280' }}>W</span>
         <span style={{ position: 'absolute', right: '3px', fontSize: '0.48rem', color: '#6b7280' }}>E</span>
 
-        {/* Heading Needle Indicator */}
+        {/* Heading Needle Indicator with Centered Pivot */}
         <div
           style={{
             position: 'absolute',
-            width: '2px',
-            height: '24px',
-            backgroundColor: '#2dd4bf',
-            boxShadow: '0 0 6px #2dd4bf',
-            transformOrigin: 'bottom center',
-            transform: `rotate(${heading}deg) translateY(-12px)`,
-            borderRadius: '1px',
+            inset: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: `rotate(${heading}deg)`,
+            transition: 'transform 100ms linear',
+            pointerEvents: 'none',
           }}
-        />
+        >
+          {/* North-pointing tip */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '8px',
+              width: '2px',
+              height: '18px',
+              backgroundColor: '#2dd4bf',
+              boxShadow: '0 0 8px #2dd4bf',
+              borderRadius: '1px',
+            }}
+          />
+          {/* South-pointing tail */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              width: '2px',
+              height: '14px',
+              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              borderRadius: '1px',
+            }}
+          />
+        </div>
 
         {/* Center Pivot */}
-        <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#f4f4f0' }} />
+        <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#f4f4f0', zIndex: 2 }} />
       </div>
 
       {/* Numerical Heading Readout */}

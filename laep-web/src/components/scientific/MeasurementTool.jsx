@@ -24,6 +24,11 @@ export default function MeasurementTool({ measurement, onClear }) {
     );
   }
 
+  // Gracefully handle both naming styles
+  const dist = measurement?.distanceKm ?? measurement?.distKm;
+  const elev = measurement?.deltaElevM ?? measurement?.elevDeltaM;
+  const slope = measurement?.meanSlopeDeg ?? measurement?.slopeDeg;
+
   return (
     <div
       className="glass-instrument hud-corner-bracket"
@@ -45,19 +50,19 @@ export default function MeasurementTool({ measurement, onClear }) {
         <span style={{ color: '#7dd3fc', fontWeight: 600 }}>RULER ACTIVE</span>
       </div>
 
-      {measurement ? (
+      {dist != null ? (
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <div>
             <span style={{ color: '#6b7280', fontSize: '0.62rem' }}>DIST: </span>
-            <span style={{ color: '#b8f0ff', fontWeight: 600 }}>{measurement.distanceKm} km</span>
+            <span style={{ color: '#b8f0ff', fontWeight: 600 }}>{dist} km</span>
           </div>
           <div>
             <span style={{ color: '#6b7280', fontSize: '0.62rem' }}>ΔELEV: </span>
-            <span style={{ color: '#ffc857', fontWeight: 600 }}>{measurement.deltaElevM > 0 ? `+${measurement.deltaElevM}` : measurement.deltaElevM} m</span>
+            <span style={{ color: '#ffc857', fontWeight: 600 }}>{Number(elev) > 0 ? `+${elev}` : elev} m</span>
           </div>
           <div>
             <span style={{ color: '#6b7280', fontSize: '0.62rem' }}>SLOPE: </span>
-            <span style={{ color: measurement.meanSlopeDeg > 15 ? '#ff6b5e' : '#7be495', fontWeight: 600 }}>{measurement.meanSlopeDeg}°</span>
+            <span style={{ color: Number(slope) > 15 ? '#ff6b5e' : '#7be495', fontWeight: 600 }}>{slope}°</span>
           </div>
         </div>
       ) : (

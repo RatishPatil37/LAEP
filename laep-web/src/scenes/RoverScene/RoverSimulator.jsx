@@ -1,48 +1,96 @@
 /**
  * RoverSimulator.jsx — 3D Kinematic Lunar Rover Traversal Simulator
- * Fuses:
- * - 3D Parametric Crater Terrain with rim-to-floor slope and boulder hazards.
- * - 6-Wheel Rocker-Bogie Lunar Rover chassis with rotating wheels and stereo cameras.
- * - Dynamic Spotlights (Rover Headlights) casting beams into permanent shadow (PSR).
- * - Real-time Inclinometer & Artificial Horizon Gyro HUD (Pitch, Roll, Slip Risk).
- * - Interactive Timeline Scrubber & Speed Controls (1x, 2x, 5x).
+ * Features:
+ * - Mathematical Impact Crater Depressions (Downwards Bowl Cavities + Raised Rim Crests).
+ * - Primary Ice Target Crater (Faustini Basin Floor Cold Trap, Verified Subsurface Ice).
+ * - Multi-Crater Avoidance: Collision-free kinematic trajectory navigating safely between Hazard Craters Alpha & Beta.
+ * - 3D Holographic Navigation Beacons & Target Rings for all craters.
+ * - Glowing 3D Neon Traversal Spline conforming to terrain surface.
+ * - 6-Wheel Rocker-Bogie Lunar Rover chassis with rotating wheels, stereo cameras, and piercing headlights.
+ * - Real-time Inclinometer & Artificial Horizon Gyro HUD (Pitch, Roll, Slip Risk, Odometer).
+ * - Real A* Pathfinding Telemetry integration from Zustand mission store.
  * - Triple Camera Perspectives: Chase Cam, Driver Hazard Cam, Orbital Satellite View.
- * - Real-time Chronological Telemetry Stream.
  */
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useMissionStore } from '../../stores/useMissionStore';
 import { soundEngine } from '../../lib/soundEffects';
 
-// Procedural Heightmap for Crater Rim-to-Floor Descent
-function getTerrainHeight(x, z) {
-  // Overall crater wall slope (descending toward negative z)
-  const baseSlope = -0.18 * z;
-  // Large crater bowl depression
-  const distFromCenter = Math.sqrt(x * x + (z + 10) * (z + 10));
-  const craterDepression = Math.max(0, 15 - distFromCenter * 0.5) * -0.25;
-  // Multi-frequency roughness & micro-craters
-  const micro1 = Math.sin(x * 0.4) * Math.cos(z * 0.4) * 0.35;
-  const micro2 = Math.sin(x * 1.2 + z * 0.8) * 0.12;
-  const micro3 = Math.cos(x * 2.5 - z * 2.1) * 0.05;
-  return baseSlope + craterDepression + micro1 + micro2 + micro3;
+// Mathematical Impact Crater Profile (Cavity Depression + Raised Rim Ejecta Crest)
+function craterProfile(x, z, cx, cz, radius, depth, rimHeight) {
+  const dx = x - cx;
+  const dz = z - cz;
+  const dist = Math.sqrt(dx * dx + dz * dz);
+  if (dist < radius) {
+    // Parabolic depression cavity
+    const normDist = dist / radius;
+    const cavity = -depth * Math.pow(1 - normDist * normDist, 1.35);
+    const innerRim = rimHeight * Math.pow(normDist, 3.5);
+    return cavity + innerRim;
+  } else if (dist < radius * 1.7) {
+    // Raised rim ejecta ramp decaying outward smoothly
+    const rimFraction = (dist - radius) / (radius * 0.7);
+    const rimDecay = rimHeight * 0.5 * (1 + Math.cos(rimFraction * Math.PI));
+    return rimDecay;
+  }
+  return 0;
 }
 
-// Terrain Surface Component
+// Global Lunar Terrain Elevation Function (Analytical Downward Craters + Natural Undulations)
+export function getTerrainHeight(x, z) {
+  // 1. Regional North-to-South descent from sunlit polar rim (z = +30) into dark basin floor (z = -30)
+  const regionalSlope = -0.09 * z;
+
+  // 2. Primary Ice Target Crater (Deep Cold Trap Bowl at x = 0, z = -24)
+  const targetCrater = craterProfile(x, z, 0, -24, 9.5, 4.8, 1.1);
+
+  // 3. Hazard Crater Alpha (Dangerous 28° cliff obstacle at x = -9, z = 6)
+  const hazardCraterAlpha = craterProfile(x, z, -9, 6, 6.2, 5.2, 1.3);
+
+  // 4. Hazard Crater Beta (Faulted fracture crater at x = 9, z = -7)
+  const hazardCraterBeta = craterProfile(x, z, 9, -7, 6.8, 4.8, 1.1);
+
+  // 5. Multi-octave natural regolith undulations
+  const micro1 = Math.sin(x * 0.25) * Math.cos(z * 0.25) * 0.32;
+  const micro2 = Math.sin(x * 0.65 + z * 0.45) * 0.12;
+
+  return regionalSlope + targetCrater + hazardCraterAlpha + hazardCraterBeta + micro1 + micro2;
+}
+
+// Waypoint Traversal Spline (Avoids Hazard Craters Alpha & Beta, terminates in Ice Crater)
+function buildRoverSpline() {
+  const waypoints = [
+    new THREE.Vector3(0, 0, 28),     // 0. Faustini North Rim Crest
+    new THREE.Vector3(3.8, 0, 18),   // 1. Gently curving east away from Hazard Alpha
+    new THREE.Vector3(5.2, 0, 7),    // 2. Safe eastern corridor passing Hazard Alpha
+    new THREE.Vector3(1.2, 0, -3),   // 3. Central saddle between Alpha and Beta
+    new THREE.Vector3(-3.2, 0, -12), // 4. Western shelf curving clear of Hazard Beta
+    new THREE.Vector3(-1.0, 0, -19), // 5. Entering northern gentle rim of Ice Target Crater
+    new THREE.Vector3(0, 0, -24),    // 6. Center of Target Ice Crater (Deposit Core)
+  ];
+  waypoints.forEach((p) => {
+    p.y = getTerrainHeight(p.x, p.z) + 0.62;
+  });
+  return new THREE.CatmullRomCurve3(waypoints);
+}
+
+// Terrain Surface Component with Craters & Ice Deposits
 function LunarTerrain({ wireframe }) {
   const meshRef = useRef();
 
-  const { geometry, colors } = useMemo(() => {
-    const geom = new THREE.PlaneGeometry(80, 80, 100, 100);
+  const { geometry } = useMemo(() => {
+    const geom = new THREE.PlaneGeometry(90, 90, 140, 140);
     geom.rotateX(-Math.PI / 2);
 
     const pos = geom.attributes.position;
     const cols = [];
-    const colorA = new THREE.Color('#383b42'); // Lowland cold trap regolith
-    const colorB = new THREE.Color('#686c75'); // Sunlit rim regolith
-    const colorIce = new THREE.Color('#8ce8ff'); // Diagnostic ice-consistent anomaly
+    const colorRegolithBase = new THREE.Color('#32353c');
+    const colorRegolithRim  = new THREE.Color('#5e636e');
+    const colorHazardWall   = new THREE.Color('#1f2127');
+    const colorIceTarget    = new THREE.Color('#38bdf8');
+    const colorIceCore      = new THREE.Color('#a5f3fc');
 
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i);
@@ -50,15 +98,32 @@ function LunarTerrain({ wireframe }) {
       const y = getTerrainHeight(x, z);
       pos.setY(i, y);
 
-      // Color based on depth / shadow and icy pocket
-      const depthFactor = THREE.MathUtils.clamp((y + 6) / 10, 0, 1);
-      const isIcePocket = z < -8 && Math.abs(x) < 7 && y < -2;
-      const finalColor = isIcePocket ? colorIce : colorA.clone().lerp(colorB, depthFactor);
-      cols.push(finalColor.r, finalColor.g, finalColor.b);
+      // Distance to target ice crater center (0, -24)
+      const dTarget = Math.hypot(x - 0, z - (-24));
+      // Distance to Hazard Crater Alpha (-9, 6)
+      const dAlpha = Math.hypot(x - (-9), z - 6);
+      // Distance to Hazard Crater Beta (9, -7)
+      const dBeta = Math.hypot(x - 9, z - (-7));
+
+      let vertexCol;
+      if (dTarget < 6.5) {
+        // High confidence subsurface ice pocket (bright cyan crystalline)
+        const iceFraction = THREE.MathUtils.clamp(1 - dTarget / 6.5, 0, 1);
+        vertexCol = colorIceTarget.clone().lerp(colorIceCore, iceFraction);
+      } else if (dAlpha < 5.8 || dBeta < 6.4) {
+        // Dark steep hazard crater walls
+        vertexCol = colorHazardWall;
+      } else {
+        // Sunlit rim elevation shading
+        const depthFactor = THREE.MathUtils.clamp((y + 6) / 10, 0, 1);
+        vertexCol = colorRegolithBase.clone().lerp(colorRegolithRim, depthFactor);
+      }
+      cols.push(vertexCol.r, vertexCol.g, vertexCol.b);
     }
 
+    geom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(cols), 3));
     geom.computeVertexNormals();
-    return { geometry: geom, colors: new Float32Array(cols) };
+    return { geometry: geom };
   }, []);
 
   return (
@@ -74,53 +139,78 @@ function LunarTerrain({ wireframe }) {
   );
 }
 
-// Boulders and Scatter Hazards
-function LunarBoulders() {
-  const boulders = useMemo(() => {
-    const items = [];
-    const count = 35;
-    for (let i = 0; i < count; i++) {
-      const x = (Math.random() - 0.5) * 60;
-      const z = (Math.random() - 0.5) * 60;
-      const y = getTerrainHeight(x, z);
-      const scale = 0.3 + Math.random() * 0.9;
-      items.push({ pos: [x, y + scale * 0.4, z], scale });
-    }
-    return items;
-  }, []);
+// Glowing 3D Neon Kinematic Route Line
+function TraversalRouteLine({ curve }) {
+  const lineGeom = useMemo(() => {
+    const points = curve.getPoints(140);
+    const adjusted = points.map((p) => new THREE.Vector3(p.x, getTerrainHeight(p.x, p.z) + 0.12, p.z));
+    return new THREE.BufferGeometry().setFromPoints(adjusted);
+  }, [curve]);
 
   return (
+    <line geometry={lineGeom}>
+      <lineBasicMaterial color="#2dd4bf" linewidth={3} transparent opacity={0.88} />
+    </line>
+  );
+}
+
+// 3D Holographic Navigation Beacons for Craters
+function CraterMarkers() {
+  return (
     <group>
-      {boulders.map((b, idx) => (
-        <mesh key={idx} position={b.pos} scale={b.scale} castShadow receiveShadow>
-          <dodecahedronGeometry args={[1, 1]} />
-          <meshStandardMaterial color="#555861" roughness={0.95} />
+      {/* ── 1. Target Ice Crater Beacon (Floor at 0, -24) ── */}
+      <group position={[0, getTerrainHeight(0, -24) + 0.15, -24]}>
+        {/* Glowing cyan ice pool disk */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0, 4.8, 36]} />
+          <meshBasicMaterial color="#2dd4bf" transparent opacity={0.35} side={THREE.DoubleSide} />
         </mesh>
-      ))}
+        {/* Pulsing Concentric Target Rings */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[4.7, 5.0, 36]} />
+          <meshBasicMaterial color="#7dd3fc" side={THREE.DoubleSide} />
+        </mesh>
+        <pointLight color="#2dd4bf" intensity={8} distance={18} />
+      </group>
+
+      {/* Target Crater North Rim Entrance Marker */}
+      <group position={[0, getTerrainHeight(0, -14.5) + 0.2, -14.5]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[1.2, 1.4, 24]} />
+          <meshBasicMaterial color="#34d399" side={THREE.DoubleSide} />
+        </mesh>
+        <pointLight color="#34d399" intensity={3} distance={8} />
+      </group>
+
+      {/* ── 2. Hazard Crater Alpha (Obstacle at -9, 6) ── */}
+      <group position={[-9, getTerrainHeight(-9, 6) + 0.25, 6]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[5.8, 6.3, 36]} />
+          <meshBasicMaterial color="#ff6b5e" transparent opacity={0.7} side={THREE.DoubleSide} />
+        </mesh>
+        <pointLight color="#ff6b5e" intensity={5} distance={12} />
+      </group>
+
+      {/* ── 3. Hazard Crater Beta (Obstacle at 9, -7) ── */}
+      <group position={[9, getTerrainHeight(9, -7) + 0.25, -7]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[6.4, 6.9, 36]} />
+          <meshBasicMaterial color="#f59e0b" transparent opacity={0.7} side={THREE.DoubleSide} />
+        </mesh>
+        <pointLight color="#f59e0b" intensity={5} distance={12} />
+      </group>
     </group>
   );
 }
 
 // 6-Wheel Lunar Rover Chassis with Dynamic Headlights
-function LunarRoverChassis({ progress, onTelemetryUpdate, cameraMode }) {
+function LunarRoverChassis({ progress, onTelemetryUpdate, cameraMode, curve }) {
   const roverGroupRef = useRef();
   const wheelRefs = useRef([]);
   const headlightLeftRef = useRef();
   const headlightRightRef = useRef();
 
-  // Waypoint Traversal Path (Faustini Rim to Floor PSR)
-  const curve = useMemo(() => {
-    return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, getTerrainHeight(0, 28) + 0.6, 28),
-      new THREE.Vector3(3, getTerrainHeight(3, 18) + 0.6, 18),
-      new THREE.Vector3(-2, getTerrainHeight(-2, 8) + 0.6, 8),
-      new THREE.Vector3(4, getTerrainHeight(4, -4) + 0.6, -4),
-      new THREE.Vector3(-1, getTerrainHeight(-1, -16) + 0.6, -16),
-      new THREE.Vector3(0, getTerrainHeight(0, -26) + 0.6, -26),
-    ]);
-  }, []);
-
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (!roverGroupRef.current) return;
 
     // Current point and look-ahead tangent
@@ -128,9 +218,9 @@ function LunarRoverChassis({ progress, onTelemetryUpdate, cameraMode }) {
     const pos = curve.getPointAt(t);
     const tangent = curve.getTangentAt(t).normalize();
 
-    // Align with terrain surface
+    // Align with terrain surface perfectly
     const terrainY = getTerrainHeight(pos.x, pos.z);
-    pos.y = terrainY + 0.55;
+    pos.y = terrainY + 0.58;
     roverGroupRef.current.position.copy(pos);
 
     // Calculate heading, pitch, roll
@@ -141,14 +231,14 @@ function LunarRoverChassis({ progress, onTelemetryUpdate, cameraMode }) {
     const pitchDeg = THREE.MathUtils.radToDeg(pitchRad);
 
     const normal = new THREE.Vector3(0, 1, 0);
-    const rollDeg = Math.sin(t * 30) * 1.8; // Chassis micro-oscillation over regolith
+    const rollDeg = Math.sin(t * 30) * 1.5; // Natural regolith chassis oscillation
 
     // Orientation
     const targetQuat = new THREE.Quaternion();
     const m = new THREE.Matrix4();
     m.lookAt(pos, pos.clone().add(tangent), normal);
     targetQuat.setFromRotationMatrix(m);
-    roverGroupRef.current.quaternion.slerp(targetQuat, 0.1);
+    roverGroupRef.current.quaternion.slerp(targetQuat, 0.12);
 
     // Rotate wheels
     const wheelRot = progress * 80;
@@ -158,7 +248,7 @@ function LunarRoverChassis({ progress, onTelemetryUpdate, cameraMode }) {
 
     // Dynamic telemetry emission
     const slopeDeg = Math.abs(pitchDeg) + Math.abs(rollDeg);
-    const slipRisk = Math.min(100, Math.round((slopeDeg / 20) * 45 + Math.random() * 4));
+    const slipRisk = Math.min(100, Math.round((slopeDeg / 20) * 40 + Math.random() * 3));
     onTelemetryUpdate({
       pitch: pitchDeg.toFixed(1),
       roll: rollDeg.toFixed(1),
@@ -187,7 +277,7 @@ function LunarRoverChassis({ progress, onTelemetryUpdate, cameraMode }) {
       {/* Main Avionics Body */}
       <mesh position={[0, 0.35, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.2, 0.5, 1.8]} />
-        <meshStandardMaterial color="#c29b38" roughness={0.4} metalness={0.7} /> {/* Gold insulation foil */}
+        <meshStandardMaterial color="#c29b38" roughness={0.4} metalness={0.7} /> {/* Gold MLI insulation foil */}
       </mesh>
 
       {/* Equipment Bay & Battery Enclosure */}
@@ -301,8 +391,8 @@ function LunarAtmosphereAndLights({ solarElevation }) {
 }
 
 export default function RoverSimulator() {
-  const isResearchMode = useMissionStore((s) => s.isResearchMode);
   const solarElevation = useMissionStore((s) => s.solarElevation);
+  const activeRouteTelemetry = useMissionStore((s) => s.activeRouteTelemetry);
 
   // Traversal Playback State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -310,6 +400,9 @@ export default function RoverSimulator() {
   const [progress, setProgress] = useState(0.12);
   const [wireframe, setWireframe] = useState(false);
   const [cameraMode, setCameraMode] = useState('chase'); // 'chase' | 'hazard' | 'orbital'
+
+  // Precomputed Spline Curve
+  const roverSpline = useMemo(() => buildRoverSpline(), []);
 
   // Dynamic Telemetry
   const [telemetry, setTelemetry] = useState({
@@ -361,8 +454,8 @@ export default function RoverSimulator() {
     setProgress(0.0);
   };
 
-  // Traversal Metrics
-  const totalDistanceKm = 4.72;
+  // Traversal Metrics (Backed by real A* backend telemetry when available)
+  const totalDistanceKm = activeRouteTelemetry?.path_length_km ?? 4.72;
   const currentDistanceKm = (progress * totalDistanceKm).toFixed(2);
   const batteryPct = Math.max(15, (100 - progress * 24.5)).toFixed(1);
   const isInShadow = progress > 0.35;
@@ -377,11 +470,13 @@ export default function RoverSimulator() {
       >
         <LunarAtmosphereAndLights solarElevation={solarElevation} />
         <LunarTerrain wireframe={wireframe} />
-        <LunarBoulders />
+        <TraversalRouteLine curve={roverSpline} />
+        <CraterMarkers />
         <LunarRoverChassis
           progress={progress}
           onTelemetryUpdate={setTelemetry}
           cameraMode={cameraMode}
+          curve={roverSpline}
         />
         {cameraMode === 'chase' && (
           <OrbitControls
@@ -448,6 +543,12 @@ export default function RoverSimulator() {
             <div style={{ color: '#ffc857', fontWeight: 600 }}>{batteryPct}%</div>
           </div>
         </div>
+
+        {activeRouteTelemetry && (
+          <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed rgba(255,255,255,0.1)', fontSize: '0.62rem', color: '#9aa0a6' }}>
+            <span style={{ color: '#2dd4bf' }}>[A* KINEMATIC ROUTE ACTIVE]</span> Energy: {activeRouteTelemetry.est_energy_wh || 240} Wh | Mean Slope: {activeRouteTelemetry.mean_slope_deg || 6.2}°
+          </div>
+        )}
       </div>
 
       {/* ── Camera Perspective Selector ─────────────────────────────────── */}
@@ -552,7 +653,7 @@ export default function RoverSimulator() {
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', color: '#9aa0a6' }}>
             <span>FAUSTINI NORTH RIM [START]</span>
             <span style={{ color: '#7dd3fc' }}>{(progress * 100).toFixed(1)}%</span>
-            <span>PSR RESOURCE TARGET [GOAL]</span>
+            <span>PSR ICE TARGET [GOAL]</span>
           </div>
           <input
             type="range"

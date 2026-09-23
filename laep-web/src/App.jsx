@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useMissionStore } from './stores/useMissionStore';
 import { soundEngine } from './lib/soundEffects';
 import CommandPalette from './components/navigation/CommandPalette';
+import MissionBoot from './components/navigation/MissionBoot';
 import './styles/globals.css';
 import './styles/aerospace.css';
 
@@ -14,6 +15,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {/* ── Cinematic Mission Diagnostic Boot Sequence (Runs on browser load/refresh) ── */}
+      <MissionBoot />
+
       {/* ── Global Topbar ─────────────────────────────────────────── */}
       <header className="topbar">
         <div className="topbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
