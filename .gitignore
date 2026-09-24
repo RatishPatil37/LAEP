@@ -18,3 +18,4 @@ ENV/
 # OS and temp files
 .DS_Store
 *.tmp
+.git_submodule_backup
