@@ -2,121 +2,113 @@ import { useState, useRef, useEffect } from 'react';
 import { useMissionStore } from '../../stores/useMissionStore';
 import { soundEngine } from '../../lib/soundEffects';
 
-const LAEP_SYSTEM_PROMPT = `You are the LAEP (Lunar Analytics & Exploration Platform) Mission AI Copilot, supporting ISRO Chandrayaan-2 lunar polar science.
-You assist planetary scientists, mission planners, and explorers researching water-ice deposits and autonomous rover traversals in lunar polar regions.
+const LAEP_SYSTEM_PROMPT = `You are the LAEP (Lunar Analytics & Exploration Platform) Mission Copilot, assisting ISRO Chandrayaan-2 planetary science and mission planning.
+Answer with objective, concise, and technically rigorous language without conversational fluff.
 
-Key Project Context:
-1. Primary Landing Benchmark: Faustini F2 North Rim (82.10°E, 87.35°S), chosen for gentle slopes (<10°), high earth-visibility, and cold-trap shadow persistence (96%).
-2. Multi-Sensor Data Fusion:
-   - Chandrayaan-2 DFSAR (Dual-Frequency Synthetic Aperture Radar): L-band & S-band polarimetry, Circular Polarization Ratio (CPR) and Degree of Polarization (DOP). CPR > 1 inside PSR indicates ice volume scattering.
-   - CH-2 OHRC (Orbital High Resolution Camera): 0.25 m/pixel imagery for boulder detection and hazard avoidance.
-   - CH-2 TMC-2: Stereo triplet images generating 5 m digital elevation models (DEM).
-   - CH-2 IIRS (Imaging Infrared Spectrometer): 250 bands (0.8–5.0 µm) detecting the diagnostic 3.0 µm water-ice absorption feature.
-3. Model Training Scope:
-   - Current models are strictly trained on extreme lunar polar latitudes: 80°S–90°S and 80°N–90°N.
-   - The pipeline uses a dual-stage architecture: Deep Learning for visual shadow segmentation + Machine Learning for fused Ice Confidence Score (ICS).
-4. Autonomous Rover Kinematics:
-   - A* algorithm with cost function incorporating slope gradient penalty (W1), shadow battery drain (W2), terramechanic slip risk, and a 20° tilt cutoff.
+Key Technical Parameters:
+1. Landing Site Benchmark: Faustini F2 North Rim (82.10°E, 87.35°S), selected for slope < 9.8°, permanent shadow persistence (96%), and direct line-of-sight communication with IDSN Byalalu.
+2. Sensors:
+   - DFSAR: Dual-Frequency Synthetic Aperture Radar (L-band 1.25 GHz, S-band 2.5 GHz). High Circular Polarization Ratio (CPR > 1) inside cold traps indicates volume scattering in water-ice deposits. Outside cold traps, CPR > 1 indicates surface roughness from blocky ejecta.
+   - OHRC: 0.25 m/pixel optical imaging for boulder hazard classification.
+   - TMC-2: Stereo triplet imaging generating 5 m DEMs.
+   - IIRS: 250 spectral channels (0.8–5.0 µm) detecting the diagnostic 3.0 µm O–H stretch band and 2.0 µm water-ice absorption trough.
+3. Model Scope:
+   - Models are trained strictly on extreme polar latitudes (80°S–90°S and 80°N–90°N).
+   - Dual-stage pipeline: Deep Learning shadow/hazard segmentation + Random Forest/XGBoost ensemble for Ice Confidence Score (ICS).
+4. Rover Kinematics:
+   - A* algorithm with slope penalty (W1), shadow battery drain (W2), terramechanic slip risk, and a hard 20° tilt threshold.`;
 
-Answer clearly, professionally, and concisely in aerospace-grade mission control style with technical accuracy.`;
-
-// Smart Offline Knowledge Base for Zero-Friction Instant Answers
 const OFFLINE_KNOWLEDGE_BASE = [
   {
-    keywords: ['faustini', 'f2', 'landing', 'site', 'why faustini'],
-    answer: `### 🎯 Faustini Crater F2 Landing Site Selection
-**Coordinates**: 82.10°E, 87.35°S (MCMF grid) | **Diameter**: ~39 km (Faustini parent)
+    keywords: ['faustini', 'f2', 'landing', 'site', 'why faustini', 'coordinates'],
+    answer: `### Faustini Crater F2 Landing Site Specification
+**Coordinates**: 82.10°E, 87.35°S | **MCMF Grid Sector**: South Polar
 
-**Why Faustini F2 is the Primary Candidate**:
-1. **Low Kinetic Hazard**: The North Rim terrace offers average slope gradients **< 9.8°**, well within the safe 15° rover tilt margin.
-2. **Cold-Trap Proximity**: Direct overland access to Permanently Shadowed Regions (PSRs) where equilibrium temperatures remain **< 110 K**, preventing water-ice sublimation over geological epochs.
-3. **Earth Visibility**: Sustains direct Line-of-Sight (LOS) communication with ISRO IDSN (Byalalu 32m deep-space antenna) for >70% of the lunar synodic month.
-4. **DFSAR CPR Anomaly**: Chandrayaan-2 DFSAR reveals elevated Circular Polarization Ratios (**peak CPR = 1.47**) inside the crater floor cold-trap, consistent with coherent backscatter from subsurface water-ice deposits.`,
+**Selection Criteria**:
+1. **Slope Grade**: North Rim terrace features mean slopes < 9.8°, below the safe 15° rover threshold.
+2. **Cold-Trap Proximity**: Immediate overland access to Permanently Shadowed Regions (PSRs) with equilibrium temperatures < 110 K.
+3. **Comms Visibility**: Direct Line-of-Sight (LOS) link to ISRO IDSN (Byalalu 32m deep-space antenna) for >70% of the lunar synodic month.
+4. **DFSAR Backscatter**: Elevated Circular Polarization Ratio (peak CPR = 1.47) inside the floor cold trap indicates subsurface water ice.`,
   },
   {
     keywords: ['dfsar', 'cpr', 'radar', 'sar', 'polarization', 's-band', 'l-band'],
-    answer: `### 📡 Chandrayaan-2 DFSAR & CPR Mechanics
+    answer: `### Chandrayaan-2 DFSAR Polarimetry & CPR Analysis
 **Sensor**: Dual-Frequency Synthetic Aperture Radar (L-band 1.25 GHz, S-band 2.5 GHz).
 
-**What is CPR (Circular Polarization Ratio)?**
-- **Definition**: The ratio of Same-Sense circular return power ($SC$) to Opposite-Sense circular return power ($OC$):
-  $$\\text{CPR} = \\frac{\\sigma_{SC}}{\\sigma_{OC}}$$
-- **Significance**:
-  - Smooth lunar surfaces reflect opposite sense ($OC > SC \\implies \\text{CPR} \\ll 1$).
-  - Surface roughness (blocky ejecta) scatters both senses ($\\text{CPR} \\approx 0.4 - 0.8$).
-  - **Volume Scattering in Water Ice**: Multiple internal reflections within low-loss ice grains preserve the same sense ($SC > OC$), yielding **CPR > 1.0**.
-- **Discrimination Rule**: In LAEP, CPR > 1.0 **inside** a PSR cold-trap indicates water ice; CPR > 1.0 **outside** indicates rocky crater ejecta.`,
+**Circular Polarization Ratio (CPR)**:
+$$\\text{CPR} = \\frac{\\sigma_{SC}}{\\sigma_{OC}}$$
+- $\\sigma_{SC}$: Same-sense circular return power.
+- $\\sigma_{OC}$: Opposite-sense circular return power.
+
+**Physical Discrimination**:
+- **Smooth Surface**: Opposite-sense dominant (CPR << 1).
+- **Surface Roughness**: Blocky ejecta scatters both senses (CPR ≈ 0.4–0.8).
+- **Water Ice Volume Scattering**: Coherent backscatter within low-loss ice grains preserves same-sense return (CPR > 1.0).
+- **Criterion**: In LAEP, CPR > 1.0 inside a PSR indicates water ice; CPR > 1.0 outside indicates rocky ejecta.`,
   },
   {
-    keywords: ['model', 'dl', 'ml', 'architecture', 'dual stage', 'pipeline', 'neural', 'cnn', 'vit'],
-    answer: `### 🧠 Dual-Stage Ice & Hazard Architecture
-LAEP utilizes an end-to-end multi-instrument machine learning pipeline:
+    keywords: ['model', 'dl', 'ml', 'architecture', 'dual stage', 'pipeline', 'neural'],
+    answer: `### Dual-Stage Model Architecture
+The LAEP pipeline processes multi-sensor lunar datasets in two stages:
 
-1. **Stage 1 — Deep Learning Visual & Shadow Segmentation**:
-   - Ingests **OHRC (0.25 m)** and **TMC-2** imagery.
-   - Identifies Doubly Shadowed Regions (DSRs), cold-trap micro-topography, and hazard masks (boulders > 0.5 m, steep craters).
-2. **Stage 2 — Physics-Guided ML Ice Confidence Score (ICS)**:
-   - Employs an ensemble (Random Forest + XGBoost) trained on co-registered **DFSAR CPR**, **DOP**, **IIRS 3.0 µm band depth**, and **Diviner equilibrium temperatures**.
-   - Output: Calibrated probability map ($ICS \\in [0, 1]$) with 95% Bayesian confidence intervals ($\\pm 9\\%$ uncertainty bounds).`,
+1. **Stage 1 — Visual & Shadow Segmentation**:
+   - Ingests OHRC (0.25 m) and TMC-2 imagery.
+   - Identifies Doubly Shadowed Regions (DSRs) and boulder hazard masks.
+2. **Stage 2 — Physics-Guided Ice Confidence Score (ICS)**:
+   - Random Forest and XGBoost ensemble trained on co-registered DFSAR CPR, DOP, IIRS 3.0 µm band depth, and Diviner equilibrium temperatures.
+   - Calibrated output: Ice Confidence Score ($ICS \\in [0, 1]$) with ±9% Bayesian confidence intervals.`,
   },
   {
     keywords: ['bound', 'bounds', '80', '90', 'polar', 'limit', 'latitude', 'scope', 'training'],
-    answer: `### 🌐 80°–90° Polar Model Domain & Bounds
-**Active Model Envelope**:
-- **South Polar Reach**: $80^\\circ\\text{S}$ to $90^\\circ\\text{S}$ (Latitude $-80.0^\\circ$ to $-90.0^\\circ$).
-- **North Polar Reach**: $80^\\circ\\text{N}$ to $90^\\circ\\text{N}$ (Latitude $+80.0^\\circ$ to $+90.0^\\circ$).
-- **Active Reticle**: Faustini F2 target sector ($65^\\circ\\text{E} - 95^\\circ\\text{E}, 86.5^\\circ\\text{S} - 89.9^\\circ\\text{S}$).
+    answer: `### Model Training Domain (80°–90° Polar Limits)
+**Spatial Domain**:
+- South Polar Reach: 80.0°S to 90.0°S (-80.0° to -90.0°).
+- North Polar Reach: 80.0°N to 90.0°N (+80.0° to +90.0°).
+- Primary Reticle: Faustini F2 (65.0°E–95.0°E, 86.5°S–89.9°S).
 
 **Scientific Rationale**:
-- Cold-trap water ice requires perennial cryogenic temperatures ($< 110\\text{ K}$) only found in topographically shielded craters at extreme lunar polar inclinations ($|\\text{lat}| > 80^\\circ$).
-- Sub-polar and equatorial regions experience daytime temperatures up to $390\\text{ K}$, where volatile ice is physically unstable.
-- You can toggle the **MODEL BOUNDS** channel in the Layer Mixer (11 CH) to inspect the exact polar training boundaries on the Moon Trek map.`,
+- Cryogenic cold traps (< 110 K) capable of retaining volatile water ice over geological timescales exist exclusively at extreme polar latitudes (|lat| > 80°).
+- Sub-polar and equatorial surfaces reach 390 K during lunar day, sublimating volatile ice rapidly.
+- Boundary line overlays can be toggled via the MODEL BOUNDS channel in the Layer Mixer.`,
   },
   {
     keywords: ['route', 'kinematic', 'a*', 'path', 'planner', 'rover', 'energy', 'slope penalty'],
-    answer: `### 🚜 Autonomous Kinematic A* Traversal Engine
-The LAEP pathfinder plans obstacle-free, energy-minimal rover routes across LOLA DEM grids:
+    answer: `### Autonomous Kinematic A* Traversal Engine
+Plans obstacle-free, energy-minimal rover paths across LOLA DEM grids.
 
 **Cost Function**:
 $$J(n) = g(n) + h(n) + W_1 \\cdot \\Delta\\theta(n) + W_2 \\cdot \\Phi_{\\text{shadow}}(n)$$
-- $g(n)$: Euclidean distance travelled from rim start.
-- $h(n)$: Octile heuristic distance to ice target.
-- $W_1 \\cdot \\Delta\\theta$: Slope gradient penalty (steep slopes exponentially increase wheel slippage and roll hazard).
-- $W_2 \\cdot \\Phi_{\\text{shadow}}$: Shadow duration penalty (protects rover battery from excessive cryogenic drain).
-- **Terramechanic Constraints**: Hard 20° tilt threshold cutoff, slip ratio coefficient $\\mu = 0.18$, and maximum gradeability verification.`,
+- $g(n)$: Cumulative traverse distance from start.
+- $h(n)$: Octile distance heuristic to destination.
+- $W_1 \\cdot \\Delta\\theta$: Slope gradient penalty (avoids rollover and wheel slip).
+- $W_2 \\cdot \\Phi_{\\text{shadow}}$: Shadow duration penalty (limits battery drain).
+- Hard constraint: 20° tilt cutoff with slip ratio coefficient $\\mu = 0.18$.`,
   },
   {
     keywords: ['iirs', 'spectrometer', 'infrared', '3 micron', 'absorption', 'frost'],
-    answer: `### 🔬 Chandrayaan-2 IIRS (Imaging Infrared Spectrometer)
-- **Spectral Coverage**: 0.8 µm to 5.0 µm across 250 contiguous channels with ~8 nm resolution.
-- **Water Ice Fingerprint**: Detects the fundamental **3.0 µm asymmetric O–H stretch vibration band** and the 1.5 µm & 2.0 µm overtone absorption bands.
-- **Diagnostic Metric**: Band depth calculation:
+    answer: `### Chandrayaan-2 IIRS Spectrometer
+- **Spectral Coverage**: 0.8 µm to 5.0 µm across 250 contiguous bands (~8 nm sampling).
+- **Key Absorption Bands**: Detects the diagnostic 3.0 µm O–H fundamental stretch band and the 1.5 µm / 2.0 µm overtone troughs.
+- **Band Depth Metric**:
   $$\\text{BD}_{3.0} = 1 - \\frac{R_{3.0}}{0.5 \\cdot (R_{2.8} + R_{3.2})}$$
-- Even faint surface hoarfrost (~0.1 wt%) generates measurable band depression, providing direct spectroscopic confirmation of surface ice.`,
+- Positive band depth indicates surface frost or regolith-adsorbed hydroxyl molecules.`,
   },
   {
     keywords: ['ohrc', 'tmc', 'camera', 'resolution', 'stereo', 'dem', 'boulder'],
-    answer: `### 📷 OHRC & TMC-2 High-Resolution Optical Payload
-- **OHRC (Orbital High-Resolution Camera)**:
-  - Spatial Resolution: **0.25 m/pixel** from 100 km orbit (highest resolution planetary camera ever flown to the Moon).
-  - Purpose: Resolves sub-meter hazards (boulders, fissures, micro-craters) to safeguard autonomous rover landings.
-- **TMC-2 (Terrain Mapping Camera-2)**:
-  - Triple-stereo viewing (Fore, Nadir, Aft at $\\pm 25^\\circ$).
-  - Generates 5 m Digital Elevation Models (DEM) for precision slope, curvature, and roughness computation.`,
+    answer: `### High-Resolution Imaging Payloads
+- **OHRC (Orbital High Resolution Camera)**: 0.25 m/pixel spatial resolution from 100 km orbit for boulder hazard classification down to 0.5 m.
+- **TMC-2 (Terrain Mapping Camera-2)**: Triplet stereo imaging (Fore, Nadir, Aft at ±25°) generating 5 m Digital Elevation Models (DEM) for slope and terrain roughness computation.`,
   },
 ];
 
-const DEFAULT_FALLBACK_REPLY = `### 🛰️ LAEP Mission Intelligence
-I am the LAEP Lunar Assistant. I have indexed all Chandrayaan-2 polar datasets, the Faustini F2 landing candidate, and the autonomous rover planner.
+const DEFAULT_FALLBACK_REPLY = `### LAEP Technical Reference
+Chandrayaan-2 mission parameters and polar datasets are indexed:
+- **Landing Site**: Faustini F2 North Rim (82.10°E, 87.35°S).
+- **Radar Payload**: DFSAR CPR volume scattering vs. surface roughness discrimination.
+- **Model Scope**: Dual-stage ML pipeline constrained to 80°–90° polar zones.
+- **Path Planning**: Kinematic A* pathfinder with slope and shadow penalties.
 
-**You can ask me about**:
-- **Landing Geology**: Why Faustini F2 North Rim was selected over Shackleton or Shoemaker.
-- **Radar Science**: How DFSAR S/L-band Circular Polarization Ratio (CPR) distinguishes water ice from surface rocks.
-- **Algorithms**: How the dual-stage Deep Learning + ML pipeline evaluates the Ice Confidence Score (ICS).
-- **Navigation**: How the Kinematic A* engine optimizes slope gradients and battery power.
-- **Model Boundaries**: The 80°–90° polar training zone highlighted in the NASA Moon Trek map.
-
-💡 *Tip: Add your \`VITE_GEMINI_API_KEY\` to \`.env\` in \`laep-web/\` to activate live Google Gemini generative reasoning.*`;
+To query live Google Gemini, configure \`VITE_GEMINI_API_KEY\` in \`laep-web/.env\`.`;
 
 export default function GeminiAssistant() {
   const isOpen = useMissionStore((s) => s.aiAssistantOpen);
@@ -127,8 +119,8 @@ export default function GeminiAssistant() {
     {
       id: 'welcome',
       role: 'assistant',
-      text: `**Namaste! I am your Chandrayaan-2 Mission Copilot.** 🌖\n\nAsk me anything about the **Faustini F2** landing area, **DFSAR CPR** radar ice anomalies, our dual-stage ML models, or autonomous rover path planning.`,
-      time: '12:00',
+      text: `**CH-2 Mission Copilot initialized.**\n\nQuery technical specifications for Faustini F2 landing geology, DFSAR CPR radar data, dual-stage ML ice models, or A* rover path planning.`,
+      time: '00:00',
     },
   ]);
   const [inputText, setInputText] = useState('');
@@ -163,7 +155,6 @@ export default function GeminiAssistant() {
 
     try {
       if (isLiveGemini) {
-        // Live Gemini API Call via REST
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
           {
@@ -173,11 +164,11 @@ export default function GeminiAssistant() {
               contents: [
                 {
                   role: 'user',
-                  parts: [{ text: `${LAEP_SYSTEM_PROMPT}\n\nUser Question: ${query}` }],
+                  parts: [{ text: `${LAEP_SYSTEM_PROMPT}\n\nTechnical Question: ${query}` }],
                 },
               ],
               generationConfig: {
-                temperature: 0.25,
+                temperature: 0.2,
                 maxOutputTokens: 800,
               },
             }),
@@ -185,13 +176,13 @@ export default function GeminiAssistant() {
         );
 
         if (!response.ok) {
-          throw new Error(`Gemini API error status: ${response.status}`);
+          throw new Error(`API response status: ${response.status}`);
         }
 
         const data = await response.json();
         const replyText =
           data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-          'Telemetry connection interrupted. Please try again.';
+          'Telemetry connection interrupted. Repeat inquiry.';
 
         setMessages((prev) => [
           ...prev,
@@ -204,8 +195,7 @@ export default function GeminiAssistant() {
         ]);
         soundEngine.playTargetAcquired();
       } else {
-        // Offline Mission Intelligence Fallback
-        await new Promise((r) => setTimeout(r, 450)); // Simulates slight thinking
+        await new Promise((r) => setTimeout(r, 200));
         const qLower = query.toLowerCase();
 
         const match = OFFLINE_KNOWLEDGE_BASE.find((item) =>
@@ -226,8 +216,7 @@ export default function GeminiAssistant() {
         soundEngine.playTargetAcquired();
       }
     } catch (err) {
-      console.warn('Gemini Assistant fallback triggered:', err);
-      // Fallback on error to offline intelligence
+      console.warn('Mission Copilot offline fallback:', err);
       const qLower = query.toLowerCase();
       const match = OFFLINE_KNOWLEDGE_BASE.find((item) =>
         item.keywords.some((kw) => qLower.includes(kw))
@@ -239,7 +228,7 @@ export default function GeminiAssistant() {
         {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          text: `*(Live API Offline — Serving Verified Mission Data)*\n\n${replyText}`,
+          text: `*(Live API Offline — Serving Offline Data)*\n\n${replyText}`,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -249,16 +238,16 @@ export default function GeminiAssistant() {
   };
 
   const quickChips = [
-    'Why Faustini F2 for landing?',
-    'How does DFSAR CPR detect ice?',
-    'Explain the dual-stage DL+ML model',
-    'What are the 80°–90° training bounds?',
-    'How does A* calculate slope penalty?',
+    'Faustini F2 Landing Site',
+    'DFSAR CPR Mechanics',
+    'Dual-Stage Model Pipeline',
+    '80°–90° Polar Domain Limits',
+    'Kinematic A* Cost Function',
   ];
 
   return (
     <>
-      {/* ── Floating Action Button (Bottom Right) ── */}
+      {/* ── Utilitarian Trigger Button (Bottom Right) ── */}
       <button
         type="button"
         className={`gemini-assistant-fab ${isOpen ? 'active' : ''}`}
@@ -266,58 +255,25 @@ export default function GeminiAssistant() {
           soundEngine.playTelemetryClick();
           toggleAssistant();
         }}
-        title="Ask Gemini — ISRO Mission AI Assistant"
+        title="Toggle CH-2 Mission Copilot"
       >
-        <div className="fab-glow-ring" />
-        <div className="fab-icon-container">
-          <svg className="fab-sparkle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
-              fill="url(#gemini-grad)"
-              stroke="none"
-            />
-            <defs>
-              <linearGradient id="gemini-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#38bdf8" />
-                <stop offset="0.5" stopColor="#818cf8" />
-                <stop offset="1" stopColor="#c084fc" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <span className="fab-text">ASK GEMINI</span>
-        </div>
-        <span className="fab-status-dot" />
+        <span className={`fab-status-dot ${isLiveGemini ? 'live' : ''}`} />
+        <span className="fab-text">CH-2 COPILOT</span>
       </button>
 
-      {/* ── Slide-Over Sidebar (Chrome Style) ── */}
+      {/* ── Utilitarian Slide-Over Drawer ── */}
       <div className={`gemini-sidebar-drawer ${isOpen ? 'open' : ''}`}>
-        {/* Drawer Header */}
+        {/* Header */}
         <div className="gemini-drawer-header">
           <div className="gemini-header-left">
-            <div className="gemini-logo-glow">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
-                  fill="url(#gemini-header-grad)"
-                />
-                <defs>
-                  <linearGradient id="gemini-header-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#38bdf8" />
-                    <stop offset="1" stopColor="#a855f7" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <div>
-              <div className="gemini-header-title">ASK GEMINI // MISSION COPILOT</div>
-              <div className="gemini-header-sub">ISRO CHANDRAYAAN-2 SCIENCE INTELLIGENCE</div>
-            </div>
+            <div className="gemini-header-title">CH-2 MISSION COPILOT</div>
+            <div className="gemini-header-sub">PLANETARY SCIENCE CONSULTANT</div>
           </div>
 
           <div className="gemini-header-actions">
             <div className={`gemini-engine-pill ${isLiveGemini ? 'live' : 'offline'}`}>
               <span className="engine-dot" />
-              {isLiveGemini ? 'GEMINI 1.5 LIVE' : 'OFFLINE KNOWLEDGE'}
+              {isLiveGemini ? 'GEMINI 1.5 LIVE' : 'LOCAL KB'}
             </div>
             <button
               type="button"
@@ -326,16 +282,16 @@ export default function GeminiAssistant() {
                 soundEngine.playTelemetryClick();
                 setIsOpen(false);
               }}
-              title="Close Assistant"
+              title="Close Console"
             >
               ✕
             </button>
           </div>
         </div>
 
-        {/* Quick Suggestion Chips */}
+        {/* Query Suggestion Chips */}
         <div className="gemini-chips-shelf">
-          <div className="chips-label">QUICK MISSION INQUIRIES:</div>
+          <div className="chips-label">QUERY PRESETS:</div>
           <div className="chips-scroll">
             {quickChips.map((chip, idx) => (
               <button
@@ -350,42 +306,31 @@ export default function GeminiAssistant() {
           </div>
         </div>
 
-        {/* Message Stream */}
+        {/* Messages Body */}
         <div className="gemini-messages-body">
           {messages.map((m) => (
             <div key={m.id} className={`gemini-msg-row ${m.role}`}>
-              <div className="gemini-msg-avatar">
-                {m.role === 'assistant' ? '✦' : '👤'}
+              <div className="gemini-msg-header">
+                <span className="gemini-msg-author">
+                  {m.role === 'assistant' ? '[COPILOT]' : '[OPERATOR]'}
+                </span>
+                <span className="gemini-msg-time">{m.time}</span>
               </div>
-              <div className="gemini-msg-content">
-                <div className="gemini-msg-header">
-                  <span className="gemini-msg-author">
-                    {m.role === 'assistant' ? 'GEMINI COPILOT' : 'MISSION OPERATOR'}
-                  </span>
-                  <span className="gemini-msg-time">{m.time}</span>
-                </div>
-                <div className="gemini-msg-bubble">
-                  {/* Basic markdown formatting support */}
-                  {m.text.split('\n\n').map((para, i) => (
-                    <p key={i} style={{ marginBottom: i === m.text.split('\n\n').length - 1 ? 0 : '0.5rem' }}>
-                      {para}
-                    </p>
-                  ))}
-                </div>
+              <div className="gemini-msg-bubble">
+                {m.text.split('\n\n').map((para, i) => (
+                  <p key={i} style={{ margin: i === 0 ? 0 : '0.45rem 0 0 0' }}>
+                    {para}
+                  </p>
+                ))}
               </div>
             </div>
           ))}
 
           {loading && (
             <div className="gemini-msg-row assistant">
-              <div className="gemini-msg-avatar pulse">✦</div>
-              <div className="gemini-msg-content">
-                <div className="gemini-typing-indicator">
-                  <span />
-                  <span />
-                  <span />
-                  <span className="typing-text">Analyzing Chandrayaan-2 telemetry...</span>
-                </div>
+              <div className="gemini-typing-indicator">
+                <span className="typing-cursor" />
+                <span>Processing query telemetry...</span>
               </div>
             </div>
           )}
@@ -393,12 +338,12 @@ export default function GeminiAssistant() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Bar */}
+        {/* Input Footer */}
         <div className="gemini-input-footer">
           <div className="gemini-input-wrapper">
             <textarea
               className="gemini-textarea"
-              placeholder="Ask about Faustini F2, DFSAR CPR, rover kinematics..."
+              placeholder="Query Faustini F2, DFSAR CPR, A* kinematics..."
               rows={1}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -414,19 +359,16 @@ export default function GeminiAssistant() {
               className="btn-gemini-send"
               onClick={() => handleSend()}
               disabled={!inputText.trim() || loading}
-              title="Send Inquiry (Enter)"
             >
-              ➔
+              SEND
             </button>
           </div>
 
           <div className="gemini-env-notice">
             {isLiveGemini ? (
-              <span className="notice-ok">● Gemini 1.5 Flash Connected via .env</span>
+              <span className="notice-ok">API: Google Gemini 1.5 Flash Connected</span>
             ) : (
-              <span className="notice-hint">
-                ℹ Serving offline knowledge base. To activate live Gemini, add <code style={{ color: '#38bdf8' }}>VITE_GEMINI_API_KEY</code> into <code style={{ color: '#38bdf8' }}>laep-web/.env</code>.
-              </span>
+              <span>Local KB active. To enable live LLM, configure VITE_GEMINI_API_KEY in .env.</span>
             )}
           </div>
         </div>

@@ -28,7 +28,7 @@ export default function ClearanceModal() {
 
     const trimmed = inputKey.trim().toUpperCase();
     if (!trimmed) {
-      setErrorMsg('Please enter a clearance credential key.');
+      setErrorMsg('Clearance credential key required.');
       return;
     }
 
@@ -44,19 +44,19 @@ export default function ClearanceModal() {
         if (data.token) sessionStorage.setItem('laep_jwt', data.token);
       }
     } catch {
-      // Graceful offline fallback
+      // Offline fallback
     }
 
     if (VALID_CLEARANCE_KEYS.includes(trimmed)) {
       soundEngine.playTargetAcquired();
       setUserRole('scientist');
       localStorage.setItem('laep_user_role', 'scientist');
-      setSuccessMsg('Clearance Verified: Principal Investigator (PI) Level Granted.');
+      setSuccessMsg('Clearance Verified: Investigator Access Granted.');
       setTimeout(() => {
         setIsOpen(false);
-      }, 900);
+      }, 700);
     } else {
-      setErrorMsg('Invalid Clearance Key. Try default key: CH2-PI-CLEARANCE-2026');
+      setErrorMsg('Invalid key. Default key: CH2-PI-CLEARANCE-2026');
     }
   };
 
@@ -65,23 +65,20 @@ export default function ClearanceModal() {
     setUserRole(role);
     localStorage.setItem('laep_user_role', role);
     setErrorMsg('');
-    setSuccessMsg(`Mode switched to: ${role === 'scientist' ? 'Principal Investigator / Scientist' : 'Public Explorer'}`);
+    setSuccessMsg(`Active role: ${role === 'scientist' ? 'Investigator (Tier 2)' : 'Public Explorer (Tier 1)'}`);
     setTimeout(() => {
       setIsOpen(false);
-    }, 700);
+    }, 500);
   };
 
   return (
     <div className="clearance-modal-backdrop">
-      <div className="clearance-modal-card hud-corner-bracket">
+      <div className="clearance-modal-card">
         {/* Header */}
         <div className="clearance-modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span className="clearance-badge-icon">⎔</span>
-            <div>
-              <div className="clearance-modal-title">MISSION CLEARANCE & ROLE ACCESS</div>
-              <div className="clearance-modal-sub">ISRO CHANDRAYAAN-2 SCIENCE PROTOCOL</div>
-            </div>
+          <div>
+            <div className="clearance-modal-title">SYSTEM ACCESS CONTROL // CLEARANCE LEVEL</div>
+            <div className="clearance-modal-sub">ISRO CHANDRAYAAN-2 SCIENCE PLATFORM</div>
           </div>
           <button
             type="button"
@@ -95,15 +92,15 @@ export default function ClearanceModal() {
           </button>
         </div>
 
-        {/* Current Status Pill */}
+        {/* Current Status */}
         <div className="clearance-current-banner">
-          <span>ACTIVE USER CLEARANCE:</span>
+          <span>ACTIVE TIER:</span>
           <span className={`clearance-pill ${userRole}`}>
-            {userRole === 'scientist' ? '⚡ SCIENTIST / PRINCIPAL INVESTIGATOR (PI)' : '🌐 PUBLIC MISSION EXPLORER'}
+            {userRole === 'scientist' ? 'TIER 2 // INVESTIGATOR' : 'TIER 1 // PUBLIC EXPLORER'}
           </span>
         </div>
 
-        {/* Dual Tier Comparison Cards */}
+        {/* Role Comparison */}
         <div className="clearance-tier-grid">
           {/* Tier 1: Explorer */}
           <div
@@ -114,15 +111,15 @@ export default function ClearanceModal() {
               <span className="tier-badge">TIER 1</span>
               <h4>Public Explorer</h4>
             </div>
-            <p className="tier-desc">Designed for students, educators, and science enthusiasts observing polar exploration.</p>
+            <p className="tier-desc">Read-only scientific observation of polar craters and pre-calculated routes.</p>
             <ul className="tier-list">
-              <li>✓ Full multi-instrument map viewing (11 channels)</li>
-              <li>✓ 8 peer-reviewed ground truth benchmark craters</li>
-              <li>✓ Pre-computed optimal kinematic A* routes</li>
-              <li>✓ 3D rover physics simulation observation</li>
-              <li>✓ "Ask Gemini" lunar mission copilot</li>
-              <li className="dim">✗ Custom coordinate injection</li>
-              <li className="dim">✗ Custom bounding box ice calculations</li>
+              <li>• Multi-instrument map layers (11 channels)</li>
+              <li>• 8 ground truth benchmark craters</li>
+              <li>• Optimal A* kinematic routes</li>
+              <li>• 3D rover physics simulation</li>
+              <li>• Mission Copilot technical queries</li>
+              <li className="dim">• Custom waypoint coordinates</li>
+              <li className="dim">• Simpson 2D ice volume calculator</li>
             </ul>
             <button
               type="button"
@@ -132,53 +129,57 @@ export default function ClearanceModal() {
                 handleSelectRole('explorer');
               }}
             >
-              {userRole === 'explorer' ? 'CURRENTLY ACTIVE' : 'SWITCH TO EXPLORER'}
+              {userRole === 'explorer' ? 'ACTIVE' : 'SELECT TIER 1'}
             </button>
           </div>
 
           {/* Tier 2: Scientist / PI */}
           <div
-            className={`tier-card highlight-tier ${userRole === 'scientist' ? 'active-tier' : ''}`}
+            className={`tier-card ${userRole === 'scientist' ? 'active-tier' : ''}`}
+            onClick={() => handleSelectRole('scientist')}
           >
             <div className="tier-header">
-              <span className="tier-badge gold">TIER 2</span>
-              <h4 style={{ color: '#ffd740' }}>Scientist / PI</h4>
+              <span className="tier-badge">TIER 2</span>
+              <h4>Investigator / PI</h4>
             </div>
-            <p className="tier-desc">Unrestricted access for technical mission planners & planetary researchers.</p>
+            <p className="tier-desc">Parameter overrides and arbitrary coordinate injection for researchers.</p>
             <ul className="tier-list">
-              <li>✓ All Public Explorer capabilities</li>
-              <li>✓ <strong>Custom Waypoint Input</strong> (arbitrary Lon/Lat)</li>
-              <li>✓ <strong>Simpson 2D Bounding Box</strong> ice tonnage calculator</li>
-              <li>✓ Override rover kinematics (mass, wheel radius, tilt limit)</li>
-              <li>✓ Export raw multi-sensor telemetry CSVs</li>
-              <li>✓ Bayesian $\pm 9\%$ uncertainty bounds calibration</li>
+              <li>• All Tier 1 capabilities</li>
+              <li>• Custom waypoint coordinates (Lon/Lat)</li>
+              <li>• Simpson 2D regional ice calculator</li>
+              <li>• Kinematic parameter tuning</li>
+              <li>• Full CSV telemetry export</li>
+              <li>• ±9% Bayesian uncertainty intervals</li>
             </ul>
             <button
               type="button"
-              className={`btn-tier btn-tier-gold ${userRole === 'scientist' ? 'btn-tier-active' : ''}`}
-              onClick={() => handleSelectRole('scientist')}
+              className={`btn-tier ${userRole === 'scientist' ? 'btn-tier-active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectRole('scientist');
+              }}
             >
-              {userRole === 'scientist' ? 'CURRENTLY ACTIVE' : 'AUTHENTICATE AS SCIENTIST'}
+              {userRole === 'scientist' ? 'ACTIVE' : 'SELECT TIER 2'}
             </button>
           </div>
         </div>
 
-        {/* Key Verification Input */}
+        {/* Key Verification */}
         <form className="clearance-key-form" onSubmit={handleVerifyKey}>
           <div className="key-input-label">
-            <span>ENTER MISSION CLEARANCE KEY //</span>
-            <span style={{ fontSize: '0.65rem', color: '#9aa0a6' }}>Demo Key: CH2-PI-CLEARANCE-2026</span>
+            <span>ENTER CLEARANCE KEY:</span>
+            <span style={{ fontSize: '0.62rem', color: '#64748b' }}>Key: CH2-PI-CLEARANCE-2026</span>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.45rem' }}>
             <input
               type="text"
               className="clearance-key-input"
-              placeholder="e.g. CH2-PI-CLEARANCE-2026"
+              placeholder="CH2-PI-CLEARANCE-2026"
               value={inputKey}
               onChange={(e) => setInputKey(e.target.value)}
             />
             <button type="submit" className="btn-clearance-submit">
-              VERIFY & UNLOCK
+              AUTHENTICATE
             </button>
           </div>
 

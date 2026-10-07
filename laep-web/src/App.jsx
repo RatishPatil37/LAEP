@@ -139,7 +139,7 @@ export default function App() {
               soundEngine.playTelemetryClick();
               setClearanceModalOpen(true);
             }}
-            title={`Click to switch clearance role (Current: ${userRole === 'scientist' ? 'Principal Investigator / Scientist' : 'Public Explorer'})`}
+            title={`Clearance Access (Current: ${userRole === 'scientist' ? 'Investigator (Tier 2)' : 'Public Explorer (Tier 1)'})`}
             style={{
               padding: '0.3rem 0.65rem',
               fontFamily: "'IBM Plex Mono', monospace",
@@ -147,12 +147,10 @@ export default function App() {
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
-              borderColor: userRole === 'scientist' ? 'rgba(255, 215, 64, 0.5)' : 'rgba(56, 189, 248, 0.4)',
-              background: userRole === 'scientist' ? 'rgba(234, 179, 8, 0.12)' : 'rgba(15, 23, 42, 0.4)',
             }}
           >
-            <span style={{ color: userRole === 'scientist' ? '#ffd740' : '#38bdf8', fontWeight: 600 }}>
-              {userRole === 'scientist' ? '⚡ PI CLEARANCE' : '🌐 EXPLORER'}
+            <span style={{ color: userRole === 'scientist' ? '#34d399' : '#94a3b8', fontWeight: 600 }}>
+              {userRole === 'scientist' ? 'TIER 2 // INVESTIGATOR' : 'TIER 1 // EXPLORER'}
             </span>
           </button>
 

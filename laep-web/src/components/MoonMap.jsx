@@ -50,21 +50,18 @@ function buildTrainingBoundsFeatures() {
     new Style({
       stroke: new Stroke({
         color: '#38bdf8',
-        width: 2,
-        lineDash: [8, 6],
-      }),
-      fill: new Fill({
-        color: 'rgba(56, 189, 248, 0.05)',
+        width: 1.2,
+        lineDash: [6, 4],
       }),
     }),
     new Style({
       text: new Text({
-        text: '◄── ACTIVE MODEL TRAINING DOMAIN: 80°S TO 90°S (SOUTH POLAR REACH) ──►',
-        font: 'bold 11px "IBM Plex Mono", monospace',
-        fill: new Fill({ color: '#7dd3fc' }),
-        stroke: new Stroke({ color: '#050608', width: 3 }),
+        text: '80°S MODEL BOUNDARY',
+        font: '500 10px "IBM Plex Mono", monospace',
+        fill: new Fill({ color: '#38bdf8' }),
+        stroke: new Stroke({ color: '#050608', width: 2 }),
         placement: 'line',
-        repeat: 450,
+        repeat: 500,
       }),
     }),
   ]);
@@ -89,22 +86,19 @@ function buildTrainingBoundsFeatures() {
   northPolarPoly.setStyle([
     new Style({
       stroke: new Stroke({
-        color: 'rgba(56, 189, 248, 0.6)',
-        width: 1.5,
-        lineDash: [6, 6],
-      }),
-      fill: new Fill({
-        color: 'rgba(56, 189, 248, 0.03)',
+        color: 'rgba(56, 189, 248, 0.4)',
+        width: 1.0,
+        lineDash: [6, 4],
       }),
     }),
     new Style({
       text: new Text({
-        text: '◄── ACTIVE MODEL TRAINING DOMAIN: 80°N TO 90°N (NORTH POLAR REACH) ──►',
-        font: 'bold 11px "IBM Plex Mono", monospace',
-        fill: new Fill({ color: '#94a3b8' }),
-        stroke: new Stroke({ color: '#050608', width: 3 }),
+        text: '80°N MODEL BOUNDARY',
+        font: '500 10px "IBM Plex Mono", monospace',
+        fill: new Fill({ color: '#64748b' }),
+        stroke: new Stroke({ color: '#050608', width: 2 }),
         placement: 'line',
-        repeat: 450,
+        repeat: 500,
       }),
     }),
   ]);
@@ -127,21 +121,18 @@ function buildTrainingBoundsFeatures() {
   f2Poly.setStyle([
     new Style({
       stroke: new Stroke({
-        color: '#ffc857',
-        width: 2.5,
-        lineDash: [6, 4],
-      }),
-      fill: new Fill({
-        color: 'rgba(255, 200, 87, 0.10)',
+        color: '#94a3b8',
+        width: 1.2,
+        lineDash: [4, 4],
       }),
     }),
     new Style({
       text: new Text({
-        text: '⌖ FAUSTINI F2 ACTIVE DATASET [CH-2 DFSAR · IIRS · OHRC · TMC-2]',
-        font: 'bold 11px "IBM Plex Mono", monospace',
-        fill: new Fill({ color: '#ffc857' }),
-        stroke: new Stroke({ color: '#070b14', width: 3 }),
-        offsetY: -16,
+        text: 'FAUSTINI F2 RETICLE [CH-2 DFSAR · IIRS · OHRC]',
+        font: '500 10px "IBM Plex Mono", monospace',
+        fill: new Fill({ color: '#cbd5e1' }),
+        stroke: new Stroke({ color: '#070b14', width: 2 }),
+        offsetY: -12,
       }),
     }),
   ]);

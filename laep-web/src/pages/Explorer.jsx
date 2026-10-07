@@ -727,27 +727,25 @@ export default function Explorer() {
           {activeTab === TABS.CUSTOM && (
             <>
               {userRole !== 'scientist' ? (
-                <div className="ctrl-group" style={{ borderColor: 'rgba(255, 215, 64, 0.4)', background: 'rgba(234, 179, 8, 0.06)' }}>
-                  <div className="ctrl-group-title" style={{ color: '#ffd740' }}>
-                    <span>🔒 SCIENTIST CLEARANCE REQUIRED</span>
-                    <span style={{ fontSize: '0.62rem', color: '#ffc857' }}>TIER 2 PROTOCOL</span>
+                <div className="ctrl-group" style={{ borderColor: 'rgba(255, 255, 255, 0.12)', background: 'rgba(15, 23, 42, 0.4)' }}>
+                  <div className="ctrl-group-title" style={{ color: '#94a3b8' }}>
+                    <span>TIER 2 ACCESS RESTRICTION</span>
+                    <span style={{ fontSize: '0.62rem', color: '#64748b' }}>INVESTIGATOR CLEARANCE</span>
                   </div>
                   <p style={{ fontSize: '0.72rem', color: 'var(--c-text-dim)', lineHeight: 1.5, margin: '4px 0 8px 0' }}>
-                    Custom waypoint coordinate injection and arbitrary regional ice volume calculations are restricted to Technical Users & Principal Investigators (PI).
-                  </p>
-                  <p style={{ fontSize: '0.7rem', color: '#94a3b8', lineHeight: 1.4, margin: '0 0 10px 0' }}>
-                    Public Explorers can freely inspect all 11 instrument layers, 8 benchmark craters, pre-calculated optimal routes, and 3D simulation telemetry.
+                    Arbitrary waypoint coordinates and Simpson 2D integration are restricted to Tier 2 (Investigator). Public Explorers can observe all benchmark crater tracks.
                   </p>
                   <button
                     className="btn"
                     style={{
                       width: '100%',
-                      background: 'linear-gradient(135deg, #d97706, #ffd740)',
-                      color: '#030712',
-                      fontWeight: 700,
+                      background: '#1e293b',
+                      border: '1px solid #334155',
+                      color: '#f8fafc',
+                      fontWeight: 600,
                       fontFamily: 'var(--font-mono)',
-                      fontSize: '0.72rem',
-                      padding: '0.5rem',
+                      fontSize: '0.7rem',
+                      padding: '0.45rem',
                       cursor: 'pointer',
                     }}
                     onClick={() => {
@@ -755,16 +753,16 @@ export default function Explorer() {
                       setClearanceModalOpen(true);
                     }}
                   >
-                    ⚡ ENTER SCIENTIST CLEARANCE KEY
+                    AUTHENTICATE AS INVESTIGATOR
                   </button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.6rem', background: 'rgba(234, 179, 8, 0.12)', border: '1px solid rgba(255, 215, 64, 0.4)', borderRadius: 4, marginBottom: 8 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.66rem', color: '#ffd740', fontWeight: 600 }}>
-                    ⚡ PI SCIENTIST CLEARANCE UNLOCKED
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.35rem 0.55rem', background: '#0d131d', border: '1px solid #1e293b', borderRadius: 3, marginBottom: 8 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.64rem', color: '#34d399', fontWeight: 600 }}>
+                    INVESTIGATOR CLEARANCE ACTIVE
                   </span>
-                  <span style={{ fontSize: '0.6rem', color: '#f8fafc', background: 'rgba(255,215,64,0.2)', padding: '0.1rem 0.35rem', borderRadius: 2 }}>
-                    ACTIVE
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8', background: '#1e293b', padding: '0.1rem 0.3rem', borderRadius: 2 }}>
+                    TIER 2
                   </span>
                 </div>
               )}

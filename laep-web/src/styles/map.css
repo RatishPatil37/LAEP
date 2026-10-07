@@ -556,19 +556,18 @@
 
 /* ── High-Width Bottom Map Elevation Shelf ─────────────────────────────── */
 .map-bottom-shelf {
-  height: 44px;
+  height: 38px;
   width: 100%;
-  background: linear-gradient(180deg, rgba(11, 13, 16, 0.95), #050608);
-  border-top: 2px solid rgba(125, 211, 252, 0.35);
+  background: #080b11;
+  border-top: 1px solid #1e293b;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.25rem;
+  padding: 0 1rem;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--c-text-dim);
+  font-size: 0.65rem;
+  color: #94a3b8;
   z-index: 25;
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
   flex-shrink: 0;
 }
 
@@ -579,47 +578,46 @@
 }
 
 .shelf-indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--c-cyan);
-  box-shadow: 0 0 8px var(--c-cyan);
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background-color: #38bdf8;
 }
 
 .shelf-label {
-  color: var(--c-text-muted);
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  color: #64748b;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
 }
 
 .shelf-val {
-  color: var(--c-text);
+  color: #cbd5e1;
   font-weight: 500;
 }
 
 .shelf-val.highlight {
-  color: #ffc857;
+  color: #e2e8f0;
 }
 
 .btn-shelf-focus {
-  background: rgba(125, 211, 252, 0.12);
-  border: 1px solid rgba(125, 211, 252, 0.45);
-  color: var(--c-ice);
-  padding: 0.3rem 0.75rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 0.25rem 0.65rem;
   border-radius: 2px;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  transition: all 150ms ease;
+  transition: all 120ms ease;
 }
 
 .btn-shelf-focus:hover {
-  background: rgba(125, 211, 252, 0.25);
-  border-color: var(--c-cyan);
-  box-shadow: 0 0 12px rgba(125, 211, 252, 0.35);
+  background: #1e293b;
+  border-color: #64748b;
+  color: #ffffff;
 }
 
