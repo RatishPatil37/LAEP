@@ -1,0 +1,27 @@
+
+# Virtual environments
+.venv_lfm/
+.venv/
+venv/
+env/
+
+# LFM cache (large binary tensor files)
+data/lfm_cache/
+
+# Preview images (generated)
+data/previews/
+
+# Large binary model/data files
+backbone/checkpoint.pt
+data/trained_ice_model.pt
+data/south_pole_training_dataset.pt
+laep_context_encoder.pt
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/

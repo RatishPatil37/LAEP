@@ -26,7 +26,7 @@ import Point        from 'ol/geom/Point';
 import { useMissionStore, LAYER_IDS } from '../stores/useMissionStore';
 
 // ── NASA WMTS Tile Grid (EPSG:4326) ───────────────────────────────────────
-const MOON_RESOLUTIONS = Array.from({ length: 9 }, (_, z) => 0.703125 / Math.pow(2, z));
+const MOON_RESOLUTIONS = Array.from({ length: 14 }, (_, z) => 0.703125 / Math.pow(2, z));
 const MOON_MATRIX_IDS  = MOON_RESOLUTIONS.map((_, z) => String(z));
 
 const moonTileGrid = new WMTSTileGrid({
@@ -344,10 +344,10 @@ const MoonMap = forwardRef(function MoonMap({ onCoordMove, onMapClick, onSelectC
       ],
       view: new View({
         projection: 'EPSG:4326',
-        center: [0, -85],
-        zoom: 4,
+        center: [82.0, -87.3], // Default spawn centered near Faustini Crater
+        zoom: 7,
         minZoom: 1,
-        maxZoom: 8,
+        maxZoom: 13,
         extent: [-180, -90, 180, 90],
         smoothResolutionConstraint: true,
         smoothExtentConstraint: true,

@@ -1,0 +1,3 @@
+[submodule "lfm-service/NASA-IBM-Lunar-Foundation-Model"]
+	path = lfm-service/NASA-IBM-Lunar-Foundation-Model
+	url = https://github.com/NASA-IMPACT/NASA-IBM-Lunar-Foundation-Model.git

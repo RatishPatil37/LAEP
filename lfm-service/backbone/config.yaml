@@ -1,0 +1,509 @@
+data:
+  text_tokenizer_path: ni_lfm/utils/tokenizer/trained/text_tokenizer.json
+  in_domains:
+  - aspect
+  - aspect_3m
+  - dtm
+  - dtm_3m
+  - metadata
+  - nac
+  - slope
+  - slope_3m
+  - static_maps
+  - tok_aspect
+  - tok_aspect_3m
+  - tok_dtm
+  - tok_dtm_3m
+  - tok_nac
+  - tok_slope
+  - tok_slope_3m
+  - tok_uv
+  - tok_vis
+  - uv
+  - vis
+  out_domains:
+  - metadata
+  - static_maps
+  - tok_aspect
+  - tok_aspect_3m
+  - tok_dtm
+  - tok_dtm_3m
+  - tok_nac
+  - tok_slope
+  - tok_slope_3m
+  - tok_uv
+  - tok_vis
+  domains:
+    aspect:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - -1.0
+        - -1.0
+        max:
+        - 1.0
+        - 1.0
+        mean:
+        - -0.0031365868805563
+        - 0.0020341061674325
+        std:
+        - 0.6212637861961272
+        - 0.6221601482231327
+        channels:
+        - ASPECT_SIN
+        - ASPECT_COS
+        image_size: 853
+        gsd_m: 60.0
+      num_channels: 2
+      patch_size: 16
+      id: 14823
+    aspect_3m:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - -1.0
+        - -1.0
+        max:
+        - 1.0
+        - 1.0
+        mean:
+        - -0.0022040437245567
+        - -0.00885322472636
+        std:
+        - 0.6981628912701232
+        - 0.7007190804510356
+        channels:
+        - sin
+        - cos
+        image_size: 171
+        gsd_m: 3.0
+      num_channels: 2
+      patch_size: 16
+      id: 15084
+    dtm:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - -9128.724609375
+        max:
+        - 10783.029296875
+        mean:
+        - -637.2084107556901
+        std:
+        - 1920.7233898703932
+        channels:
+        - band_data
+        image_size: 853
+        gsd_m: 60.0
+      num_channels: 1
+      patch_size: 16
+      id: 28982
+    dtm_3m:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: local_mean_std
+      stats:
+        min:
+        - -7047.75537109375
+        max:
+        - 10784.5673828125
+        mean:
+        - 0.0
+        std:
+        - 17.45505070239829
+        channels:
+        - band_data
+        image_size: 171
+        gsd_m: 3.0
+      num_channels: 1
+      patch_size: 16
+      id: 11943
+    metadata:
+      encoder_kwargs:
+        vocab_size: 60757
+      decoder_kwargs:
+        vocab_size: 60757
+      image_size: null
+      min_tokens: 0
+      max_tokens: 10
+      keep: null
+      id: 1951
+    nac:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - 0.0
+        max:
+        - 0.99918395280838
+        mean:
+        - 0.053995178164645
+        std:
+        - 0.0374660347301751
+        channels:
+        - band_data
+        image_size: 512
+        gsd_m: 1.0
+      num_channels: 1
+      patch_size: 16
+      id: 26586
+    slope:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - 0.0
+        max:
+        - 87.77169036865234
+        mean:
+        - 7.980291966975289
+        std:
+        - 6.310896777386625
+        channels:
+        - band_data
+        image_size: 853
+        gsd_m: 60.0
+      num_channels: 1
+      patch_size: 16
+      id: 26169
+    slope_3m:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - 0.0
+        max:
+        - 89.28305053710938
+        mean:
+        - 7.777025042088172
+        std:
+        - 6.852015028274956
+        channels:
+        - band_data
+        image_size: 171
+        gsd_m: 3.0
+      num_channels: 1
+      patch_size: 16
+      id: 15562
+    static_maps:
+      encoder_kwargs:
+        vocab_size: 60757
+      decoder_kwargs:
+        vocab_size: 60757
+      image_size: null
+      min_tokens: 0
+      max_tokens: 31
+      keep: null
+      id: 27082
+    tok_aspect:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 2
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: aspect
+      pre_resize: 512
+      id: 8746
+    tok_aspect_3m:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 2
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: aspect_3m
+      pre_resize: 512
+      id: 17100
+    tok_dtm:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 1
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: dtm
+      pre_resize: 512
+      id: 12071
+    tok_dtm_3m:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 1
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: dtm_3m
+      pre_resize: 512
+      id: 19033
+    tok_nac:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 1
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: nac
+      pre_resize: 512
+      id: 28941
+    tok_slope:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 1
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: slope
+      pre_resize: 512
+      id: 363
+    tok_slope_3m:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 1
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: slope_3m
+      pre_resize: 512
+      id: 28916
+    tok_uv:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 2
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: uv
+      pre_resize: 512
+      id: 10318
+    tok_vis:
+      pretokenized: true
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      patch_size: 16
+      num_channels: 5
+      codebook_size: 15360
+      num_codebooks: 1
+      parent_domain: vis
+      pre_resize: 512
+      id: 27757
+    uv:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - 0.0
+        - 0.0
+        max:
+        - 0.26182821393013
+        - 0.279819130897522
+        mean:
+        - 0.0176056219925766
+        - 0.0208237419578931
+        std:
+        - 0.0161019641570903
+        - 0.018979149243733
+        channels:
+        - '321'
+        - '360'
+        image_size: 102
+        gsd_m: 502.0
+      num_channels: 2
+      patch_size: 16
+      id: 13788
+    vis:
+      pretokenized: false
+      min_tokens: 0
+      max_tokens: 256
+      input_size: 256
+      pre_resize: 512
+      scaler: std
+      stats:
+        min:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        max:
+        - 0.649539589881897
+        - 0.4876615703105926
+        - 0.5253850817680359
+        - 0.5012162923812866
+        - 0.5236126184463501
+        mean:
+        - 0.0262588825351396
+        - 0.0355034864633048
+        - 0.0379165676944608
+        - 0.0398220978887433
+        - 0.0425382088988623
+        std:
+        - 0.0235771438796118
+        - 0.0304743769950188
+        - 0.0321657294809433
+        - 0.033536663068166
+        - 0.0355271969090003
+        channels:
+        - '415'
+        - '566'
+        - '604'
+        - '643'
+        - '689'
+        image_size: 512
+        gsd_m: 100.0
+      num_channels: 5
+      patch_size: 16
+      id: 7833
+  alphas:
+    low_res:
+      vis:
+        input_alphas: '[1000, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      uv:
+        input_alphas: '[0, 1000, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      dtm:
+        input_alphas: '[0, 0, 1000, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      slope:
+        input_alphas: '[0, 0, 0, 1000, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      aspect:
+        input_alphas: '[0, 0, 0, 0, 1000, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      tok_vis:
+        input_alphas: '[0, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+      tok_uv:
+        input_alphas: '[0, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+      tok_dtm:
+        input_alphas: '[0, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+      tok_slope:
+        input_alphas: '[0, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+      tok_aspect:
+        input_alphas: '[0, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+      metadata:
+        input_alphas: '[0, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+      static_maps:
+        input_alphas: '[0, 0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+    high_res:
+      nac:
+        input_alphas: '[1000, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      dtm_3m:
+        input_alphas: '[0, 0, 1000, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      slope_3m:
+        input_alphas: '[0, 0, 0, 1000, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      aspect_3m:
+        input_alphas: '[0, 1000, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'
+      tok_nac:
+        input_alphas: '[0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]'
+      tok_dtm_3m:
+        input_alphas: '[0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]'
+      tok_slope_3m:
+        input_alphas: '[0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]'
+      tok_aspect_3m:
+        input_alphas: '[0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]'
+      metadata:
+        input_alphas: '[0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]'
+      static_maps:
+        input_alphas: '[0, 0, 0, 0, 0.01, 0.1, 1, 10, 0.05, 0.5]'
+        target_alphas: '[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]'
+model:
+  name: lunarfm_base
+  num_register_tokens: 0
+  num_input_tokens: 256
+  num_target_tokens: 256
+  encoder_embedding_params:
+    metadata:
+      max_length: 10
+    static_maps:
+      max_length: 31
+  decoder_embedding_params:
+    metadata:
+      max_length: 10
+    static_maps:
+      max_length: 31
+train:
+  batch_size: 96
+  epochs: 150
+  warmup_epochs: 15
+  accum_iter: 1
+  opt: adamw
+  opt_betas:
+  - 0.9
+  - 0.95
+  clip_grad: 5.0
+  weight_decay: 0.05
+  lr: 0.0001
+  min_lr: 0.0
+  scheduler: cosine
+  dtype: bf16
+  loss_type: mod
+  find_unused_params: true
+  seed: 0
+  world_size: 16

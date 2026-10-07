@@ -108,6 +108,10 @@ export default function Explorer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // LFM Model Prediction State
+  const [lfmPrediction, setLfmPrediction] = useState(null);
+  const [lfmLoading, setLfmLoading] = useState(false);
+
   // ── On mount: Load ground truth benchmarks & Robbins sub-craters ──────
   useEffect(() => {
     getBenchmarkCraters()
@@ -187,11 +191,31 @@ export default function Explorer() {
     [start, goal, wSlope, wShadow, maxSlope, setSimulation]
   );
 
+  // ── Run LFM Prediction ────────────────────────────────────────────────
+  const fetchLfmPrediction = useCallback((pt) => {
+    setLfmLoading(true);
+    fetch('http://localhost:8000/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitude: pt[1], longitude: pt[0] })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.error) setLfmPrediction(data);
+      else console.error('LFM Predict Error:', data.error);
+    })
+    .catch(console.error)
+    .finally(() => setLfmLoading(false));
+  }, []);
+
   // ── Map click handler — explicit state machine ───────────────────────
   const handleMapClick = useCallback(
     ([lon, lat]) => {
       soundEngine.playTelemetryClick();
       const pt = [Number(lon.toFixed(4)), Number(lat.toFixed(4))];
+
+      // Trigger LFM Ice Prediction API Call
+      fetchLfmPrediction(pt);
 
       if (mode === MODE.START || (mode === MODE.NONE && !start)) {
         setStart(pt);
@@ -268,6 +292,10 @@ export default function Explorer() {
 
     mapRef.current?.setMarkers(sPt, gPt);
     mapRef.current?.flyTo([(sLon + gLon) / 2, (sLat + gLat) / 2], 7);
+    
+    // Trigger the Prediction scan specifically on the Goal target
+    fetchLfmPrediction(gPt);
+    
     handlePathfind(sPt, gPt);
   };
 
@@ -523,6 +551,51 @@ export default function Explorer() {
                   </button>
                 </div>
               </div>
+
+              {/* LFM Ice Prospectivity Prediction (ALWAYS VISIBLE) */}
+              <div className="ctrl-group" style={{ borderColor: 'var(--c-ice)', background: 'rgba(45, 212, 191, 0.05)' }}>
+                <div className="ctrl-group-title" style={{ color: 'var(--c-ice)' }}>
+                  <span>NASA LFM GATED FUSION PREDICTION</span>
+                  {lfmLoading && <span style={{ fontSize: '0.62rem', color: '#ffc857', animation: 'pulse 1.5s infinite' }}>[SCANNING LUNAR PATCH...]</span>}
+                </div>
+                
+                {/* AWAITING STATE */}
+                {!lfmPrediction && !lfmLoading && (
+                  <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '0.75rem', color: 'var(--c-text-dim)', letterSpacing: '1px' }}>
+                    [ AWAITING TELEMETRY ]<br/>
+                    <span style={{ fontSize: '0.65rem' }}>CLICK ANYWHERE ON MAP TO SCAN</span>
+                  </div>
+                )}
+
+                {/* RESULT STATE */}
+                {lfmPrediction && !lfmLoading && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '6px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--c-text-dim)', letterSpacing: '1px' }}>ICE PROSPECTIVITY:</span>
+                        <span style={{ fontSize: '1.4rem', fontFamily: 'var(--font-mono)', fontWeight: 'bold', color: lfmPrediction.ice_prospectivity_percent > 40 ? 'var(--c-ice)' : '#fb7185' }}>
+                          {lfmPrediction.ice_prospectivity_percent.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div style={{ 
+                        fontSize: '0.72rem', 
+                        color: lfmPrediction.ice_prospectivity_percent > 40 ? '#10b981' : '#fb7185', 
+                        background: 'rgba(0,0,0,0.4)', 
+                        padding: '8px', 
+                        borderRadius: '6px',
+                        border: `1px solid ${lfmPrediction.ice_prospectivity_percent > 40 ? 'rgba(16,185,129,0.3)' : 'rgba(251,113,133,0.3)'}`,
+                        textAlign: 'center',
+                        fontWeight: 'bold',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {lfmPrediction.message}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: 'var(--c-text-dim)', background: 'rgba(255,255,255,0.03)', padding: '6px', borderRadius: '4px' }}>
+                        <span>ELEVATION: {lfmPrediction.elevation_m}m</span>
+                        <span>SLOPE: {lfmPrediction.slope_deg}°</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
               {/* Traversal Cost Sliders */}
               <div className="ctrl-group">

@@ -1,0 +1,239 @@
+LAEP
+NASA–IBM Lunar Foundation Model Integrationfor Multimodal Lunar Ice Prospectivity
+Technical Research & Implementation Guide
+
+Core recommendationUse the NASA–IBM Lunar Foundation Model as a regional lunar-context encoder and combine it with Chandrayaan-2 mission-specific physical evidence (DFSAR, IIRS, OHRC and TMC-2) through a spatially aligned multimodal fusion model. Start with a frozen LFM + cached embeddings + tabular MLP/gated fusion; only fine-tune the foundation model after the data/target pipeline is scientifically validated.
+
+Prepared for the LAEP projectLunar Autonomous Exploration Pipeline
+
+1. Executive Summary
+The NASA–IBM Lunar Foundation Model (LFM), SomBench ice-prospectivity benchmark, TerraTorch integration, and the LAEP Chandrayaan-2 pipeline can be combined without forcing all datasets into one raster or one resolution. The recommended architecture is a dual-branch, multi-scale late-fusion system.
+Branch A — Lunar context: use the NASA–IBM LFM to encode regional lunar context from the SomBench/LRO polar layers.
+Branch B — Physical evidence: encode localized Chandrayaan-2 features such as DFSAR CPR/DOP, IIRS spectral features, OHRC observations, and TMC-2 terrain variables.
+Fusion: combine the two representations using gated fusion initially; cross-attention can be evaluated as a higher-complexity alternative.
+Output: produce an ice-prospectivity score, uncertainty, and a separate physics-derived ICS/evidence report.
+Validation: use spatial-block or crater-wise cross-validation, not a random pixel split.
+Data principle: join NASA-derived raster information to the LAEP CSV by spatial coordinates/footprints, never by row number.
+Scientific principle: NASA-IBM PRO is a prospectivity target/prior, not direct measured ground-truth ice.
+The attached architecture already follows this broad design: it separates broad LRO context from localized Chandrayaan-2 evidence, uses a missingness-aware physical branch, and proposes gated fusion and uncertainty. fileciteturn0file1L2-L16
+2. What Each NASA/IBM Component Actually Is
+Component
+What it is
+Role in LAEP
+NASA–IBM Lunar Foundation Model
+A pretrained lunar remote-sensing representation model.
+Extract regional/contextual lunar embeddings.
+SomBench
+A multimodal lunar benchmark containing co-registered lunar data.
+Source of standardized LRO-derived context and downstream benchmark data.
+SomBench Ice Prospectivity Regression
+Polar benchmark with eight input modalities and a PRO regression target.
+Reference/benchmark and source of PRO/context features.
+NASA–IBM Ice Prospectivity checkpoint
+LFM fine-tuned for the SomBench ice-prospectivity regression task.
+Generate a NASA-derived prospectivity prediction; useful as a prior/feature, not independent ice truth.
+TerraTorch
+Geospatial deep-learning integration/training framework.
+Reuse the reference training/inference ecosystem instead of rebuilding geospatial model plumbing.
+LAEP
+Your cross-mission lunar exploration pipeline.
+Add Chandrayaan-2 physical evidence, uncertainty, terrain/hazard analysis, and downstream mission planning.
+
+3. The Most Important Scientific Distinction
+Do not equate PRO with measured iceThe SomBench PRO target is a knowledge-driven/fuzzy-overlay prospectivity target. Therefore PRO or the NASA–IBM ice model output should be described as a prospectivity prior or benchmark-derived environmental suitability signal, not as direct physical ground truth for water ice.
+
+The conceptual separation should be:
+NASA–IBM / LRO context        ↓Regional environmental suitability / prospectivityChandrayaan-2 DFSAR        ↓Localized radar/polarimetric evidenceChandrayaan-2 IIRS        ↓Localized spectral evidenceTMC-2 / OHRC        ↓Terrain + surface contextAll evidence        ↓Multimodal fusion        ↓LAEP ice prospectivity
+4. Why NASA–IBM Is Useful for LAEP
+Domain-specific pretraining: the LFM is trained on lunar observations rather than generic natural images.
+Multi-modal lunar context: it can represent relationships between terrain, illumination, thermal and other lunar variables.
+Transfer learning: LAEP can start from pretrained lunar representations instead of learning all lunar spatial features from scratch.
+Polar relevance: NASA–IBM provides an existing ice-prospectivity benchmark and fine-tuned checkpoint that can serve as a strong reference system.
+Context complementarity: the LFM supplies regional context while Chandrayaan-2 can contribute mission-specific localized evidence.
+The NASA–IBM work reports that the LFM improves downstream performance relative to the evaluated ImageNet and random-initialization baselines, and its polar experiment shows useful performance for ice-prospectivity regression.
+5. Five Ways to Combine NASA–IBM with LAEP
+Option
+Architecture
+Difficulty
+Recommended use
+1. PRO + CH-2
+NASA_PRO + CH-2 features → XGBoost/LightGBM
+Low
+First baseline
+2. LFM embeddings + CH-2
+768-d LFM embedding + physical MLP → fusion
+Medium
+Best practical research option
+3. LFM ice model as prior
+NASA_PRO + LFM/CH-2 features → learned model
+Medium
+Strong ablation / ensemble
+4. Fine-tune LFM
+LFM + CH-2 data → task-specific fine-tuning
+High
+After target is validated
+5. Cross-attention
+LFM spatial tokens ↔ CH-2 physical embedding
+High
+Advanced model / future work
+
+5.1 Recommended progression
+Baseline 1: CH-2 onlyBaseline 2: NASA_PRO onlyBaseline 3: CH-2 + NASA_PROExperiment 4: CH-2 + LFM embeddingsExperiment 5: CH-2 + LFM embeddings + NASA_PROExperiment 6: Full gated fusion + uncertaintyExperiment 7: Cross-attention (optional)
+6. Converting the Hugging Face SomBench Data into Numerical Features
+The SomBench ice-prospectivity dataset is not a table of opaque AI scores. Its core layers are geospatial raster files (GeoTIFFs). Each raster pixel already stores numerical values. The relevant modalities include DICE, TMAX, LPSR, LPSR_DEN, LPSR_DIS, SLOPE, CUR and ASP_SIN_COS, while PRO is the regression target.
+Conceptually:
+SomBench GeoTIFF       ↓rasterio.read()       ↓NumPy array       ↓numeric pixel values       ↓sample at LAEP coordinate       ↓append to LAEP row
+Illustrative Python:
+import rasteriowith rasterio.open("patch_PRO.tif") as src:    pro = src.read(1)print(pro.dtype)print(pro.shape)print(pro.min(), pro.max())
+The exact numerical interpretation depends on the raster metadata and layer definition. Do not manually normalize or rescale values before inspecting the GeoTIFF metadata.
+7. How to Combine SomBench with Your Custom CSV
+Your custom LAEP CSV might contain:
+latitude, longitude, CPR, DOP, FD, SERD, slope, elevation, ...-87.35, 78.40, 1.27, 0.08, ..., ..., 6.2, 1840, ...
+The correct operation is a spatial lookup:
+CH-2 coordinate(-87.35, 78.40)        ↓CRS / raster transform        ↓SomBench row/column        ↓sample DICE, TMAX, LPSR, ...        ↓sample PRO        ↓append to CH-2 record
+Critical ruleNever merge the two datasets by row number. A spatial join must be based on latitude/longitude, projected coordinates, raster footprints, or another explicit spatial index.
+
+7.1 Example final tabular record
+Group
+Example fields
+Coordinates
+latitude, longitude, x, y, tile_id
+DFSAR
+CPR, DOP, total_power, m-χ features, FD/SERD where applicable
+IIRS
+R1500, R2000, R1500/R2000, absorption depth
+Terrain
+elevation, slope, roughness, incidence/slant angle
+NASA/SomBench
+DICE, TMAX, LPSR, LPSR_DEN, LPSR_DIS, SLOPE, CUR, ASPECT
+NASA prospectivity
+NASA_PRO
+Availability
+IIRS/DFSAR/OHRC/TMC availability masks
+Target
+independently defined LAEP target
+
+8. The Resolution Problem: Do Not Force Everything to 25 m
+SomBench ice-prospectivity data are approximately 240 m/pixel. Some Chandrayaan-2 products may have substantially finer native spatial scales. Upsampling a 240 m raster to 25 m creates more pixels, not more information.
+Better:240 m LFM context       ↓regional embedding25–100 m / native CH-2 observations       ↓local physical embedding       ↓multi-scale fusionAvoid:240 m raster       ↓artificial 25 m upsampling       ↓pretending it contains 25 m information
+Therefore, the recommended architecture is multi-scale rather than a single forced common grid.
+9. Extracting LFM Embeddings
+The attached architecture proposes extracting a 768-dimensional LFM representation and reducing it to a 256-dimensional context vector. fileciteturn0file1L61-L74
+LFM raster tile      ↓NASA–IBM ViT-B      ↓768-d spatial/token representation      ↓local spatial pooling or coordinate query      ↓LayerNorm + GELU projection      ↓256-d context vector
+For the first implementation, freeze the LFM and cache the 768-dimensional embeddings offline. This keeps the downstream experiments fast and isolates the fusion problem.
+10. Chandrayaan-2 Physical Evidence Branch
+The architecture document separates DFSAR, IIRS, OHRC and TMC-2 features and uses an explicit availability/missingness mask. This is a good design because missing IIRS observations should not be interpreted as physical zeros. fileciteturn0file1L75-L92
+Raw CH-2 features       +availability mask       ↓2-layer MLP + LayerNorm/residual       +mask projection       ↓physical embedding
+Do not blindly mean-impute IIRS if missingness itself carries information.
+Create explicit availability indicators for each feature or modality.
+Standardize continuous features using training-set statistics only.
+Verify DFSAR CPR/DOP actually vary before training; collapsed features can make the radar branch ineffective.
+11. Recommended Fusion Architecture
+The attached architecture proposes gated fusion between the LFM context and Chandrayaan-2 physical representation. The mathematical form is:
+g = sigmoid(Wg [e_context ; e_phys] + bg)z_fused =    g ⊙ W_context(e_context)    + (1-g) ⊙ W_phys(e_phys)
+This is preferable to blindly concatenating all features because the model can learn how strongly the localized physical branch and broader lunar context should contribute.
+Interpretability cautionDo not claim that the gate will automatically go to zero whenever CPR is high or IIRS shows an absorption feature unless this behavior is explicitly supervised or demonstrated through an analysis of learned gates.
+
+12. Better Alternative to Pure Gated Fusion: Cross-Attention
+For a more advanced version, preserve a local set of LFM spatial tokens rather than reducing immediately to one vector. Use the Chandrayaan-2 physical representation as a query and the local LFM tokens as keys/values.
+LFM local tokens[T1 T2 T3 ... Tn]       │       │ keys / values       ▼   Cross-Attention       ▲       │ queryCH-2 physical embedding       │       ▼fused local representation       ↓prediction + uncertainty
+This is more expressive than a single scalar gate because it allows the physical observation to select the most relevant parts of the regional lunar context. It is also more computationally expensive and should be treated as an advanced experiment.
+13. Ground Truth: The Critical Research Requirement
+Before fine-tuning any model, define what the model is actually predicting. The architecture document explicitly recommends disentangling the target from a deterministic Hazard_Class_Label rule and using an independently defensible target. fileciteturn0file1L112-L120
+Do not create a target directly from the same CPR/DOP rules that are then presented to the model as independent evidence.
+Do not call NASA_PRO measured ice ground truth.
+If using a verified volatile/ice catalog or independently justified physical criterion, document its provenance and spatial uncertainty.
+If the target is prospectivity rather than confirmed ice, name it accordingly throughout the paper.
+14. Experimental Plan and Ablation Study
+Experiment
+Input
+Model
+Purpose
+A
+CH-2 only
+LightGBM/MLP
+Baseline physical evidence performance
+B
+NASA_PRO only
+Linear/MLP
+Benchmark-derived prior performance
+C
+CH-2 + NASA_PRO
+XGBoost/LightGBM
+Test whether PRO adds useful context
+D
+CH-2 + LFM embedding
+MLP fusion
+Test learned lunar context
+E
+CH-2 + LFM + NASA_PRO
+MLP/gated fusion
+Test combined evidence
+F
+Full model + uncertainty
+Gated multimodal network
+Final proposed architecture
+G
+Cross-attention
+Attention fusion
+Advanced comparison
+
+Report metrics appropriate to the target: RMSE/MAE/R² for continuous prospectivity, and classification metrics such as precision/recall/F1/AUC only if a defensible binary target is defined. Calibration and uncertainty quality should be reported if a probabilistic output is claimed.
+15. Validation Strategy
+Do not use a simple random train_test_split for pixel-level lunar data. Nearby pixels are spatially autocorrelated, which can produce artificially optimistic results.
+Preferred:Spatial Block CVorCrater-wise GroupKFoldExample concept:Train: Faustini / Shoemaker regionsTest:  Shackleton / Haworth regions
+The attached architecture explicitly recommends spatial-block or crater-wise validation for this reason. fileciteturn0file1L128-L135
+16. Step-by-Step Implementation Roadmap
+Audit and clean the LAEP CSV. Confirm coordinates, feature ranges, units, NaN patterns, and CPR/DOP variation.
+Download and inspect SomBench GeoTIFFs and metadata. Confirm CRS, resolution, bounds, nodata values and layer naming.
+Build a spatial indexing/alignment script that maps every LAEP sample to the correct SomBench tile/pixel or local footprint.
+Create a merged research table containing CH-2 features, NASA/SomBench context features, NASA_PRO, coordinates and availability masks.
+Run the NASA–IBM ice-prospectivity checkpoint as a benchmark and save NASA_PRO predictions.
+Run the base NASA–IBM LFM with no gradient updates and extract/cachе 768-d spatial embeddings.
+Train CH-2-only baseline and NASA_PRO-only baseline.
+Train CH-2 + NASA_PRO baseline.
+Train CH-2 + LFM embedding MLP fusion.
+Add gated fusion and compare against simple concatenation.
+Add uncertainty only after the deterministic/prospectivity target is stable.
+Run spatial-block/crater-wise cross-validation.
+Perform ablations and error analysis by modality availability, terrain class, PSR proximity and spatial region.
+Only then evaluate LoRA/fine-tuning of the LFM if the frozen representation is useful.
+Connect the final prospectivity/uncertainty outputs to the existing LAEP terrain, hazard, cost-map and A* modules.
+17. Recommended LAEP Data Schema
+point_idlatitudelongitudetile_id# Chandrayaan-2 physical evidenceCPRDOPtotal_powerFDSERDiirs_1500iirs_2000iirs_band_ratioiirs_absorption_depth# Terrain / morphologyelevationsloperoughnessincidence_angleslant_angle# NASA/SomBench contextDICETMAXLPSRLPSR_DENLPSR_DISNASA_SLOPECURASPECT# NASA benchmark-derived signalNASA_PRO# AvailabilityDFSAR_availableIIRS_1500_availableIIRS_2000_availableOHRC_availableTMC2_available# Cached foundation-model representationLFM_001 ... LFM_768# Final targettarget
+18. How This Should Appear in the Final LAEP Product
+The user should not have to understand the NASA–IBM model. The primary interface should be location-driven: select a lunar region, specify an analysis radius/polygon, and let the backend retrieve the available spatial context and Chandrayaan-2 evidence.
+USER  ↓latitude / longitude / radius or polygon  ↓LAEP API  ↓data availability resolver  ↓NASA–IBM LFM + Chandrayaan-2 fusion  ↓prospectivity + uncertainty + evidence  ↓terrain / hazard analysis  ↓cost map  ↓A* route planning  ↓web visualization
+For researchers, an additional mode can accept a Chandrayaan-2 CSV with mandatory latitude/longitude and optional mission-specific features. The backend should create the missingness mask automatically.
+19. Recommended Final LAEP Architecture
+                       LRO / SOMBENCH               DICE TMAX PSR SLOPE ASPECT...                           │                           ▼                 NASA–IBM Lunar FM                    pretrained ViT-B                           │                      LFM tokens                           │                 local spatial pooling                           │                      256-d context                           │                           │            ┌──────────────┴──────────────┐            │                             │            ▼                             ▼   Chandrayaan-2 branch           Availability mask   DFSAR / IIRS / OHRC / TMC-2            │                             │            └──────────────┬──────────────┘                           ▼                   Physical embedding                           │                           ▼              Gated Fusion / Cross-Attention                           │                           ▼                 Fused multimodal latent                           │                 ┌─────────┼─────────┐                 ▼         ▼         ▼             Prospectivity  Uncertainty  Physics ICS                 │                 ▼         Terrain + Hazard Analysis                 │                 ▼            Cost Map + A*                 │                 ▼          Candidate Exploration Route
+20. What You Can Reasonably Claim
+LAEP integrates a lunar foundation-model representation with Chandrayaan-2 mission-specific physical observations.
+The architecture is multi-modal and multi-scale rather than relying on a single sensor.
+The NASA–IBM component supplies learned lunar spatial context; Chandrayaan-2 supplies localized physical evidence.
+The system explicitly handles missing modalities through availability masks.
+The system evaluates spatial generalization using spatially separated validation.
+The NASA–IBM prospectivity output can be used as a contextual prior/feature and benchmark reference.
+The final LAEP score should be called an ice prospectivity score unless the target is independently calibrated and validated as a probability of ice.
+Avoid overclaimingDo not claim that the model has confirmed lunar water ice unless your evaluation uses an independently defensible ground-truth source and the validation supports that claim.
+
+21. Key References and Resources
+NASA Science — Artificial Intelligence for the Lunar Foundation Modelhttps://science.nasa.gov/science-research/artificial-intelligence-lunar-foundation-model/
+NASA–IBM Lunar Foundation Model GitHubhttps://github.com/NASA-IMPACT/NASA-IBM-Lunar-Foundation-Model
+NASA–IBM Lunar FM SomBench collectionhttps://huggingface.co/collections/nasa-ibm-ai4science/lunar-fm-ml-ready-benchmark-dataset-sombench
+SomBench Ice Prospectivity Regression datasethttps://huggingface.co/datasets/nasa-ibm-ai4science/Sombench-Ice-Prospectivity-Regression
+TorchGeo TerraTorchhttps://github.com/torchgeo/terratorch
+LAEP project repositoryhttps://github.com/RatishPatil37/LAEP
+Appendix A — Immediate Next Coding Tasks
+Create `download_sombench.py` to retrieve the required polar GeoTIFFs.
+Create `inspect_sombench.py` to print CRS, bounds, resolution, nodata and min/max statistics for every layer.
+Create `spatial_align.py` to map LAEP CSV coordinates to SomBench pixels/footprints.
+Create `build_fused_table.py` to output the merged CSV/Parquet.
+Create `run_nasa_pro.py` to generate NASA_PRO predictions for the LAEP spatial footprint.
+Create `extract_lfm_embeddings.py` to cache 768-d LFM representations.
+Create `train_baselines.py` for CH-2-only, NASA_PRO-only and CH-2 + NASA_PRO experiments.
+Create `train_fusion.py` for LFM + CH-2 gated fusion.
+Create `spatial_cv.py` for region/crater-based evaluation.
+Only after these pass, implement LoRA/fine-tuning and cross-attention.
+
+End of Technical Guide
