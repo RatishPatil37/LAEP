@@ -3,8 +3,11 @@ import { useMissionStore } from './stores/useMissionStore';
 import { soundEngine } from './lib/soundEffects';
 import CommandPalette from './components/navigation/CommandPalette';
 import MissionBoot from './components/navigation/MissionBoot';
+import GeminiAssistant from './components/assistant/GeminiAssistant';
+import ClearanceModal from './components/auth/ClearanceModal';
 import './styles/globals.css';
 import './styles/aerospace.css';
+import './styles/assistant.css';
 
 export default function App() {
   const isResearchMode = useMissionStore((s) => s.isResearchMode);
@@ -12,6 +15,8 @@ export default function App() {
   const setCommandPaletteOpen = useMissionStore((s) => s.setCommandPaletteOpen);
   const audioMuted = useMissionStore((s) => s.audioMuted);
   const toggleAudio = useMissionStore((s) => s.toggleAudio);
+  const userRole = useMissionStore((s) => s.userRole);
+  const setClearanceModalOpen = useMissionStore((s) => s.setClearanceModalOpen);
 
   return (
     <div className="app-shell">
@@ -126,6 +131,31 @@ export default function App() {
             </span>
           </button>
 
+          {/* User Clearance Badge & Switcher */}
+          <button
+            type="button"
+            className="btn-aerospace"
+            onClick={() => {
+              soundEngine.playTelemetryClick();
+              setClearanceModalOpen(true);
+            }}
+            title={`Click to switch clearance role (Current: ${userRole === 'scientist' ? 'Principal Investigator / Scientist' : 'Public Explorer'})`}
+            style={{
+              padding: '0.3rem 0.65rem',
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: '0.65rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              borderColor: userRole === 'scientist' ? 'rgba(255, 215, 64, 0.5)' : 'rgba(56, 189, 248, 0.4)',
+              background: userRole === 'scientist' ? 'rgba(234, 179, 8, 0.12)' : 'rgba(15, 23, 42, 0.4)',
+            }}
+          >
+            <span style={{ color: userRole === 'scientist' ? '#ffd740' : '#38bdf8', fontWeight: 600 }}>
+              {userRole === 'scientist' ? '⚡ PI CLEARANCE' : '🌐 EXPLORER'}
+            </span>
+          </button>
+
           {/* Telemetry Status Indicator */}
           <div className="topbar-status">
             <div className="status-indicator">
@@ -143,6 +173,12 @@ export default function App() {
 
       {/* ── Global ⌘K Command Palette ─────────────────────────────── */}
       <CommandPalette />
+
+      {/* ── Global Planetary Clearance & Role Modal ────────────────── */}
+      <ClearanceModal />
+
+      {/* ── Chrome-Style "Ask Gemini" AI Assistant ─────────────────── */}
+      <GeminiAssistant />
     </div>
   );
 }

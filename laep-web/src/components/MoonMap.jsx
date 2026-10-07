@@ -22,8 +22,133 @@ import GeoJSON      from 'ol/format/GeoJSON';
 import { Style, Stroke, Circle as CircleStyle, Fill, Text } from 'ol/style';
 import Feature      from 'ol/Feature';
 import Point        from 'ol/geom/Point';
+import Polygon      from 'ol/geom/Polygon';
 
 import { useMissionStore, LAYER_IDS } from '../stores/useMissionStore';
+
+// ── Model Training Bounds & Faustini F2 Tactical Footprint ────────────────
+function buildTrainingBoundsFeatures() {
+  const features = [];
+
+  // 1. South Polar Training Zone (80°S – 90°S)
+  const southPolarRing = [
+    [-180, -80],
+    [-90,  -80],
+    [0,    -80],
+    [90,   -80],
+    [180,  -80],
+    [180,  -90],
+    [-180, -90],
+    [-180, -80],
+  ];
+  const southPolarPoly = new Feature({
+    geometry: new Polygon([southPolarRing]),
+    name: 'TRAINED MODEL DOMAIN (80°S – 90°S)',
+    type: 'south_polar_zone',
+  });
+  southPolarPoly.setStyle([
+    new Style({
+      stroke: new Stroke({
+        color: '#38bdf8',
+        width: 2,
+        lineDash: [8, 6],
+      }),
+      fill: new Fill({
+        color: 'rgba(56, 189, 248, 0.05)',
+      }),
+    }),
+    new Style({
+      text: new Text({
+        text: '◄── ACTIVE MODEL TRAINING DOMAIN: 80°S TO 90°S (SOUTH POLAR REACH) ──►',
+        font: 'bold 11px "IBM Plex Mono", monospace',
+        fill: new Fill({ color: '#7dd3fc' }),
+        stroke: new Stroke({ color: '#050608', width: 3 }),
+        placement: 'line',
+        repeat: 450,
+      }),
+    }),
+  ]);
+  features.push(southPolarPoly);
+
+  // 2. North Polar Training Zone (80°N – 90°N)
+  const northPolarRing = [
+    [-180, 80],
+    [-90,  80],
+    [0,    80],
+    [90,   80],
+    [180,  80],
+    [180,  90],
+    [-180, 90],
+    [-180, 80],
+  ];
+  const northPolarPoly = new Feature({
+    geometry: new Polygon([northPolarRing]),
+    name: 'TRAINED MODEL DOMAIN (80°N – 90°N)',
+    type: 'north_polar_zone',
+  });
+  northPolarPoly.setStyle([
+    new Style({
+      stroke: new Stroke({
+        color: 'rgba(56, 189, 248, 0.6)',
+        width: 1.5,
+        lineDash: [6, 6],
+      }),
+      fill: new Fill({
+        color: 'rgba(56, 189, 248, 0.03)',
+      }),
+    }),
+    new Style({
+      text: new Text({
+        text: '◄── ACTIVE MODEL TRAINING DOMAIN: 80°N TO 90°N (NORTH POLAR REACH) ──►',
+        font: 'bold 11px "IBM Plex Mono", monospace',
+        fill: new Fill({ color: '#94a3b8' }),
+        stroke: new Stroke({ color: '#050608', width: 3 }),
+        placement: 'line',
+        repeat: 450,
+      }),
+    }),
+  ]);
+  features.push(northPolarPoly);
+
+  // 3. Faustini F2 Active Target Reticle
+  // Latitude: -86.5°S to -89.9°S, Longitude: 65.0°E to 95.0°E
+  const f2Ring = [
+    [65.0, -89.9],
+    [95.0, -89.9],
+    [95.0, -86.5],
+    [65.0, -86.5],
+    [65.0, -89.9],
+  ];
+  const f2Poly = new Feature({
+    geometry: new Polygon([f2Ring]),
+    name: 'FAUSTINI F2 ACTIVE DATASET FOOTPRINT',
+    type: 'f2_footprint',
+  });
+  f2Poly.setStyle([
+    new Style({
+      stroke: new Stroke({
+        color: '#ffc857',
+        width: 2.5,
+        lineDash: [6, 4],
+      }),
+      fill: new Fill({
+        color: 'rgba(255, 200, 87, 0.10)',
+      }),
+    }),
+    new Style({
+      text: new Text({
+        text: '⌖ FAUSTINI F2 ACTIVE DATASET [CH-2 DFSAR · IIRS · OHRC · TMC-2]',
+        font: 'bold 11px "IBM Plex Mono", monospace',
+        fill: new Fill({ color: '#ffc857' }),
+        stroke: new Stroke({ color: '#070b14', width: 3 }),
+        offsetY: -16,
+      }),
+    }),
+  ]);
+  features.push(f2Poly);
+
+  return features;
+}
 
 // ── NASA WMTS Tile Grid (EPSG:4326) ───────────────────────────────────────
 const MOON_RESOLUTIONS = Array.from({ length: 9 }, (_, z) => 0.703125 / Math.pow(2, z));
@@ -154,6 +279,15 @@ const MoonMap = forwardRef(function MoonMap({ onCoordMove, onMapClick, onSelectC
       mapRef.current.getView().animate({
         center: coords,
         zoom: zoom,
+        duration: 1200
+      });
+    },
+
+    focusFaustini() {
+      if (!mapRef.current) return;
+      mapRef.current.getView().animate({
+        center: [82.0, -87.4],
+        zoom: 5.6,
         duration: 1200
       });
     },
@@ -311,6 +445,14 @@ const MoonMap = forwardRef(function MoonMap({ onCoordMove, onMapClick, onSelectC
     });
     ch2Layer.set('id', 'ch2');
 
+    // 11. Model Training Bounds & Faustini F2 Reticle Layer
+    const boundsLayer = new VectorLayer({
+      source: new VectorSource({ features: buildTrainingBoundsFeatures() }),
+      visible: Boolean(layersVisible[LAYER_IDS.BOUNDS] !== false),
+      zIndex: 95,
+    });
+    boundsLayer.set('id', LAYER_IDS.BOUNDS);
+
     const pathLayer = new VectorLayer({
       source: new VectorSource(),
       visible: true,
@@ -339,16 +481,18 @@ const MoonMap = forwardRef(function MoonMap({ onCoordMove, onMapClick, onSelectC
         hazardLayer,
         ch2Layer,
         craterLayer,
+        boundsLayer,
         pathLayer,
         markerLayer,
       ],
       view: new View({
         projection: 'EPSG:4326',
-        center: [0, -85],
-        zoom: 4,
+        center: [82.0, -87.2],
+        zoom: 4.8,
         minZoom: 1,
-        maxZoom: 8,
+        maxZoom: 9,
         extent: [-180, -90, 180, 90],
+        padding: [30, 20, 80, 20],
         smoothResolutionConstraint: true,
         smoothExtentConstraint: true,
         enableRotation: false,
@@ -367,6 +511,7 @@ const MoonMap = forwardRef(function MoonMap({ onCoordMove, onMapClick, onSelectC
       [LAYER_IDS.ICE]:          iceLayer,
       [LAYER_IDS.HAZARD]:       hazardLayer,
       [LAYER_IDS.ROUTE]:        pathLayer,
+      [LAYER_IDS.BOUNDS]:       boundsLayer,
       craters:                  craterLayer,
       ch2:                      ch2Layer,
       markers:                  markerLayer,
@@ -402,7 +547,35 @@ const MoonMap = forwardRef(function MoonMap({ onCoordMove, onMapClick, onSelectC
     });
   }, []);
 
-  return <div id="moon-map" ref={mapEl} style={{ width: '100%', height: '100%', background: '#01040a' }} />;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', position: 'relative' }}>
+      <div id="moon-map" ref={mapEl} style={{ flex: 1, width: '100%', minHeight: 0, background: '#01040a' }} />
+      
+      {/* ── High-Width Bottom Elevation Shelf Bar (Elevates Map for Full Viewport Reach) ── */}
+      <div className="map-bottom-shelf">
+        <div className="shelf-telemetry-item">
+          <span className="shelf-indicator" />
+          <span className="shelf-label">MODEL DOMAIN //</span>
+          <span className="shelf-val">TRAINED: 80°S – 90°S & 80°N – 90°N</span>
+        </div>
+        <div className="shelf-telemetry-item">
+          <span className="shelf-label">ACTIVE BENCHMARK //</span>
+          <span className="shelf-val highlight">FAUSTINI F2 [82.10°E, -87.35°S]</span>
+        </div>
+        <button
+          type="button"
+          className="btn-shelf-focus"
+          onClick={() => {
+            soundEngine.playTargetAcquired();
+            mapRef.current?.getView().animate({ center: [82.0, -87.4], zoom: 5.6, duration: 1000 });
+          }}
+          title="Elevate and zoom directly onto Faustini F2 active mapping area"
+        >
+          <span>⌖ FOCUS FAUSTINI F2</span>
+        </button>
+      </div>
+    </div>
+  );
 });
 
 export default MoonMap;

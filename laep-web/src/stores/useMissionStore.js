@@ -12,6 +12,7 @@ export const LAYER_IDS = {
   ICE:         'ice',
   HAZARD:      'hazard',
   ROUTE:       'route',
+  BOUNDS:      'bounds',
 };
 
 export const INITIAL_LAYERS_VISIBLE = {
@@ -25,6 +26,7 @@ export const INITIAL_LAYERS_VISIBLE = {
   [LAYER_IDS.ICE]:         true,
   [LAYER_IDS.HAZARD]:      false,
   [LAYER_IDS.ROUTE]:       true,
+  [LAYER_IDS.BOUNDS]:      true,
   craters:                 true,
   ch2:                     false,
 };
@@ -48,6 +50,17 @@ export const useMissionStore = create((set, get) => ({
   isResearchMode: false,
   isComparisonMode: false,
   comparisonSplit: 50, // percentage (0 to 100)
+
+  // ── Authentication & Role-Based Clearance ──
+  userRole: 'explorer', // 'explorer' | 'scientist'
+  setUserRole: (role) => set({ userRole: role }),
+  clearanceModalOpen: false,
+  setClearanceModalOpen: (open) => set({ clearanceModalOpen: open }),
+
+  // ── AI Assistant Sidebar ──
+  aiAssistantOpen: false,
+  setAiAssistantOpen: (open) => set({ aiAssistantOpen: open }),
+  toggleAiAssistant: () => set((s) => ({ aiAssistantOpen: !s.aiAssistantOpen })),
 
   // ── Terrain & Visualization Controls ──
   terrainExaggeration: 2.0, // 1.0x to 5.0x

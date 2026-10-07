@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
 
-from routers import dem, ice_detection, pathfinding, craters
+from routers import dem, ice_detection, pathfinding, craters, auth
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("laep-api")
@@ -38,6 +38,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # ── Register Routers ───────────────────────────────────────────────────────
+app.include_router(auth.router,          prefix="/api", tags=["Clearance & Authentication"])
 app.include_router(dem.router,           prefix="/api", tags=["Terrain"])
 app.include_router(ice_detection.router, prefix="/api", tags=["Ice Detection"])
 app.include_router(pathfinding.router,   prefix="/api", tags=["Pathfinding"])

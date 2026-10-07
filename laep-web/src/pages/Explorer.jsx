@@ -32,6 +32,8 @@ import MapComparisonSlider from '../components/scientific/MapComparisonSlider';
 import MeasurementTool from '../components/scientific/MeasurementTool';
 import DataProvenanceDrawer from '../components/scientific/DataProvenanceDrawer';
 import MultiSensorInspector from '../components/scientific/MultiSensorInspector';
+import RadargramProfiler from '../components/scientific/RadargramProfiler';
+import HyperspectralCurve from '../components/scientific/HyperspectralCurve';
 import LandingDecisionMatrix from '../components/scientific/LandingDecisionMatrix';
 
 import '../styles/map.css';
@@ -70,6 +72,8 @@ export default function Explorer() {
   const layersVisible = useMissionStore((s) => s.layersVisible);
   const toggleLayerVisibility = useMissionStore((s) => s.toggleLayerVisibility);
   const setActiveRouteTelemetry = useMissionStore((s) => s.setActiveRouteTelemetry);
+  const userRole = useMissionStore((s) => s.userRole);
+  const setClearanceModalOpen = useMissionStore((s) => s.setClearanceModalOpen);
 
   // Active Sidebar Tab
   const [activeTab, setActiveTab] = useState(TABS.WAYPOINTS);
@@ -709,10 +713,12 @@ export default function Explorer() {
             </div>
           )}
 
-          {/* ════════ TAB 3: 18-CHANNEL SENSORS ════════ */}
+          {/* ════════ TAB 3: 18-CHANNEL SENSORS & RADAR PROFILE ════════ */}
           {activeTab === TABS.SENSORS && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <MultiSensorInspector crater={selectedCrater} />
+              <RadargramProfiler crater={selectedCrater} />
+              <HyperspectralCurve crater={selectedCrater} />
               <LandingDecisionMatrix crater={selectedCrater} />
             </div>
           )}
@@ -720,7 +726,50 @@ export default function Explorer() {
           {/* ════════ TAB 4: CUSTOM COORDINATES & VOLUMETRICS ════════ */}
           {activeTab === TABS.CUSTOM && (
             <>
-              <div className="ctrl-group">
+              {userRole !== 'scientist' ? (
+                <div className="ctrl-group" style={{ borderColor: 'rgba(255, 215, 64, 0.4)', background: 'rgba(234, 179, 8, 0.06)' }}>
+                  <div className="ctrl-group-title" style={{ color: '#ffd740' }}>
+                    <span>🔒 SCIENTIST CLEARANCE REQUIRED</span>
+                    <span style={{ fontSize: '0.62rem', color: '#ffc857' }}>TIER 2 PROTOCOL</span>
+                  </div>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--c-text-dim)', lineHeight: 1.5, margin: '4px 0 8px 0' }}>
+                    Custom waypoint coordinate injection and arbitrary regional ice volume calculations are restricted to Technical Users & Principal Investigators (PI).
+                  </p>
+                  <p style={{ fontSize: '0.7rem', color: '#94a3b8', lineHeight: 1.4, margin: '0 0 10px 0' }}>
+                    Public Explorers can freely inspect all 11 instrument layers, 8 benchmark craters, pre-calculated optimal routes, and 3D simulation telemetry.
+                  </p>
+                  <button
+                    className="btn"
+                    style={{
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #d97706, #ffd740)',
+                      color: '#030712',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.72rem',
+                      padding: '0.5rem',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      soundEngine.playTelemetryClick();
+                      setClearanceModalOpen(true);
+                    }}
+                  >
+                    ⚡ ENTER SCIENTIST CLEARANCE KEY
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.6rem', background: 'rgba(234, 179, 8, 0.12)', border: '1px solid rgba(255, 215, 64, 0.4)', borderRadius: 4, marginBottom: 8 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.66rem', color: '#ffd740', fontWeight: 600 }}>
+                    ⚡ PI SCIENTIST CLEARANCE UNLOCKED
+                  </span>
+                  <span style={{ fontSize: '0.6rem', color: '#f8fafc', background: 'rgba(255,215,64,0.2)', padding: '0.1rem 0.35rem', borderRadius: 2 }}>
+                    ACTIVE
+                  </span>
+                </div>
+              )}
+
+              <div className="ctrl-group" style={{ opacity: userRole === 'scientist' ? 1 : 0.65, pointerEvents: userRole === 'scientist' ? 'auto' : 'none' }}>
                 <div className="ctrl-group-title">CUSTOM WAYPOINT INPUT</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--c-text-dim)' }}>
                   Enter coordinate points for autonomous polar routing:
@@ -748,7 +797,7 @@ export default function Explorer() {
                 </button>
               </div>
 
-              <div className="ctrl-group">
+              <div className="ctrl-group" style={{ opacity: userRole === 'scientist' ? 1 : 0.65, pointerEvents: userRole === 'scientist' ? 'auto' : 'none' }}>
                 <div className="ctrl-group-title">REGIONAL BOUNDING BOX (ICE TONNAGE)</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--c-text-dim)' }}>
                   Compute 2D Simpson Rule Ice Tonnage for any Lat/Lon region:

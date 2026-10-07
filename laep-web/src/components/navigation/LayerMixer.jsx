@@ -12,6 +12,7 @@ const LAYER_ITEMS = [
   { id: LAYER_IDS.ICE,          label: 'ICE SIGNAL',   glyph: 'ICE', desc: 'Multi-Sensor Ice-Consistency Signal', color: '#2dd4bf' },
   { id: LAYER_IDS.HAZARD,       label: 'HAZARD MASK',  glyph: 'HZD', desc: 'Multi-Modal Terrain Cost Grid', color: '#fb7185' },
   { id: LAYER_IDS.ROUTE,        label: 'ROVER ROUTE',  glyph: 'NAV', desc: 'Autonomous Kinematic Route', color: '#34d399' },
+  { id: LAYER_IDS.BOUNDS,       label: 'MODEL BOUNDS', glyph: 'BOX', desc: '80°-90° Polar Zone & Faustini F2 Reticle', color: '#38bdf8' },
 ];
 
 export default function LayerMixer({ onToggleLayer }) {
@@ -51,7 +52,7 @@ export default function LayerMixer({ onToggleLayer }) {
         }}
       >
         <span>LAYER MIXER</span>
-        <span style={{ fontSize: '0.55rem', color: '#6b7280' }}>10 CH</span>
+        <span style={{ fontSize: '0.55rem', color: '#6b7280' }}>11 CH</span>
       </div>
 
       {LAYER_ITEMS.map((item) => {

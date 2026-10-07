@@ -1,4 +1,3 @@
-
 Absolutely. If the current frontend is **10/100**, I would not try to make it “a nicer dashboard.” I would redesign LAEP as an **interactive planetary mission experience**.
 
 And your 3D Moon idea is exactly the right direction — but I would take it much further.
@@ -232,7 +231,7 @@ On the Moon:
               │
               │
        ● Malapert
-            
+          
                  ● Faustini
 
         ● Nobile
