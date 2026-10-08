@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import { useMissionStore } from '../../stores/useMissionStore';
 import { soundEngine } from '../../lib/soundEffects';
 
@@ -112,94 +114,283 @@ Chandrayaan-2 mission parameters and polar datasets are indexed:
 
 To query live Google Gemini, configure \`VITE_GEMINI_API_KEY\` in \`laep-web/.env\`.`;
 
-// Helper: parse inline markdown elements (**bold**, `code`)
-function renderInlineFormatting(text) {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
-  return parts.map((part, idx) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return (
-        <strong key={idx} className="copilot-strong">
-          {part.slice(2, -2)}
-        </strong>
-      );
+// Normalizes LaTeX strings and Markdown anomalies produced by LLM outputs
+function normalizeLatexText(text) {
+  if (!text) return '';
+  let str = text;
+
+  // 1. Separate divider lines cleanly into standalone blocks
+  str = str.replace(/(^|\n)(---|___|\*\*\*)(\n|$)/g, '\n\n---\n\n');
+
+  // 2. Separate headings from following text/lists
+  str = str.replace(/^(#{1,6}\s[^\n]+)\n([^\n#])/gm, '$1\n\n$2');
+
+  // 3. Separate inline bullets that follow headers, e.g. '#### A. DFSAR * In-Domain' -> '#### A. DFSAR\n* In-Domain'
+  str = str.replace(/^(#{1,6}\s[^\n*]+)\s\*\s/gm, '$1\n* ');
+
+  // 4. Split multiple inline bullets on the same line: ' * In-Domain ... * OOD Failure'
+  str = str.replace(/([^\n])\s\*\s([A-Za-z0-9])/g, '$1\n* $2');
+
+  // 5. Fix orphaned leading degree notation at start of sentence/string: '80^\circ$.' -> '$80^\circ$.'
+  str = str.replace(/(^|\n|\.\s+)(\d+(?:\.\d+)?\^\\circ)\$/g, (m, p1, p2) => p1 + '$' + p2 + '$');
+
+  // 6. Fix split math ranges like '$80^\circ–$90^\circ$' or '$80^\circ-$90^\circ$' -> '$80^\circ - 90^\circ$'
+  str = str.replace(/\$([^\$]+)[–-](\$)([^\$]+)\$/g, (m, g1, d, g2) => {
+    return '$' + g1 + ' - ' + g2 + '$';
+  });
+
+  // 7. Fix bare degree notation outside math, e.g. ' 80^\circ ' -> ' $80^\circ$ '
+  str = str.replace(/(^|[\s(])(\d+(?:\.\d+)?\^\\circ)(?![\$\w])/g, (m, p1, p2) => p1 + '$' + p2 + '$');
+
+  return str;
+}
+
+// Tokenizes inline formatting: math, code, bold, italic, and text
+function tokenizeInline(text) {
+  if (!text) return [];
+  const regex = /(\$\$[^\$]+\$\$|\$[^\$\n]+\$|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
+  const parts = text.split(regex);
+  return parts.filter(Boolean).map((part) => {
+    if (part.startsWith('$$') && part.endsWith('$$') && part.length > 4) {
+      return { type: 'displayMath', content: part.slice(2, -2) };
     }
-    if (part.startsWith('`') && part.endsWith('`')) {
-      return (
-        <code key={idx} className="copilot-code">
-          {part.slice(1, -1)}
-        </code>
-      );
+    if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+      return { type: 'inlineMath', content: part.slice(1, -1) };
     }
-    return part;
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return { type: 'code', content: part.slice(1, -1) };
+    }
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return { type: 'bold', content: part.slice(2, -2) };
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+      return { type: 'italic', content: part.slice(1, -1) };
+    }
+    return { type: 'text', content: part };
   });
 }
 
-// Helper: render block-level markdown (headings, lists, paragraphs)
-function renderFormattedMessage(rawText) {
-  if (!rawText) return null;
-  const blocks = rawText.split('\n\n');
-
-  return blocks.map((block, bIdx) => {
-    const trimmed = block.trim();
-    if (!trimmed) return null;
-
-    // Heading level 3 or 2
-    if (trimmed.startsWith('### ')) {
+// Renders token array with KaTeX and formatting
+function renderInlineTokens(tokens) {
+  return tokens.map((token, idx) => {
+    if (token.type === 'inlineMath') {
+      try {
+        const html = katex.renderToString(token.content.trim(), {
+          displayMode: false,
+          throwOnError: false,
+        });
+        return (
+          <span
+            key={idx}
+            className="claude-inline-math"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        );
+      } catch (err) {
+        return (
+          <span key={idx} className="claude-inline-math-raw">
+            ${token.content}$
+          </span>
+        );
+      }
+    }
+    if (token.type === 'displayMath') {
+      try {
+        const html = katex.renderToString(token.content.trim(), {
+          displayMode: true,
+          throwOnError: false,
+        });
+        return (
+          <div
+            key={idx}
+            className="claude-display-math"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        );
+      } catch (err) {
+        return (
+          <div key={idx} className="claude-display-math-raw">
+            $${token.content}$$
+          </div>
+        );
+      }
+    }
+    if (token.type === 'code') {
       return (
-        <h4 key={bIdx} className="copilot-heading">
-          {trimmed.replace('### ', '')}
-        </h4>
+        <code key={idx} className="claude-inline-code">
+          {token.content}
+        </code>
       );
     }
-    if (trimmed.startsWith('## ')) {
+    if (token.type === 'bold') {
       return (
-        <h3 key={bIdx} className="copilot-heading">
-          {trimmed.replace('## ', '')}
-        </h3>
+        <strong key={idx} className="claude-strong">
+          {renderInlineTokens(tokenizeInline(token.content))}
+        </strong>
       );
     }
-
-    // Numbered List
-    if (/^\d+\.\s/.test(trimmed)) {
-      const items = trimmed.split('\n').filter((l) => /^\d+\.\s/.test(l.trim()));
+    if (token.type === 'italic') {
       return (
-        <ol key={bIdx} className="copilot-ol">
-          {items.map((item, iIdx) => (
-            <li key={iIdx} className="copilot-li">
-              {renderInlineFormatting(item.replace(/^\d+\.\s+/, ''))}
-            </li>
-          ))}
-        </ol>
+        <em key={idx} className="claude-em">
+          {token.content}
+        </em>
       );
     }
-
-    // Bullet List
-    if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.includes('\n- ')) {
-      const lines = trimmed.split('\n');
-      const intro = lines.find((l) => !l.trim().startsWith('- ') && !l.trim().startsWith('* '));
-      const listItems = lines.filter((l) => l.trim().startsWith('- ') || l.trim().startsWith('* '));
-
-      return (
-        <div key={bIdx} className="copilot-list-wrapper">
-          {intro && <p className="copilot-para">{renderInlineFormatting(intro)}</p>}
-          <ul className="copilot-ul">
-            {listItems.map((item, iIdx) => (
-              <li key={iIdx} className="copilot-li">
-                {renderInlineFormatting(item.replace(/^[-*]\s+/, ''))}
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
-    }
-
-    // Math block or regular paragraph
-    return (
-      <p key={bIdx} className="copilot-para">
-        {renderInlineFormatting(trimmed)}
-      </p>
-    );
+    return token.content;
   });
+}
+
+// Block-level Markdown and KaTeX renderer with Claude styling and streaming cursor
+function renderFormattedMessage(rawText, isStreaming = false) {
+  if (!rawText) return null;
+  const normalized = normalizeLatexText(rawText);
+  const blocks = normalized.split(/\n\n+/).filter((b) => b.trim().length > 0);
+
+  return (
+    <div className="claude-rendered-content">
+      {blocks.map((block, bIdx) => {
+        const trimmed = block.trim();
+        const isLastBlock = bIdx === blocks.length - 1;
+
+        // Horizontal divider
+        if (trimmed === '---' || trimmed === '***') {
+          return (
+            <div key={bIdx} className="claude-divider-wrapper">
+              <hr className="claude-divider" />
+              {isLastBlock && isStreaming && (
+                <span className="claude-streaming-cursor" aria-hidden="true" />
+              )}
+            </div>
+          );
+        }
+
+        // Standalone display math block ($$ ... $$)
+        if (trimmed.startsWith('$$') && trimmed.endsWith('$$') && trimmed.length > 4) {
+          const mathExpr = trimmed.slice(2, -2).trim();
+          try {
+            const html = katex.renderToString(mathExpr, {
+              displayMode: true,
+              throwOnError: false,
+            });
+            return (
+              <div key={bIdx} className="claude-display-math-container">
+                <div
+                  className="claude-display-math"
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+                {isLastBlock && isStreaming && (
+                  <span className="claude-streaming-cursor" aria-hidden="true" />
+                )}
+              </div>
+            );
+          } catch (e) {
+            return (
+              <pre key={bIdx} className="claude-math-fallback">
+                {trimmed}
+              </pre>
+            );
+          }
+        }
+
+        // Headings
+        if (trimmed.startsWith('#### ')) {
+          return (
+            <h4 key={bIdx} className="claude-heading-4">
+              {renderInlineTokens(tokenizeInline(trimmed.replace(/^####\s+/, '')))}
+              {isLastBlock && isStreaming && (
+                <span className="claude-streaming-cursor" aria-hidden="true" />
+              )}
+            </h4>
+          );
+        }
+        if (trimmed.startsWith('### ')) {
+          return (
+            <h3 key={bIdx} className="claude-heading-3">
+              {renderInlineTokens(tokenizeInline(trimmed.replace(/^###\s+/, '')))}
+              {isLastBlock && isStreaming && (
+                <span className="claude-streaming-cursor" aria-hidden="true" />
+              )}
+            </h3>
+          );
+        }
+        if (trimmed.startsWith('## ')) {
+          return (
+            <h2 key={bIdx} className="claude-heading-2">
+              {renderInlineTokens(tokenizeInline(trimmed.replace(/^##\s+/, '')))}
+              {isLastBlock && isStreaming && (
+                <span className="claude-streaming-cursor" aria-hidden="true" />
+              )}
+            </h2>
+          );
+        }
+
+        // Numbered list
+        if (/^\d+\.\s/.test(trimmed)) {
+          const items = trimmed.split('\n').filter((l) => /^\d+\.\s/.test(l.trim()));
+          return (
+            <ol key={bIdx} className="claude-ol">
+              {items.map((item, iIdx) => {
+                const isLastItem = isLastBlock && iIdx === items.length - 1;
+                return (
+                  <li key={iIdx} className="claude-li">
+                    {renderInlineTokens(tokenizeInline(item.replace(/^\d+\.\s+/, '')))}
+                    {isLastItem && isStreaming && (
+                      <span className="claude-streaming-cursor" aria-hidden="true" />
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          );
+        }
+
+        // Bullet list
+        if (
+          trimmed.startsWith('- ') ||
+          trimmed.startsWith('* ') ||
+          trimmed.includes('\n* ') ||
+          trimmed.includes('\n- ')
+        ) {
+          const lines = trimmed.split('\n');
+          const intro = lines.find((l) => !l.trim().startsWith('- ') && !l.trim().startsWith('* '));
+          const listItems = lines.filter((l) => l.trim().startsWith('- ') || l.trim().startsWith('* '));
+
+          return (
+            <div key={bIdx} className="claude-list-block">
+              {intro && (
+                <p className="claude-para">
+                  {renderInlineTokens(tokenizeInline(intro))}
+                </p>
+              )}
+              <ul className="claude-ul">
+                {listItems.map((item, iIdx) => {
+                  const isLastItem = isLastBlock && iIdx === listItems.length - 1;
+                  return (
+                    <li key={iIdx} className="claude-li">
+                      {renderInlineTokens(tokenizeInline(item.replace(/^[-*]\s+/, '')))}
+                      {isLastItem && isStreaming && (
+                        <span className="claude-streaming-cursor" aria-hidden="true" />
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        }
+
+        // Paragraph
+        return (
+          <p key={bIdx} className="claude-para">
+            {renderInlineTokens(tokenizeInline(trimmed))}
+            {isLastBlock && isStreaming && (
+              <span className="claude-streaming-cursor" aria-hidden="true" />
+            )}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function GeminiAssistant() {
@@ -211,13 +402,15 @@ export default function GeminiAssistant() {
     {
       id: 'welcome',
       role: 'assistant',
-      text: `### CH-2 Mission Copilot Online\nIntegrated with Chandrayaan-2 multi-sensor datasets (DFSAR, IIRS, TMC-2, OHRC) and Google Gemini 3.6 Flash.\n\nQuery technical parameters for the **Faustini F2 landing corridor**, **radar CPR water-ice volume scattering**, or **kinematic A* rover traverse planning**.`,
+      text: `### Chandrayaan-2 Planetary Science Copilot\nIntegrated with multi-sensor lunar observation datasets (DFSAR, IIRS, TMC-2, OHRC) and Google Gemini 3.6 Flash.\n\nQuery technical parameters for the **Faustini F2 landing corridor**, **DFSAR radar CPR volume scattering**, or **kinematic A* rover traversal planning**.`,
       time: '00:00',
+      isStreaming: false,
     },
   ]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const streamingRef = useRef(null);
 
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const isLiveGemini = Boolean(apiKey && apiKey.trim().length > 5);
@@ -226,11 +419,94 @@ export default function GeminiAssistant() {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, loading]);
+
+  // Clean up any streaming interval when unmounting
+  useEffect(() => {
+    return () => {
+      if (streamingRef.current) {
+        clearInterval(streamingRef.current);
+        streamingRef.current = null;
+      }
+    };
+  }, []);
+
+  // Organic Claude-like fluid token streaming
+  const streamAssistantReply = (replyText) => {
+    return new Promise((resolve) => {
+      if (streamingRef.current) {
+        clearInterval(streamingRef.current);
+        streamingRef.current = null;
+      }
+
+      const msgId = (Date.now() + 1).toString();
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Append empty assistant message with isStreaming = true
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: msgId,
+          role: 'assistant',
+          text: '',
+          time: timeStr,
+          isStreaming: true,
+        },
+      ]);
+      setLoading(false);
+
+      // Create natural tokens (words or small syllable chunks)
+      const tokens = [];
+      let i = 0;
+      while (i < replyText.length) {
+        const spaceIdx = replyText.indexOf(' ', i + 2);
+        if (spaceIdx !== -1 && spaceIdx - i <= 8) {
+          tokens.push(replyText.slice(i, spaceIdx + 1));
+          i = spaceIdx + 1;
+        } else {
+          const step = Math.min(4, replyText.length - i);
+          tokens.push(replyText.slice(i, i + step));
+          i += step;
+        }
+      }
+
+      let tokenIdx = 0;
+      let accumulated = '';
+
+      streamingRef.current = setInterval(() => {
+        if (tokenIdx < tokens.length) {
+          accumulated += tokens[tokenIdx];
+          tokenIdx++;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === msgId ? { ...m, text: accumulated, isStreaming: true } : m))
+          );
+        } else {
+          if (streamingRef.current) {
+            clearInterval(streamingRef.current);
+            streamingRef.current = null;
+          }
+          setMessages((prev) =>
+            prev.map((m) => (m.id === msgId ? { ...m, text: replyText, isStreaming: false } : m))
+          );
+          soundEngine.playTargetAcquired();
+          resolve();
+        }
+      }, 16); // High-rate fluid animation
+    });
+  };
 
   const handleSend = async (overrideText) => {
     const query = (overrideText || inputText).trim();
     if (!query || loading) return;
+
+    // Clear any previous stream if user sends immediately
+    if (streamingRef.current) {
+      clearInterval(streamingRef.current);
+      streamingRef.current = null;
+      setMessages((prev) =>
+        prev.map((m) => (m.isStreaming ? { ...m, isStreaming: false } : m))
+      );
+    }
 
     soundEngine.playTelemetryClick();
     setInputText('');
@@ -240,6 +516,7 @@ export default function GeminiAssistant() {
       role: 'user',
       text: query,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isStreaming: false,
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -247,7 +524,7 @@ export default function GeminiAssistant() {
 
     try {
       if (isLiveGemini) {
-        // Direct call to Google Gemini 3.6 Flash API (with graceful model fallback if needed)
+        // Direct call to Google Gemini 3.6 Flash API
         const callGeminiModel = async (modelName) => {
           return fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
@@ -272,7 +549,7 @@ export default function GeminiAssistant() {
 
         let response = await callGeminiModel('gemini-3.6-flash');
         if (!response.ok) {
-          // Fallback attempt to gemini-2.5-flash / gemini-1.5-flash if 3.6 endpoint returns an error
+          // Graceful fallback to gemini-2.5-flash / gemini-1.5-flash
           const altResponse = await callGeminiModel('gemini-2.5-flash');
           if (altResponse.ok) {
             response = altResponse;
@@ -293,19 +570,10 @@ export default function GeminiAssistant() {
           data?.candidates?.[0]?.content?.parts?.[0]?.text ||
           'Telemetry connection interrupted. Repeat inquiry.';
 
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            text: replyText,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
-        soundEngine.playTargetAcquired();
+        await streamAssistantReply(replyText);
       } else {
         // Offline verified scientific knowledge base fallback
-        await new Promise((r) => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 220));
         const qLower = query.toLowerCase();
 
         const match = OFFLINE_KNOWLEDGE_BASE.find((item) =>
@@ -313,17 +581,7 @@ export default function GeminiAssistant() {
         );
 
         const replyText = match ? match.answer : DEFAULT_FALLBACK_REPLY;
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            text: replyText,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          },
-        ]);
-        soundEngine.playTargetAcquired();
+        await streamAssistantReply(replyText);
       }
     } catch (err) {
       console.warn('Mission Copilot live API note:', err.message);
@@ -331,17 +589,10 @@ export default function GeminiAssistant() {
       const match = OFFLINE_KNOWLEDGE_BASE.find((item) =>
         item.keywords.some((kw) => qLower.includes(kw))
       );
-      const replyText = match ? match.answer : DEFAULT_FALLBACK_REPLY;
+      const fallbackReply = match ? match.answer : DEFAULT_FALLBACK_REPLY;
+      const fullReply = `*(Live API note: ${err.message}. Serving verified Chandrayaan-2 telemetry knowledge base)*\n\n${fallbackReply}`;
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          text: `*(Live API fallback: ${err.message}. Serving verified Chandrayaan-2 telemetry knowledge base)*\n\n${replyText}`,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
+      await streamAssistantReply(fullReply);
     } finally {
       setLoading(false);
     }
@@ -415,15 +666,16 @@ export default function GeminiAssistant() {
         </button>
       </div>
 
-      {/* ── Wide Aerospace Sidebar Console ── */}
+      {/* ── Claude-Themed Mission Copilot Drawer ── */}
       <div className={`gemini-sidebar-drawer ${isOpen ? 'open' : ''}`}>
         {/* Header */}
         <div className="gemini-drawer-header">
           <div className="gemini-header-left">
-            <div className="gemini-header-title">CH-2 MISSION COPILOT</div>
-            <div className="gemini-header-sub">
-              PLANETARY EXPLORATION INTELLIGENCE
+            <div className="gemini-header-title">
+              <span className="claude-sparkle-glyph">✦</span>
+              CH-2 MISSION COPILOT
             </div>
+            <div className="gemini-header-sub">PLANETARY SCIENCE & ROVER INTELLIGENCE</div>
           </div>
 
           <div className="gemini-header-actions">
@@ -438,7 +690,7 @@ export default function GeminiAssistant() {
                 soundEngine.playTelemetryClick();
                 setIsOpen(false);
               }}
-              title="Close Console"
+              title="Close Copilot"
             >
               ✕
             </button>
@@ -447,7 +699,7 @@ export default function GeminiAssistant() {
 
         {/* Query Preset Chips */}
         <div className="gemini-chips-shelf">
-          <div className="chips-label">QUERY PRESETS:</div>
+          <div className="chips-label">SUGGESTED INQUIRIES:</div>
           <div className="chips-scroll">
             {quickChips.map((chip, idx) => (
               <button
@@ -468,21 +720,46 @@ export default function GeminiAssistant() {
             <div key={m.id} className={`gemini-msg-row ${m.role}`}>
               <div className="gemini-msg-header">
                 <span className="gemini-msg-author">
-                  {m.role === 'assistant' ? '[ISRO / CH-2 COPILOT]' : '[MISSION OPERATOR]'}
+                  {m.role === 'assistant' ? (
+                    <>
+                      <span className="claude-author-star">✦</span>
+                      <span>CH-2 MISSION COPILOT</span>
+                    </>
+                  ) : (
+                    <span>MISSION OPERATOR</span>
+                  )}
                 </span>
                 <span className="gemini-msg-time">{m.time}</span>
               </div>
               <div className="gemini-msg-bubble">
-                {renderFormattedMessage(m.text)}
+                {renderFormattedMessage(m.text, m.isStreaming)}
               </div>
             </div>
           ))}
 
+          {/* Organic Claude-style Thinking / Synchronizing Indicator */}
           {loading && (
             <div className="gemini-msg-row assistant">
-              <div className="gemini-typing-indicator">
-                <span className="typing-cursor" />
-                <span>Synchronizing mission telemetry & computing response...</span>
+              <div className="gemini-msg-header">
+                <span className="gemini-msg-author">
+                  <span className="claude-author-star">✦</span>
+                  <span>CH-2 MISSION COPILOT</span>
+                </span>
+              </div>
+              <div className="claude-thinking-card">
+                <div className="claude-sparkle-halo">
+                  <svg className="claude-sparkle-svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C12.5 7.5 16.5 11.5 22 12C16.5 12.5 12.5 16.5 12 22C11.5 16.5 7.5 12.5 2 12C7.5 11.5 11.5 7.5 12 2Z" />
+                  </svg>
+                </div>
+                <span className="claude-thinking-text">
+                  Synthesizing planetary telemetry & radar constraints
+                </span>
+                <div className="claude-thinking-dots">
+                  <span />
+                  <span />
+                  <span />
+                </div>
               </div>
             </div>
           )}
@@ -490,7 +767,7 @@ export default function GeminiAssistant() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Footer */}
+        {/* Input Footer — Completely cleaned without .env bottom line */}
         <div className="gemini-input-footer">
           <div className="gemini-input-wrapper">
             <textarea
@@ -511,21 +788,10 @@ export default function GeminiAssistant() {
               className="btn-gemini-send"
               onClick={() => handleSend()}
               disabled={!inputText.trim() || loading}
+              title="Transmit query"
             >
               TRANSMIT
             </button>
-          </div>
-
-          <div className="gemini-env-notice">
-            {isLiveGemini ? (
-              <span className="notice-ok">
-                TELEMETRY LINK: Google Gemini 3.6 Flash Connected via .env
-              </span>
-            ) : (
-              <span>
-                Local Knowledge Base active. Configure VITE_GEMINI_API_KEY in .env to activate live generative reasoning.
-              </span>
-            )}
           </div>
         </div>
       </div>

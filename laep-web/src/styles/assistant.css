@@ -1,6 +1,6 @@
-/* ── assistant.css — Utilitarian Mission Copilot & Access Control ── */
+/* ── assistant.css — Claude-Themed Mission Copilot & Access Control ── */
 
-/* ── Circular Aerospace Floating Action Button (FAB) ── */
+/* ── Circular Aerospace Floating Action Button (FAB) (Claude Palette) ── */
 .gemini-fab-container {
   position: fixed;
   bottom: 24px;
@@ -18,29 +18,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(7, 10, 16, 0.94);
-  border: 1.5px solid rgba(125, 211, 252, 0.35);
-  color: #b8f0ff;
+  background: #191816;
+  border: 1.5px solid rgba(217, 119, 87, 0.45);
+  color: #d97757;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(125, 211, 252, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(217, 119, 87, 0.12);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gemini-assistant-fab:hover {
-  background: #0d1526;
-  border-color: #38bdf8;
+  background: #23211e;
+  border-color: #d97757;
   color: #ffffff;
   transform: scale(1.06);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), inset 0 0 16px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 16px rgba(217, 119, 87, 0.3);
 }
 
 .gemini-assistant-fab.active {
-  background: #0b1424;
-  border-color: #38bdf8;
-  color: #38bdf8;
+  background: #23211e;
+  border-color: #d97757;
+  color: #d97757;
 }
 
 .fab-icon-svg {
@@ -51,16 +51,16 @@
   transform: rotate(6deg);
 }
 
-/* Status Indicator Pip (Top-Right of Circle) */
+/* Status Indicator Pip */
 .fab-status-pip {
   position: absolute;
-  top: 1px;
+  top: 2px;
   right: 2px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid #070a10;
-  background: #38bdf8;
+  border: 2px solid #191816;
+  background: #d97757;
 }
 
 .fab-status-pip.live {
@@ -71,25 +71,25 @@
   background: #f59e0b;
 }
 
-/* Floating Tooltip Label (Appears on Hover) */
+/* Tooltip Tag */
 .fab-tooltip {
   position: absolute;
   right: calc(100% + 14px);
-  padding: 0.35rem 0.7rem;
-  background: #090d16;
+  padding: 0.35rem 0.75rem;
+  background: #1c1a17;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 3px;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.74rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #f1f5f9;
+  letter-spacing: 0.05em;
+  color: #f5f4ef;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   transform: translateX(4px);
   transition: opacity 0.18s ease, transform 0.18s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
 }
 
 .gemini-assistant-fab:hover .fab-tooltip {
@@ -97,7 +97,7 @@
   transform: translateX(0);
 }
 
-/* ── Wide Aerospace Sidebar Console ── */
+/* ── Claude-Themed Mission Copilot Drawer ── */
 .gemini-sidebar-drawer {
   position: fixed;
   top: 0;
@@ -106,9 +106,9 @@
   width: 540px;
   max-width: 95vw;
   z-index: 140;
-  background: rgba(7, 10, 16, 0.96);
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.75);
+  background: #181715;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   display: flex;
@@ -126,9 +126,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.1rem 1.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-  background: #080c14;
+  padding: 1.15rem 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: #181715;
 }
 
 .gemini-header-left {
@@ -138,51 +138,61 @@
 }
 
 .gemini-header-title {
-  font-family: var(--font-display);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: inherit;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
-  color: #f8fafc;
+  color: #faf8f5;
+}
+
+.claude-sparkle-glyph {
+  color: #d97757;
+  font-size: 1.15rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(217, 119, 87, 0.5));
 }
 
 .gemini-header-sub {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  color: #7dd3fc;
+  font-family: inherit;
+  font-size: 0.69rem;
+  letter-spacing: 0.07em;
+  color: #a8a29e;
   font-weight: 500;
 }
 
 .gemini-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.75rem;
 }
 
 .gemini-engine-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-family: var(--font-mono);
+  font-family: inherit;
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
-  padding: 0.3rem 0.65rem;
-  border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  letter-spacing: 0.04em;
+  padding: 0.28rem 0.68rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.03);
 }
 
 .gemini-engine-pill.live {
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.4);
-  background: rgba(52, 211, 153, 0.08);
+  color: #e58f76;
+  border-color: rgba(217, 119, 87, 0.4);
+  background: rgba(217, 119, 87, 0.1);
 }
 
 .gemini-engine-pill.offline {
-  color: #ffc857;
-  border-color: rgba(255, 200, 87, 0.35);
-  background: rgba(255, 200, 87, 0.06);
+  color: #d4b58e;
+  border-color: rgba(212, 181, 142, 0.35);
+  background: rgba(212, 181, 142, 0.08);
 }
 
 .engine-dot {
@@ -194,41 +204,41 @@
 
 .btn-gemini-close {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a8a29e;
   width: 32px;
   height: 32px;
-  border-radius: 3px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: all 0.15s ease;
 }
 
 .btn-gemini-close:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: #f87171;
-  color: #f87171;
+  border-color: #d97757;
+  color: #ffffff;
 }
 
-/* Query Presets Shelf */
+/* Query Presets Shelf (Claude Pill Buttons) */
 .gemini-chips-shelf {
-  padding: 0.75rem 1.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: #05070c;
+  padding: 0.8rem 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: #141311;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 .chips-label {
-  font-family: var(--font-mono);
+  font-family: inherit;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: #8c867c;
 }
 
 .chips-scroll {
@@ -238,20 +248,20 @@
 }
 
 .gemini-chip-btn {
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  color: #cbd5e1;
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  padding: 0.35rem 0.7rem;
-  border-radius: 3px;
+  background: #23211e;
+  border: 1px solid #36332e;
+  color: #d6d0c5;
+  font-family: inherit;
+  font-size: 0.77rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.16s ease;
 }
 
 .gemini-chip-btn:hover {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: #38bdf8;
+  background: #2c2924;
+  border-color: #d97757;
   color: #ffffff;
 }
 
@@ -259,17 +269,26 @@
 .gemini-messages-body {
   flex: 1;
   overflow-y: auto;
-  padding: 1.3rem 1.4rem;
+  padding: 1.35rem 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.35rem;
   scrollbar-width: thin;
+  scrollbar-color: #38342f #181715;
+}
+
+.gemini-messages-body::-webkit-scrollbar {
+  width: 6px;
+}
+.gemini-messages-body::-webkit-scrollbar-thumb {
+  background: #38342f;
+  border-radius: 4px;
 }
 
 .gemini-msg-row {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
   max-width: 100%;
 }
 
@@ -284,148 +303,310 @@
 }
 
 .gemini-msg-author {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #7dd3fc;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #d97757;
+}
+
+.claude-author-star {
+  font-size: 0.95rem;
+  color: #d97757;
+  filter: drop-shadow(0 0 4px rgba(217, 119, 87, 0.4));
 }
 
 .gemini-msg-row.user .gemini-msg-author {
-  color: #38bdf8;
+  color: #9e988e;
 }
 
 .gemini-msg-time {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  color: #64748b;
+  font-family: inherit;
+  font-size: 0.68rem;
+  color: #78736a;
 }
 
 /* Message Bubble */
 .gemini-msg-bubble {
-  background: rgba(14, 20, 32, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 4px;
-  padding: 1rem 1.15rem;
-  font-family: var(--font-ui);
+  background: #1e1d1a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 1.15rem 1.35rem;
+  font-family: inherit;
   font-size: 0.95rem;
-  color: #e2e8f0;
-  line-height: 1.65;
+  color: #ede9e1;
+  line-height: 1.72;
   width: 100%;
   box-sizing: border-box;
 }
 
 .gemini-msg-row.user .gemini-msg-bubble {
-  background: #0d1526;
-  border-color: rgba(56, 189, 248, 0.32);
-  color: #f8fafc;
+  background: #272522;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px 16px 4px 16px;
+  color: #faf9f6;
   width: auto;
-  max-width: 90%;
+  max-width: 88%;
 }
 
-/* ── Rich Semantic Markdown Typography ── */
-.copilot-heading {
-  font-family: var(--font-display);
-  font-size: 1.08rem;
-  font-weight: 700;
-  color: #b8f0ff;
+/* ── Claude Markdown & KaTeX Typography ── */
+.claude-rendered-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.claude-heading-2 {
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #faf8f5;
   letter-spacing: -0.01em;
-  margin: 0.9rem 0 0.45rem 0;
+  margin: 1.1rem 0 0.45rem 0;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.claude-heading-3 {
+  font-family: inherit;
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: #f7f5ef;
+  letter-spacing: -0.01em;
+  margin: 0.95rem 0 0.4rem 0;
   padding-bottom: 0.3rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.copilot-heading:first-child {
-  margin-top: 0;
+.claude-heading-4 {
+  font-family: inherit;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #e5dfd5;
+  margin: 0.85rem 0 0.35rem 0;
 }
 
-.copilot-para {
-  margin: 0.55rem 0;
+.claude-para {
+  margin: 0.35rem 0;
   font-size: 0.95rem;
-  line-height: 1.65;
-  color: #cbd5e1;
+  line-height: 1.72;
+  color: #ded8cd;
 }
 
-.copilot-strong {
+.claude-strong {
   color: #ffffff;
   font-weight: 600;
 }
 
-.copilot-code {
-  font-family: var(--font-mono);
-  font-size: 0.84rem;
-  background: rgba(0, 0, 0, 0.45);
+.claude-em {
+  color: #e5a478;
+  font-style: italic;
+}
+
+.claude-inline-code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  background: #262420;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.12rem 0.38rem;
-  border-radius: 3px;
-  color: #ffc857;
+  padding: 0.12rem 0.4rem;
+  border-radius: 4px;
+  color: #e5a478;
 }
 
-.copilot-list-wrapper {
-  margin: 0.55rem 0;
+.claude-divider-wrapper {
+  margin: 0.8rem 0;
 }
 
-.copilot-ul,
-.copilot-ol {
-  margin: 0.45rem 0 0.65rem 0;
+.claude-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0;
+}
+
+.claude-list-block {
+  margin: 0.35rem 0;
+}
+
+.claude-ul,
+.claude-ol {
+  margin: 0.35rem 0 0.65rem 0;
   padding-left: 1.35rem;
 }
 
-.copilot-li {
-  margin-bottom: 0.35rem;
-  font-size: 0.93rem;
-  line-height: 1.6;
-  color: #cbd5e1;
+.claude-li {
+  margin-bottom: 0.4rem;
+  font-size: 0.94rem;
+  line-height: 1.68;
+  color: #ded8cd;
 }
 
-/* Typing Indicator */
-.gemini-typing-indicator {
+.claude-ul .claude-li::marker {
+  color: #d97757;
+}
+
+/* ── KaTeX Math Container & Display ── */
+.claude-display-math-container {
+  margin: 0.85rem 0;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.75rem 1rem;
-  background: rgba(14, 20, 32, 0.85);
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  color: #7dd3fc;
 }
 
-.typing-cursor {
-  display: inline-block;
-  width: 7px;
-  height: 14px;
-  background: #38bdf8;
-  animation: cursorBlink 1s infinite step-start;
+.claude-display-math {
+  background: #141311;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.95rem 1.15rem;
+  width: 100%;
+  overflow-x: auto;
+  text-align: center;
+  color: #f7f5ee;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-@keyframes cursorBlink {
-  50% {
-    opacity: 0;
+.claude-inline-math {
+  color: #f7f5ee;
+  font-size: 1.02em;
+  padding: 0 0.15rem;
+}
+
+.claude-math-fallback {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  background: #141311;
+  padding: 0.65rem;
+  border-radius: 6px;
+  color: #d97757;
+}
+
+/* KaTeX internal sizing harmonization */
+.katex {
+  font-size: 1.05em;
+  text-rendering: geometricPrecision;
+}
+
+.katex-display {
+  margin: 0 !important;
+}
+
+/* ── Claude Organic Thinking / Synchronizing Indicator ── */
+.claude-thinking-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.15rem;
+  background: #1e1d1a;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: inherit;
+  font-size: 0.86rem;
+  color: #b5ada1;
+}
+
+.claude-sparkle-halo {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d97757;
+  animation: claudeSparkleSpin 4s linear infinite;
+}
+
+.claude-sparkle-svg {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 0 6px rgba(217, 119, 87, 0.6));
+}
+
+@keyframes claudeSparkleSpin {
+  0% { transform: rotate(0deg) scale(0.95); opacity: 0.8; }
+  50% { transform: rotate(180deg) scale(1.1); opacity: 1; }
+  100% { transform: rotate(360deg) scale(0.95); opacity: 0.8; }
+}
+
+.claude-thinking-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+}
+
+.claude-thinking-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d97757;
+  animation: claudeDotWave 1.3s infinite ease-in-out;
+}
+
+.claude-thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.claude-thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes claudeDotWave {
+  0%, 80%, 100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.3);
   }
 }
 
-/* Footer & Input Box */
+/* ── Claude Signature Blinking Streaming Cursor ── */
+.claude-streaming-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1.15em;
+  vertical-align: -0.15em;
+  background: #d97757;
+  border-radius: 2px;
+  margin-left: 4px;
+  box-shadow: 0 0 10px rgba(217, 119, 87, 0.7);
+  animation: claudeCursorPulse 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+@keyframes claudeCursorPulse {
+  0% {
+    opacity: 0.25;
+    transform: scaleY(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* ── Footer & Input Box (Claude Floating Input Style) ── */
 .gemini-input-footer {
-  padding: 1.1rem 1.4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
-  background: #080c14;
+  padding: 1.15rem 1.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #181715;
 }
 
 .gemini-input-wrapper {
   display: flex;
   align-items: flex-end;
-  gap: 0.6rem;
-  background: #04070d;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 4px;
-  padding: 0.5rem 0.75rem;
-  transition: border-color 0.15s ease;
+  gap: 0.65rem;
+  background: #22201d;
+  border: 1px solid #38342f;
+  border-radius: 16px;
+  padding: 0.65rem 0.85rem;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .gemini-input-wrapper:focus-within {
-  border-color: #38bdf8;
+  border-color: #d97757;
+  box-shadow: 0 0 0 1px rgba(217, 119, 87, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .gemini-textarea {
@@ -433,53 +614,43 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #f8fafc;
-  font-family: var(--font-ui);
+  color: #faf9f5;
+  font-family: inherit;
   font-size: 0.94rem;
   resize: none;
-  padding: 0.2rem 0;
-  line-height: 1.5;
+  padding: 0.15rem 0;
+  line-height: 1.55;
 }
 
 .gemini-textarea::placeholder {
-  color: #64748b;
-  font-family: var(--font-ui);
+  color: #7c766d;
 }
 
 .btn-gemini-send {
-  background: #0284c7;
-  border: 1px solid #0284c7;
+  background: #cc785c;
+  border: none;
   color: #ffffff;
-  font-family: var(--font-mono);
+  font-family: inherit;
   font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 0.45rem 0.9rem;
-  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0.95rem;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .btn-gemini-send:hover:not(:disabled) {
-  background: #0369a1;
-  border-color: #0369a1;
+  background: #d97757;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(217, 119, 87, 0.35);
 }
 
 .btn-gemini-send:disabled {
   opacity: 0.35;
   cursor: not-allowed;
-}
-
-.gemini-env-notice {
-  margin-top: 0.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: #64748b;
-  line-height: 1.4;
-}
-
-.notice-ok {
-  color: #34d399;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ════════ CLEARANCE MODAL STYLES (UTILITARIAN) ════════ */
