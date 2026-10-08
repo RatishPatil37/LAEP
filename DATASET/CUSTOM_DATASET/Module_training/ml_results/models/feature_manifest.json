@@ -1,0 +1,22 @@
+{
+  "features": [
+    "Latitude_deg_SAR",
+    "Longitude_deg_SAR",
+    "Incidence_Angle_deg_SAR",
+    "Ground_Range_m_SAR",
+    "Slant_Range_m_SAR",
+    "Reflectance_OHRC",
+    "Elevation_m_TMC2",
+    "Slope_deg_TMC2",
+    "IIRS_Data_Available",
+    "Reflectance_IIRS_1500nm",
+    "Reflectance_IIRS_2000nm",
+    "IIRS_Band_Ratio",
+    "IIRS_H2O_Absorption_Depth"
+  ],
+  "target_mapping": {
+    "0": -1,
+    "1": 0,
+    "2": 1
+  }
+}
