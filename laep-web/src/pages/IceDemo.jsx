@@ -46,12 +46,13 @@ export default function IceDemo() {
   const pointsRef = useRef(null);
   const selectedRef = useRef(null);
   const inspectorRef = useRef(null);
+  const initialSampleViewRef = useRef(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
   const [baseState, setBaseState] = useState('Loading NASA basemap…');
   const [baseAttempt, setBaseAttempt] = useState(0);
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [opacity, setOpacity] = useState(0.7);
   const [selected, setSelected] = useState(null);
   const [hover, setHover] = useState(null);
@@ -62,7 +63,7 @@ export default function IceDemo() {
     let active = true;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
-    setError(''); setData(null); setSelected(null); setEnabled(false);
+    setError(''); setData(null); setSelected(null);
     loadDemo(PRODUCT_URL, controller.signal).then(result => { if (active) setData(result); }).catch(e => {
       if (!active) return;
       if (!controller.signal.aborted) setError(e.message);
@@ -84,6 +85,7 @@ export default function IceDemo() {
     const map = new Map({ target: target.current, layers: [base, points, selection],
       view: new View({ projection: 'LUNAR:SP', center: [0, 0], resolution: 1200,
         minResolution: 50, maxResolution: 5000, enableRotation: false }) });
+    initialSampleViewRef.current = false;
     mapRef.current = map; pointsRef.current = points; selectedRef.current = selection;
     const hit = e => map.forEachFeatureAtPixel(e.pixel, f => f.get('sample'), {
       layerFilter: l => l === points, hitTolerance: 5,
@@ -143,6 +145,12 @@ export default function IceDemo() {
       f.setStyle(styles.get(bucket)); return f;
     });
     source.addFeatures(features);
+    if (features.length && !initialSampleViewRef.current) {
+      mapRef.current?.getView().fit(source.getExtent(), {
+        padding: [56, 56, 56, 56], minResolution: 130, duration: 0,
+      });
+      initialSampleViewRef.current = true;
+    }
   }, [data, baseAttempt]);
 
   useEffect(() => {
@@ -194,7 +202,7 @@ export default function IceDemo() {
           {baseState.includes('unavailable') && <button onClick={() => setBaseAttempt(a => a + 1)}>Retry basemap</button>}</div>
         {!enabled && <div className="ice-map-notice">Overlay withheld pending location verification.<br /><small>These are supplied CSV coordinates, not validated ice locations.</small>
           <button disabled={!data} onClick={() => setEnabled(true)}>Show unverified locations</button></div>}
-        {enabled && <div className="ice-map-warning">UNVERIFIED SOURCE LOCATIONS · DIAGNOSTIC ONLY</div>}
+        {enabled && data && <div className="ice-map-warning">MODEL-SCORED SAMPLE POINTS · UNVERIFIED LOCATIONS · NOT CONFIRMED ICE<br />VIEW FRAMED TO SUPPLIED COORDINATES</div>}
         {hover && <div className="ice-map-hover">{hover.id} · model score {scoreText(hover.score)}</div>}
         <div className="ice-map-legend"><strong>Model score · label +1</strong>
           <div className="ice-scale" /><div className="ice-scale-labels"><span>0 · lower</span><span>1 · higher</span></div>
@@ -209,7 +217,7 @@ export default function IceDemo() {
           <div className="ice-counts"><div><strong>{data.counts.eligible.toLocaleString()}</strong><span>scored samples</span></div>
             <div><strong>{data.counts.unobserved.toLocaleString()}</strong><span>IIRS unobserved</span></div></div>
           <label className="ice-check"><input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} />
-            Show unverified source locations (diagnostic)</label>
+            Show model-scored sample points (unverified locations)</label>
           <label className="ice-opacity">Overlay opacity <input aria-label="Overlay opacity" type="range" min="0" max="1" step="0.05" value={opacity} onChange={e => setOpacity(Number(e.target.value))} disabled={!enabled} /></label>
           <button onClick={fit} disabled={!enabled}>Fit scored samples</button>
           <div className="ice-inspector" ref={inspectorRef} aria-live="polite"><p className="ice-eyebrow">TARGET INSPECTOR</p>
