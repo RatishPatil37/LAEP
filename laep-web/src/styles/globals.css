@@ -49,9 +49,9 @@
   --r-md: 4px;
   --r-lg: 8px;
   --shadow-panel: 0 18px 45px rgba(0, 0, 0, 0.55);
-  --shadow-glow-ice: 0 0 20px rgba(184, 240, 255, 0.18);
-  --shadow-glow-cyan: 0 0 20px rgba(125, 211, 252, 0.22);
-  --shadow-glow-sun: 0 0 20px rgba(255, 200, 87, 0.22);
+  --shadow-glow-ice: none;
+  --shadow-glow-cyan: none;
+  --shadow-glow-sun: none;
 
   /* ── Transitions ── */
   --t-fast: 120ms ease;
@@ -124,18 +124,68 @@ button:focus-visible, a:focus-visible, input:focus-visible {
 
 /* ── Aerospace Instrument Glass ── */
 .glass-instrument {
-  background: rgba(10, 13, 16, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--c-border);
+  background: rgba(10, 16, 26, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  border-radius: 12px;
   box-shadow: var(--shadow-panel);
 }
 
 .glass-instrument-subtle {
-  background: rgba(11, 13, 16, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(11, 16, 26, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 229, 255, 0.08);
+  border-radius: 10px;
+}
+
+/* ── Modern Aerospace Glassmorphic Cards (Non-AI-slop, curved, glowing rim) ── */
+.glass-card-aerospace {
+  background: rgba(10, 16, 26, 0.75);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s ease,
+              box-shadow 0.28s ease;
+}
+
+.glass-card-aerospace:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+}
+
+/* ── Scroll on Appear Animations ── */
+@keyframes scrollAppearFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.scroll-appear {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-appear.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.animate-appear-in {
+  animation: scrollAppearFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── Monospace Telemetry Badges & Labels ── */
@@ -280,7 +330,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   border-color: var(--c-ice);
   color: var(--c-ice);
   background: rgba(184, 240, 255, 0.06);
-  box-shadow: 0 0 12px rgba(184, 240, 255, 0.15);
 }
 
 .btn-aerospace-primary {
@@ -294,7 +343,6 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   color: #050608;
   background: #d4f7ff;
   border-color: #d4f7ff;
-  box-shadow: 0 0 18px rgba(184, 240, 255, 0.35);
 }
 
 /* ── Scrollbars ── */

@@ -115,32 +115,65 @@ Chandrayaan-2 mission parameters and polar datasets are indexed:
 To query live Google Gemini, configure \`VITE_GEMINI_API_KEY\` in \`laep-web/.env\`.`;
 
 // Normalizes LaTeX strings and Markdown anomalies produced by LLM outputs
-function normalizeLatexText(text) {
+function normalizeLatexText(text, isStreaming = false) {
   if (!text) return '';
   let str = text;
 
   // 1. Separate divider lines cleanly into standalone blocks
   str = str.replace(/(^|\n)(---|___|\*\*\*)(\n|$)/g, '\n\n---\n\n');
 
-  // 2. Separate headings from following text/lists
+  // 2. Convert \[ ... \] display math to \n\n$$ ... $$\n\n
+  str = str.replace(/\\\[([\s\S]*?)\\\]/g, (m, math) => `\n\n$$${math.trim()}$$\n\n`);
+
+  // 3. Convert \( ... \) inline math to $ ... $
+  str = str.replace(/\\\(([\s\S]*?)\\\)/g, (m, math) => `$${math.trim()}$`);
+
+  // 4. Separate headings from following text/lists
   str = str.replace(/^(#{1,6}\s[^\n]+)\n([^\n#])/gm, '$1\n\n$2');
 
-  // 3. Separate inline bullets that follow headers, e.g. '#### A. DFSAR * In-Domain' -> '#### A. DFSAR\n* In-Domain'
+  // 5. Separate inline bullets that follow headers, e.g. '#### A. DFSAR * In-Domain' -> '#### A. DFSAR\n* In-Domain'
   str = str.replace(/^(#{1,6}\s[^\n*]+)\s\*\s/gm, '$1\n* ');
 
-  // 4. Split multiple inline bullets on the same line: ' * In-Domain ... * OOD Failure'
+  // 6. Split multiple inline bullets on the same line: ' * In-Domain ... * OOD Failure'
   str = str.replace(/([^\n])\s\*\s([A-Za-z0-9])/g, '$1\n* $2');
 
-  // 5. Fix orphaned leading degree notation at start of sentence/string: '80^\circ$.' -> '$80^\circ$.'
+  // 7. Fix unescaped % inside math mode which would otherwise trigger LaTeX comment stripping
+  str = str.replace(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+\$)/g, (mathBlock) => {
+    return mathBlock.replace(/(?<!\\)%/g, '\\%');
+  });
+
+  // 8. Fix orphaned leading degree notation at start of sentence/string: '80^\circ$.' -> '$80^\circ$.'
   str = str.replace(/(^|\n|\.\s+)(\d+(?:\.\d+)?\^\\circ)\$/g, (m, p1, p2) => p1 + '$' + p2 + '$');
 
-  // 6. Fix split math ranges like '$80^\circ–$90^\circ$' or '$80^\circ-$90^\circ$' -> '$80^\circ - 90^\circ$'
+  // 9. Fix split math ranges like '$80^\circ–$90^\circ$' or '$80^\circ-$90^\circ$' -> '$80^\circ - 90^\circ$'
   str = str.replace(/\$([^\$]+)[–-](\$)([^\$]+)\$/g, (m, g1, d, g2) => {
     return '$' + g1 + ' - ' + g2 + '$';
   });
 
-  // 7. Fix bare degree notation outside math, e.g. ' 80^\circ ' -> ' $80^\circ$ '
+  // 10. Fix bare degree notation outside math, e.g. ' 80^\circ ' -> ' $80^{\circ}$ '
   str = str.replace(/(^|[\s(])(\d+(?:\.\d+)?\^\\circ)(?![\$\w])/g, (m, p1, p2) => p1 + '$' + p2 + '$');
+
+  // 11. Normalize ^{\circ} notation for KaTeX robustness
+  str = str.replace(/\^\\circ(?!\w)/g, '^{\\circ}');
+
+  // 12. During live token streaming: safely close trailing unclosed math delimiters
+  if (isStreaming) {
+    const dblMatches = (str.match(/\$\$/g) || []).length;
+    if (dblMatches % 2 === 1) {
+      str += '$$';
+    } else {
+      const strippedDbl = str.replace(/\$\$[\s\S]*?\$\$/g, '');
+      const sglMatches = (strippedDbl.match(/\$/g) || []).length;
+      if (sglMatches % 2 === 1) {
+        str += '$';
+      }
+    }
+  }
+
+  // 13. Protect display math blocks from being broken by double newline splits
+  str = str.replace(/\$\$([\s\S]*?)\$\$/g, (m, inner) => {
+    return '$$' + inner.replace(/\n\n+/g, ' \\\\ ') + '$$';
+  });
 
   return str;
 }
@@ -240,10 +273,10 @@ function renderInlineTokens(tokens) {
   });
 }
 
-// Block-level Markdown and KaTeX renderer with Claude styling and streaming cursor
+// Block-level Markdown, Table, and KaTeX renderer with aerospace styling and streaming cursor
 function renderFormattedMessage(rawText, isStreaming = false) {
   if (!rawText) return null;
-  const normalized = normalizeLatexText(rawText);
+  const normalized = normalizeLatexText(rawText, isStreaming);
   const blocks = normalized.split(/\n\n+/).filter((b) => b.trim().length > 0);
 
   return (
@@ -252,7 +285,7 @@ function renderFormattedMessage(rawText, isStreaming = false) {
         const trimmed = block.trim();
         const isLastBlock = bIdx === blocks.length - 1;
 
-        // Horizontal divider
+        // 1. Horizontal divider
         if (trimmed === '---' || trimmed === '***') {
           return (
             <div key={bIdx} className="claude-divider-wrapper">
@@ -264,7 +297,39 @@ function renderFormattedMessage(rawText, isStreaming = false) {
           );
         }
 
-        // Standalone display math block ($$ ... $$)
+        // 2. Fenced code block (```lang ... ```)
+        if (trimmed.startsWith('```')) {
+          const firstLineEnd = trimmed.indexOf('\n');
+          let lang = 'CODE';
+          let codeContent = '';
+          if (firstLineEnd !== -1) {
+            lang = trimmed.slice(3, firstLineEnd).trim() || 'CODE';
+            const endIdx = trimmed.lastIndexOf('```');
+            if (endIdx > firstLineEnd) {
+              codeContent = trimmed.slice(firstLineEnd + 1, endIdx).trim();
+            } else {
+              codeContent = trimmed.slice(firstLineEnd + 1).trim();
+            }
+          } else {
+            codeContent = trimmed.replace(/^```/, '').replace(/```$/, '').trim();
+          }
+
+          return (
+            <div key={bIdx} className="claude-code-block-wrapper">
+              <div className="claude-code-header">
+                <span>{lang.toUpperCase()}</span>
+              </div>
+              <pre className="claude-code-block">
+                <code>{codeContent}</code>
+              </pre>
+              {isLastBlock && isStreaming && (
+                <span className="claude-streaming-cursor" aria-hidden="true" />
+              )}
+            </div>
+          );
+        }
+
+        // 3. Standalone display math block ($$ ... $$)
         if (trimmed.startsWith('$$') && trimmed.endsWith('$$') && trimmed.length > 4) {
           const mathExpr = trimmed.slice(2, -2).trim();
           try {
@@ -292,7 +357,50 @@ function renderFormattedMessage(rawText, isStreaming = false) {
           }
         }
 
-        // Headings
+        // 4. Markdown Table (| Header 1 | Header 2 | ... |)
+        if (trimmed.includes('|') && trimmed.includes('\n')) {
+          const rawLines = trimmed.split('\n').map((l) => l.trim()).filter(Boolean);
+          const sepIdx = rawLines.findIndex((l) => /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?$/.test(l));
+          if (sepIdx > 0) {
+            const parseRow = (line) => {
+              let cells = line.split('|');
+              if (line.startsWith('|')) cells.shift();
+              if (line.endsWith('|')) cells.pop();
+              return cells.map((c) => c.trim());
+            };
+
+            const headerCells = parseRow(rawLines[0]);
+            const bodyRows = rawLines.slice(sepIdx + 1).map(parseRow);
+
+            return (
+              <div key={bIdx} className="claude-table-container">
+                <table className="claude-table">
+                  <thead>
+                    <tr>
+                      {headerCells.map((h, hIdx) => (
+                        <th key={hIdx}>{renderInlineTokens(tokenizeInline(h))}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bodyRows.map((row, rIdx) => (
+                      <tr key={rIdx}>
+                        {row.map((cell, cIdx) => (
+                          <td key={cIdx}>{renderInlineTokens(tokenizeInline(cell))}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {isLastBlock && isStreaming && (
+                  <span className="claude-streaming-cursor" aria-hidden="true" />
+                )}
+              </div>
+            );
+          }
+        }
+
+        // 5. Headings
         if (trimmed.startsWith('#### ')) {
           return (
             <h4 key={bIdx} className="claude-heading-4">
@@ -324,7 +432,7 @@ function renderFormattedMessage(rawText, isStreaming = false) {
           );
         }
 
-        // Numbered list
+        // 6. Numbered list
         if (/^\d+\.\s/.test(trimmed)) {
           const items = trimmed.split('\n').filter((l) => /^\d+\.\s/.test(l.trim()));
           return (
@@ -344,7 +452,7 @@ function renderFormattedMessage(rawText, isStreaming = false) {
           );
         }
 
-        // Bullet list
+        // 7. Bullet list
         if (
           trimmed.startsWith('- ') ||
           trimmed.startsWith('* ') ||
@@ -379,7 +487,7 @@ function renderFormattedMessage(rawText, isStreaming = false) {
           );
         }
 
-        // Paragraph
+        // 8. Paragraph
         return (
           <p key={bIdx} className="claude-para">
             {renderInlineTokens(tokenizeInline(trimmed))}
@@ -411,6 +519,8 @@ export default function GeminiAssistant() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const streamingRef = useRef(null);
+  const currentFullReplyRef = useRef('');
+  const currentMsgIdRef = useRef('');
 
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const isLiveGemini = Boolean(apiKey && apiKey.trim().length > 5);
@@ -421,28 +531,48 @@ export default function GeminiAssistant() {
     }
   }, [messages, isOpen, loading]);
 
-  // Clean up any streaming interval when unmounting
+  // Clean up any streaming interval when unmounting and flush full text
   useEffect(() => {
     return () => {
       if (streamingRef.current) {
         clearInterval(streamingRef.current);
         streamingRef.current = null;
+        if (currentMsgIdRef.current && currentFullReplyRef.current) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === currentMsgIdRef.current
+                ? { ...m, text: currentFullReplyRef.current, isStreaming: false }
+                : m
+            )
+          );
+        }
       }
     };
   }, []);
 
-  // Organic Claude-like fluid token streaming
+  // Adaptive fluid token streaming that never freezes or stops mid-answer
   const streamAssistantReply = (replyText) => {
     return new Promise((resolve) => {
       if (streamingRef.current) {
         clearInterval(streamingRef.current);
         streamingRef.current = null;
+        if (currentMsgIdRef.current && currentFullReplyRef.current) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === currentMsgIdRef.current
+                ? { ...m, text: currentFullReplyRef.current, isStreaming: false }
+                : m
+            )
+          );
+        }
       }
 
       const msgId = (Date.now() + 1).toString();
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      currentMsgIdRef.current = msgId;
+      currentFullReplyRef.current = replyText;
 
-      // Append empty assistant message with isStreaming = true
+      // Append assistant message with isStreaming = true
       setMessages((prev) => [
         ...prev,
         {
@@ -455,16 +585,17 @@ export default function GeminiAssistant() {
       ]);
       setLoading(false);
 
-      // Create natural tokens (words or small syllable chunks)
+      // Adaptive token chunking so streaming is fluid and finishes smoothly in ~2s
       const tokens = [];
       let i = 0;
+      const targetStep = Math.max(6, Math.min(32, Math.ceil(replyText.length / 55)));
       while (i < replyText.length) {
-        const spaceIdx = replyText.indexOf(' ', i + 2);
-        if (spaceIdx !== -1 && spaceIdx - i <= 8) {
-          tokens.push(replyText.slice(i, spaceIdx + 1));
-          i = spaceIdx + 1;
+        const nextSpace = replyText.indexOf(' ', i + targetStep);
+        if (nextSpace !== -1 && nextSpace - i <= targetStep + 10) {
+          tokens.push(replyText.slice(i, nextSpace + 1));
+          i = nextSpace + 1;
         } else {
-          const step = Math.min(4, replyText.length - i);
+          const step = Math.min(targetStep, replyText.length - i);
           tokens.push(replyText.slice(i, i + step));
           i += step;
         }
@@ -474,6 +605,17 @@ export default function GeminiAssistant() {
       let accumulated = '';
 
       streamingRef.current = setInterval(() => {
+        // If tab was switched to background, instantly flush entire reply
+        if (document.hidden) {
+          clearInterval(streamingRef.current);
+          streamingRef.current = null;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === msgId ? { ...m, text: replyText, isStreaming: false } : m))
+          );
+          resolve();
+          return;
+        }
+
         if (tokenIdx < tokens.length) {
           accumulated += tokens[tokenIdx];
           tokenIdx++;
@@ -491,7 +633,7 @@ export default function GeminiAssistant() {
           soundEngine.playTargetAcquired();
           resolve();
         }
-      }, 16); // High-rate fluid animation
+      }, 18);
     });
   };
 
@@ -499,13 +641,19 @@ export default function GeminiAssistant() {
     const query = (overrideText || inputText).trim();
     if (!query || loading) return;
 
-    // Clear any previous stream if user sends immediately
+    // Clear any previous stream if user sends immediately and flush full text
     if (streamingRef.current) {
       clearInterval(streamingRef.current);
       streamingRef.current = null;
-      setMessages((prev) =>
-        prev.map((m) => (m.isStreaming ? { ...m, isStreaming: false } : m))
-      );
+      if (currentMsgIdRef.current && currentFullReplyRef.current) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === currentMsgIdRef.current
+              ? { ...m, text: currentFullReplyRef.current, isStreaming: false }
+              : m
+          )
+        );
+      }
     }
 
     soundEngine.playTelemetryClick();
@@ -535,12 +683,16 @@ export default function GeminiAssistant() {
                 contents: [
                   {
                     role: 'user',
-                    parts: [{ text: `${LAEP_SYSTEM_PROMPT}\n\nTechnical Question: ${query}` }],
+                    parts: [
+                      {
+                        text: `${LAEP_SYSTEM_PROMPT}\nFormatting Rules: Use standard Markdown tables (| ... |) for comparative parameters. Use $$ ... $$ for display equations and $ ... $ for inline math expressions.\n\nTechnical Question: ${query}`,
+                      },
+                    ],
                   },
                 ],
                 generationConfig: {
                   temperature: 0.2,
-                  maxOutputTokens: 1000,
+                  maxOutputTokens: 8192,
                 },
               }),
             }
@@ -566,7 +718,9 @@ export default function GeminiAssistant() {
         }
 
         const data = await response.json();
+        const parts = data?.candidates?.[0]?.content?.parts || [];
         const replyText =
+          parts.map((p) => p.text || '').join('').trim() ||
           data?.candidates?.[0]?.content?.parts?.[0]?.text ||
           'Telemetry connection interrupted. Repeat inquiry.';
 

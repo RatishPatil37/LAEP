@@ -18,29 +18,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #191816;
-  border: 1.5px solid rgba(217, 119, 87, 0.45);
-  color: #d97757;
+  background: #080c14;
+  border: 1.5px solid rgba(0, 229, 255, 0.45);
+  color: #00e5ff;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(217, 119, 87, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gemini-assistant-fab:hover {
-  background: #23211e;
-  border-color: #d97757;
+  background: #0d1524;
+  border-color: #00e5ff;
   color: #ffffff;
-  transform: scale(1.06);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 16px rgba(217, 119, 87, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.85);
 }
 
 .gemini-assistant-fab.active {
-  background: #23211e;
-  border-color: #d97757;
-  color: #d97757;
+  background: #0d1524;
+  border-color: #00e5ff;
+  color: #00e5ff;
 }
 
 .fab-icon-svg {
@@ -59,8 +59,8 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid #191816;
-  background: #d97757;
+  border: 2px solid #080c14;
+  background: #38bdf8;
 }
 
 .fab-status-pip.live {
@@ -76,20 +76,20 @@
   position: absolute;
   right: calc(100% + 14px);
   padding: 0.35rem 0.75rem;
-  background: #1c1a17;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0d1526;
+  border: 1px solid rgba(0, 229, 255, 0.25);
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: #f5f4ef;
+  color: #f1f5f9;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   transform: translateX(4px);
   transition: opacity 0.18s ease, transform 0.18s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
 }
 
 .gemini-assistant-fab:hover .fab-tooltip {
@@ -106,9 +106,9 @@
   width: 540px;
   max-width: 95vw;
   z-index: 140;
-  background: #181715;
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.85);
+  background: #080c14;
+  border-left: 1px solid rgba(0, 229, 255, 0.2);
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   display: flex;
@@ -127,8 +127,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.15rem 1.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  background: #181715;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  background: #080c14;
 }
 
 .gemini-header-left {
@@ -145,21 +145,20 @@
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: #faf8f5;
+  color: #f1f5f9;
 }
 
 .claude-sparkle-glyph {
-  color: #d97757;
+  color: #00e5ff;
   font-size: 1.15rem;
   line-height: 1;
-  filter: drop-shadow(0 0 6px rgba(217, 119, 87, 0.5));
 }
 
 .gemini-header-sub {
   font-family: inherit;
   font-size: 0.69rem;
   letter-spacing: 0.07em;
-  color: #a8a29e;
+  color: #94a3b8;
   font-weight: 500;
 }
 
@@ -184,15 +183,15 @@
 }
 
 .gemini-engine-pill.live {
-  color: #e58f76;
-  border-color: rgba(217, 119, 87, 0.4);
-  background: rgba(217, 119, 87, 0.1);
+  color: #38bdf8;
+  border-color: rgba(0, 229, 255, 0.4);
+  background: rgba(0, 229, 255, 0.1);
 }
 
 .gemini-engine-pill.offline {
-  color: #d4b58e;
-  border-color: rgba(212, 181, 142, 0.35);
-  background: rgba(212, 181, 142, 0.08);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.08);
 }
 
 .engine-dot {
@@ -205,7 +204,7 @@
 .btn-gemini-close {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a8a29e;
+  color: #94a3b8;
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -218,16 +217,16 @@
 }
 
 .btn-gemini-close:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: #d97757;
+  background: rgba(0, 229, 255, 0.1);
+  border-color: #00e5ff;
   color: #ffffff;
 }
 
-/* Query Presets Shelf (Claude Pill Buttons) */
+/* Query Presets Shelf */
 .gemini-chips-shelf {
   padding: 0.8rem 1.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: #141311;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+  background: #060910;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -238,7 +237,7 @@
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #8c867c;
+  color: #64748b;
 }
 
 .chips-scroll {
@@ -248,9 +247,9 @@
 }
 
 .gemini-chip-btn {
-  background: #23211e;
-  border: 1px solid #36332e;
-  color: #d6d0c5;
+  background: rgba(14, 21, 37, 0.8);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  color: #b8f0ff;
   font-family: inherit;
   font-size: 0.77rem;
   padding: 0.35rem 0.75rem;
@@ -260,8 +259,8 @@
 }
 
 .gemini-chip-btn:hover {
-  background: #2c2924;
-  border-color: #d97757;
+  background: rgba(0, 229, 255, 0.15);
+  border-color: #00e5ff;
   color: #ffffff;
 }
 
@@ -274,14 +273,14 @@
   flex-direction: column;
   gap: 1.35rem;
   scrollbar-width: thin;
-  scrollbar-color: #38342f #181715;
+  scrollbar-color: #1e293b #080c14;
 }
 
 .gemini-messages-body::-webkit-scrollbar {
   width: 6px;
 }
 .gemini-messages-body::-webkit-scrollbar-thumb {
-  background: #38342f;
+  background: #1e293b;
   border-radius: 4px;
 }
 
@@ -306,53 +305,52 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
   letter-spacing: 0.05em;
-  color: #d97757;
+  color: #00e5ff;
 }
 
 .claude-author-star {
-  font-size: 0.95rem;
-  color: #d97757;
-  filter: drop-shadow(0 0 4px rgba(217, 119, 87, 0.4));
+  font-size: 0.85rem;
+  color: #00e5ff;
 }
 
 .gemini-msg-row.user .gemini-msg-author {
-  color: #9e988e;
+  color: #94a3b8;
 }
 
 .gemini-msg-time {
-  font-family: inherit;
-  font-size: 0.68rem;
-  color: #78736a;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  color: #64748b;
 }
 
-/* Message Bubble */
+/* Message Bubble (Aerospace Cyber Theme) */
 .gemini-msg-bubble {
-  background: #1e1d1a;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 14px;
-  padding: 1.15rem 1.35rem;
+  background: #0c1424;
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  border-radius: 12px;
+  padding: 1.1rem 1.3rem;
   font-family: inherit;
-  font-size: 0.95rem;
-  color: #ede9e1;
-  line-height: 1.72;
+  font-size: 0.92rem;
+  color: #e2e8f0;
+  line-height: 1.7;
   width: 100%;
   box-sizing: border-box;
 }
 
 .gemini-msg-row.user .gemini-msg-bubble {
-  background: #272522;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px 16px 4px 16px;
-  color: #faf9f6;
+  background: #101b30;
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  border-radius: 14px 14px 4px 14px;
+  color: #f8fafc;
   width: auto;
   max-width: 88%;
 }
 
-/* ── Claude Markdown & KaTeX Typography ── */
+/* ── Markdown & KaTeX Typography ── */
 .claude-rendered-content {
   display: flex;
   flex-direction: column;
@@ -363,37 +361,37 @@
   font-family: inherit;
   font-size: 1.15rem;
   font-weight: 600;
-  color: #faf8f5;
+  color: #f8fafc;
   letter-spacing: -0.01em;
   margin: 1.1rem 0 0.45rem 0;
   padding-bottom: 0.35rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
 }
 
 .claude-heading-3 {
   font-family: inherit;
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  color: #f7f5ef;
+  color: #f1f5f9;
   letter-spacing: -0.01em;
   margin: 0.95rem 0 0.4rem 0;
   padding-bottom: 0.3rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.12);
 }
 
 .claude-heading-4 {
   font-family: inherit;
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #e5dfd5;
+  color: #cbd5e1;
   margin: 0.85rem 0 0.35rem 0;
 }
 
 .claude-para {
   margin: 0.35rem 0;
-  font-size: 0.95rem;
-  line-height: 1.72;
-  color: #ded8cd;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: #e2e8f0;
 }
 
 .claude-strong {
@@ -402,18 +400,18 @@
 }
 
 .claude-em {
-  color: #e5a478;
+  color: #7dd3fc;
   font-style: italic;
 }
 
 .claude-inline-code {
   font-family: var(--font-mono, monospace);
-  font-size: 0.85rem;
-  background: #262420;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.82rem;
+  background: #050811;
+  border: 1px solid rgba(0, 229, 255, 0.2);
   padding: 0.12rem 0.4rem;
   border-radius: 4px;
-  color: #e5a478;
+  color: #7dd3fc;
 }
 
 .claude-divider-wrapper {
@@ -422,7 +420,7 @@
 
 .claude-divider {
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0, 229, 255, 0.15);
   margin: 0;
 }
 
@@ -438,13 +436,13 @@
 
 .claude-li {
   margin-bottom: 0.4rem;
-  font-size: 0.94rem;
+  font-size: 0.92rem;
   line-height: 1.68;
-  color: #ded8cd;
+  color: #e2e8f0;
 }
 
 .claude-ul .claude-li::marker {
-  color: #d97757;
+  color: #00e5ff;
 }
 
 /* ── KaTeX Math Container & Display ── */
@@ -455,19 +453,18 @@
 }
 
 .claude-display-math {
-  background: #141311;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #050811;
+  border: 1px solid rgba(0, 229, 255, 0.2);
   border-radius: 8px;
   padding: 0.95rem 1.15rem;
   width: 100%;
   overflow-x: auto;
   text-align: center;
-  color: #f7f5ee;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  color: #f8fafc;
 }
 
 .claude-inline-math {
-  color: #f7f5ee;
+  color: #f8fafc;
   font-size: 1.02em;
   padding: 0 0.15rem;
 }
@@ -475,10 +472,11 @@
 .claude-math-fallback {
   font-family: var(--font-mono, monospace);
   font-size: 0.85rem;
-  background: #141311;
+  background: #050811;
+  border: 1px solid rgba(0, 229, 255, 0.2);
   padding: 0.65rem;
   border-radius: 6px;
-  color: #d97757;
+  color: #7dd3fc;
 }
 
 /* KaTeX internal sizing harmonization */
@@ -491,18 +489,105 @@
   margin: 0 !important;
 }
 
-/* ── Claude Organic Thinking / Synchronizing Indicator ── */
+/* ── CRITICAL: Suppress KaTeX red line / red underline linter errors ── */
+.katex-error {
+  color: #7dd3fc !important;
+  border-bottom: none !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  font-family: var(--font-mono, monospace) !important;
+}
+
+/* ── Markdown Table Styling (Aerospace Cyber Theme) ── */
+.claude-table-container {
+  margin: 0.85rem 0;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  background: #050811;
+  scrollbar-width: thin;
+}
+
+.claude-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  font-family: inherit;
+  text-align: left;
+}
+
+.claude-table th {
+  background: rgba(0, 229, 255, 0.08);
+  color: #00e5ff;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+  white-space: nowrap;
+}
+
+.claude-table td {
+  padding: 0.6rem 0.9rem;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.claude-table tr:last-child td {
+  border-bottom: none;
+}
+
+.claude-table tr:hover td {
+  background: rgba(0, 229, 255, 0.04);
+}
+
+/* ── Fenced Code Block Styling ── */
+.claude-code-block-wrapper {
+  margin: 0.85rem 0;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  background: #050811;
+  overflow: hidden;
+}
+
+.claude-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.85rem;
+  background: rgba(0, 229, 255, 0.06);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  color: #7dd3fc;
+  letter-spacing: 0.06em;
+}
+
+.claude-code-block {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+/* ── Thinking / Synchronizing Indicator ── */
 .claude-thinking-card {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 1.15rem;
-  background: #1e1d1a;
+  background: #0a101d;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.15);
   font-family: inherit;
   font-size: 0.86rem;
-  color: #b5ada1;
+  color: #94a3b8;
 }
 
 .claude-sparkle-halo {
@@ -511,14 +596,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #d97757;
+  color: #00e5ff;
   animation: claudeSparkleSpin 4s linear infinite;
 }
 
 .claude-sparkle-svg {
   width: 18px;
   height: 18px;
-  filter: drop-shadow(0 0 6px rgba(217, 119, 87, 0.6));
 }
 
 @keyframes claudeSparkleSpin {
@@ -538,7 +622,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #d97757;
+  background: #00e5ff;
   animation: claudeDotWave 1.3s infinite ease-in-out;
 }
 
@@ -561,16 +645,16 @@
   }
 }
 
-/* ── Claude Signature Blinking Streaming Cursor ── */
+/* ── Streaming Cursor (Clean Aerospace style, NO neon halo) ── */
 .claude-streaming-cursor {
   display: inline-block;
   width: 7px;
   height: 1.15em;
   vertical-align: -0.15em;
-  background: #d97757;
+  background: #00e5ff;
   border-radius: 2px;
   margin-left: 4px;
-  box-shadow: 0 0 10px rgba(217, 119, 87, 0.7);
+  box-shadow: none;
   animation: claudeCursorPulse 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
 
@@ -585,28 +669,28 @@
   }
 }
 
-/* ── Footer & Input Box (Claude Floating Input Style) ── */
+/* ── Footer & Input Box (Aerospace Cyber Style) ── */
 .gemini-input-footer {
   padding: 1.15rem 1.4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: #181715;
+  border-top: 1px solid rgba(0, 229, 255, 0.15);
+  background: #080c14;
 }
 
 .gemini-input-wrapper {
   display: flex;
   align-items: flex-end;
   gap: 0.65rem;
-  background: #22201d;
-  border: 1px solid #38342f;
-  border-radius: 16px;
+  background: #0e1526;
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  border-radius: 14px;
   padding: 0.65rem 0.85rem;
   transition: all 0.18s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
 .gemini-input-wrapper:focus-within {
-  border-color: #d97757;
-  box-shadow: 0 0 0 1px rgba(217, 119, 87, 0.25), 0 4px 12px rgba(0, 0, 0, 0.4);
+  border-color: #00e5ff;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.35);
 }
 
 .gemini-textarea {
@@ -614,7 +698,7 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #faf9f5;
+  color: #f1f5f9;
   font-family: inherit;
   font-size: 0.94rem;
   resize: none;
@@ -623,27 +707,27 @@
 }
 
 .gemini-textarea::placeholder {
-  color: #7c766d;
+  color: #64748b;
 }
 
 .btn-gemini-send {
-  background: #cc785c;
+  background: linear-gradient(135deg, #00e5ff, #0284c7);
   border: none;
-  color: #ffffff;
+  color: #040711;
   font-family: inherit;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.05em;
   padding: 0.5rem 0.95rem;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .btn-gemini-send:hover:not(:disabled) {
-  background: #d97757;
+  background: #22d3ee;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(217, 119, 87, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .btn-gemini-send:disabled {

@@ -1,0 +1,21 @@
+{
+  "positive_class": 1,
+  "id_column": "Sample_ID",
+  "longitude_column": "Longitude_deg_SAR",
+  "latitude_column": "Latitude_deg_SAR",
+  "availability_column": "IIRS_Data_Available",
+  "available_value": 1,
+  "nodata": [-9999],
+  "aliases": {
+    "Reflectance_IIRS_1500nm": "Reflectance_IIRS_1500nm_Cleaned",
+    "Reflectance_IIRS_2000nm": "Reflectance_IIRS_2000nm_Cleaned"
+  },
+  "limitations": [
+    "Diagnostic inference using an explicit cleaned-column adapter; exact training preprocessing equivalence remains unverified.",
+    "Source coordinates are unverified. Do not interpret these points as established Faustini coverage.",
+    "Training labels are rule-derived. Score is not independent evidence of water ice.",
+    "Source CPR and DOP are constant; this artifact has no CPR or DOP predictors.",
+    "Unobserved IIRS samples receive no score. Missing IIRS does not establish permanent shadow.",
+    "No interpolation, ice abundance estimate, probability calibration or LFM fusion is applied."
+  ]
+}

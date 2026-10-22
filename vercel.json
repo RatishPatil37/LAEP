@@ -2,6 +2,7 @@
   "buildCommand": "cd laep-web && npm install && npm run build",
   "outputDirectory": "laep-web/dist",
   "rewrites": [
+    { "source": "/nasa-tiles/:path*", "destination": "https://trek.nasa.gov/tiles/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

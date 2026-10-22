@@ -16,6 +16,8 @@ ENV/
 *.tiff
 *.zip
 CHANDRAYAN_DS/
+DATASET/
+*.lnk
 
 # Secrets & Environment Variables
 .env

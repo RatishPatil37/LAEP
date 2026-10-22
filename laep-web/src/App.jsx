@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useMissionStore } from './stores/useMissionStore';
 import { soundEngine } from './lib/soundEffects';
 import CommandPalette from './components/navigation/CommandPalette';
@@ -8,8 +8,12 @@ import ClearanceModal from './components/auth/ClearanceModal';
 import './styles/globals.css';
 import './styles/aerospace.css';
 import './styles/assistant.css';
+import './styles/science-shell.css';
 
 export default function App() {
+  const pathname = useLocation().pathname;
+  const isMoon = pathname === '/moon';
+  const isScience = isMoon || pathname === '/ice-deposits';
   const isResearchMode = useMissionStore((s) => s.isResearchMode);
   const toggleResearchMode = useMissionStore((s) => s.toggleResearchMode);
   const setCommandPaletteOpen = useMissionStore((s) => s.setCommandPaletteOpen);
@@ -19,9 +23,9 @@ export default function App() {
   const setClearanceModalOpen = useMissionStore((s) => s.setClearanceModalOpen);
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${isMoon ? 'moon-shell' : ''} ${isScience ? 'science-shell' : ''}`}>
       {/* ── Cinematic Mission Diagnostic Boot Sequence (Runs on browser load/refresh) ── */}
-      <MissionBoot />
+      {!isScience && <MissionBoot />}
 
       {/* ── Global Topbar ─────────────────────────────────────────── */}
       <header className="topbar">
@@ -31,7 +35,9 @@ export default function App() {
           <span className="topbar-logo-badge">ISRO / CH-2</span>
         </div>
 
-        <nav className="topbar-nav">
+        <nav className="topbar-nav" aria-label="Main navigation">
+          <NavLink to="/moon" className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}>3D Moon</NavLink>
+          <NavLink to="/ice-deposits" className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}>Ice Deposits</NavLink>
           <NavLink
             to="/"
             className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}
@@ -59,19 +65,12 @@ export default function App() {
             className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}
             onClick={() => soundEngine.playTelemetryClick()}
           >
-            Analytics Lab
-          </NavLink>
-          <NavLink
-            to="/methodology"
-            className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}
-            onClick={() => soundEngine.playTelemetryClick()}
-          >
-            Methodology
+            Analytics & Methodology
           </NavLink>
         </nav>
 
         {/* Right Status & Aerospace Utility Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+        <div className="topbar-utilities" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
           {/* Quick Command Palette Button */}
           <button
             type="button"
@@ -176,7 +175,7 @@ export default function App() {
       <ClearanceModal />
 
       {/* ── Chrome-Style "Ask Gemini" AI Assistant ─────────────────── */}
-      <GeminiAssistant />
+      {!isScience && <GeminiAssistant />}
     </div>
   );
 }

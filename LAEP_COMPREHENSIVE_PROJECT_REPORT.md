@@ -1,17 +1,20 @@
 # 🌕 Lunar Autonomous Exploration Pipeline (LAEP)
+
 ## Comprehensive Technical Dossier & Presentation Defense Master Guide
+
 **Chandrayaan-2 Multi-Sensor Data Fusion, Machine Learning Volatile Detection, and Kinematic Rover Navigation**
 
 ---
 
-> **Document Classification:** Engineering Master Thesis / Defense Whitepaper  
-> **Prepared For:** Final Project Defense & Technical Presentation  
-> **Target Region:** Lunar South Pole (Faustini Crater F2 Landing Site: $82.10^\circ\text{E}, 87.35^\circ\text{S}$, Polar Envelope $80^\circ\text{S} - 90^\circ\text{S}$)  
-> **Primary Sensors:** ISRO Chandrayaan-2 (DFSAR, IIRS, TMC-2, OHRC) + LRO Ancillary (LOLA DEM, Diviner) + NASA-IBM Lunar Foundation Model (LFM)  
+> **Document Classification:** Engineering Master Thesis / Defense Whitepaper
+> **Prepared For:** Final Project Defense & Technical Presentation
+> **Target Region:** Lunar South Pole (Faustini Crater F2 Landing Site: $82.10^\circ\text{E}, 87.35^\circ\text{S}$, Polar Envelope $80^\circ\text{S} - 90^\circ\text{S}$)
+> **Primary Sensors:** ISRO Chandrayaan-2 (DFSAR, IIRS, TMC-2, OHRC) + LRO Ancillary (LOLA DEM, Diviner) + NASA-IBM Lunar Foundation Model (LFM)
 
 ---
 
 ## Table of Contents
+
 1. **Executive Summary & Complete Chronological Project Journey**
 2. **Project Directory Structure (Top-to-Bottom Architectural Map)**
 3. **Dataset Profiles, Provenance & Channel Specifications**
@@ -37,11 +40,13 @@
 # 1. Executive Summary & Complete Chronological Project Journey
 
 ### 1.1 The Planetary Exploration Problem
-On Earth, autonomous navigation relies on an established ecosystem: **GPS constellations** providing absolute positioning, **pre-mapped road vector networks**, and predictable ambient illumination. 
+
+On Earth, autonomous navigation relies on an established ecosystem: **GPS constellations** providing absolute positioning, **pre-mapped road vector networks**, and predictable ambient illumination.
 
 On the Moon, **none of these exist**:
+
 1. **No Satellite Navigation (Zero GPS):** A lunar rover cannot query satellite trilateration. Navigation must rely strictly on orbital map registration, inertial dead reckoning, wheel odometry, and celestial/star-tracker attitudes.
-2. **Extreme Polar Illumination:** In the lunar polar regions (latitudes $| \phi | \ge 80^\circ$), the sun hovers at grazing elevations ($< 2.8^\circ$ above the horizon). Mountain peaks experience quasi-permanent sunlight while crater bowls become **Permanently Shadowed Regions (PSRs)** that have not seen direct sunlight in over two billion years.
+2. **Extreme Polar Illumination:** In the lunar polar regions (latitudes $| \phi | \ge 80^\circ$), the sun hovers at grazing elevations ($< 2.8^\circ$ above the horizon). Mountain peaks experience quasi-permanent sunlight while crater bowls become **Permanently Shadowed Regions (PSRs)** that have not seen **direct sunlight in over two billion years.**
 3. **Cryogenic Cold Traps & Volatiles:** Inside these PSRs, temperatures hover between $40\text{ K}$ and $110\text{ K}$ ($-233^\circ\text{C}$ to $-163^\circ\text{C}$). Water ice molecules delivered by comets and asteroid impacts cannot escape into the vacuum; they remain kinetically trapped in the upper regolith. Identifying where water ice is located and navigating a rover to sample it without tumbling down a $30^\circ$ crater rim or dying of battery freeze in a shadow trap is the core objective of the **Lunar Autonomous Exploration Pipeline (LAEP)**.
 
 ---
@@ -187,16 +192,16 @@ The project operates primarily on two benchmark CSV datasets resulting from the 
 
 ### 3.1 Primary Datasets Profile
 
-| Attribute | `F2_combined_dataset_1790091673.csv` | `F2_combined_dataset_IIRS_processed.csv` |
-| :--- | :--- | :--- |
-| **Location** | `DATASET/LAEP_Pipeline/code/` | `DATASET/CUSTOM_DATASET/Module_training/` |
-| **Row Count** | 20,000 spatial samples | 20,000 spatial samples |
-| **Column Count** | 21 multi-sensor channels | 23 multi-sensor channels |
-| **Primary Spatial Key** | `Sample_ID` (`F2_0000` to `F2_19999`) | `Sample_ID` (`F2_0000` to `F2_19999`) |
-| **Latitude Range** | $-89.9870^\circ\text{S}$ to $-86.5188^\circ\text{S}$ | $-89.9870^\circ\text{S}$ to $-86.5188^\circ\text{S}$ |
-| **Longitude Range** | $-179.8736^\circ$ to $+179.9628^\circ$ ($360^\circ$ circle) | $-179.8736^\circ$ to $+179.9628^\circ$ ($360^\circ$ circle) |
-| **Coordinate Anchor** | DFSAR Ground Range Image (GRI) | DFSAR Ground Range Image (GRI) |
-| **Purpose** | Exploratory Data Analysis & Audit | Supervised ML Training & SHAP Validation |
+| Attribute                     | `F2_combined_dataset_1790091673.csv`                            | `F2_combined_dataset_IIRS_processed.csv`                        |
+| :---------------------------- | :---------------------------------------------------------------- | :---------------------------------------------------------------- |
+| **Location**            | `DATASET/LAEP_Pipeline/code/`                                   | `DATASET/CUSTOM_DATASET/Module_training/`                       |
+| **Row Count**           | 20,000 spatial samples                                            | 20,000 spatial samples                                            |
+| **Column Count**        | 21 multi-sensor channels                                          | 23 multi-sensor channels                                          |
+| **Primary Spatial Key** | `Sample_ID` (`F2_0000` to `F2_19999`)                       | `Sample_ID` (`F2_0000` to `F2_19999`)                       |
+| **Latitude Range**      | $-89.9870^\circ\text{S}$ to $-86.5188^\circ\text{S}$          | $-89.9870^\circ\text{S}$ to $-86.5188^\circ\text{S}$          |
+| **Longitude Range**     | $-179.8736^\circ$ to $+179.9628^\circ$ ($360^\circ$ circle) | $-179.8736^\circ$ to $+179.9628^\circ$ ($360^\circ$ circle) |
+| **Coordinate Anchor**   | DFSAR Ground Range Image (GRI)                                    | DFSAR Ground Range Image (GRI)                                    |
+| **Purpose**             | Exploratory Data Analysis & Audit                                 | Supervised ML Training & SHAP Validation                          |
 
 ---
 
@@ -236,29 +241,30 @@ In `code/analysis.md` and `code/laep_dataset_analysis.ipynb`, we conducted a tho
 
 ### 4.1 Global Descriptive Statistics Table
 
-| Feature Name | Non-Null Count | Missing % | Mean | Std Dev | Min | Median | Max | Physical Interpretation |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `Latitude_deg_SAR` | 20,000 | 0.0% | -88.5347° | 1.0476° | -89.9870° | -88.7092° | -86.5188° | Polar cap boundary |
-| `Longitude_deg_SAR` | 20,000 | 0.0% | -95.2980° | 94.0079° | -179.8736° | -143.5240° | +179.9628° | Full polar circumpolar ring |
-| `Incidence_Angle_deg_SAR` | 20,000 | 0.0% | 27.2875° | 2.5192° | 21.3800° | 26.7900° | 36.6300° | Radar incidence geometry |
-| `Ground_Range_m_SAR` | 20,000 | 0.0% | 42,994.99 m | 4,974.90 m | 35,509.58 m | 41,633.31 m | 73,462.31 m | Across-track swath width |
-| `Slant_Range_m_SAR` | 20,000 | 0.0% | 96,571.67 m | 2,338.32 m | 93,334.89 m | 95,982.01 m | 113,729.50 m | Orbit altitude ~100 km |
-| `Sat_Pos_Z_m_SAR_OAT` | 20,000 | 0.0% | -1,819,787 m | 850.92 m | -1,820,582 m | -1,820,102 m | -1,817,441 m | Polar orbit inclination |
-| `Power_LH_DFSAR` | 20,000 | 0.0% | **0.0000** | 0.0000 | 0.0000 | 0.0000 | 0.0000 | *Synthetic Constant Bug* |
-| `Power_LV_DFSAR` | 20,000 | 0.0% | **1.0e-06** | 0.0000 | 1.0e-06 | 1.0e-06 | 1.0e-06 | *Synthetic Constant Bug* |
-| `CPR_DFSAR` | 20,000 | 0.0% | **0.0500** | 0.0000 | 0.0500 | 0.0500 | 0.0500 | *Zero Radar Variance* |
-| `DOP_DFSAR` | 20,000 | 0.0% | **0.9048** | 0.0000 | 0.9048 | 0.9048 | 0.9048 | *Zero Radar Variance* |
-| `Reflectance_OHRC` | 20,000 | 0.0% | 0.1653 | 0.0928 | 0.0000 | 0.1653 | 1.0000 | 78% Imputed with Global Mean |
-| `Elevation_m_TMC2` | 20,000 | 0.0% | -1837.04 m | 22.33 m | -1850.00 m | -1844.10 m | -1749.30 m | Crater floor depression |
-| `Slope_deg_TMC2` | 20,000 | 0.0% | 1.08° | 1.86° | 0.00° | 0.50° | 8.40° | Coupled to Elevation ($r=1.0$) |
-| `Reflectance_IIRS_1500nm` | 8,156 | **59.22%** | 121.76 | 190.17 | 11.46 | 40.07 | 953.62 | Raw radiance scaling |
-| `Reflectance_IIRS_2000nm` | 8,156 | **59.22%** | 87.72 | 83.87 | 4.62 | 53.45 | 448.51 | Trough band |
-| `IIRS_Band_Ratio` | 8,156 | **59.22%** | 0.9938 | 0.5022 | 0.1584 | 0.7984 | 7.4648 | Continuum slope ratio |
-| `IIRS_H2O_Absorption_Depth`| 8,156 | **59.22%** | **-0.4523** | 0.3460 | -3.3518 | -0.4432 | +0.8435 | Thermal emission artifact |
+| Feature Name                  | Non-Null Count |    Missing %    |       Mean       |  Std Dev  |     Min     |    Median    |     Max     | Physical Interpretation          |
+| :---------------------------- | :------------: | :--------------: | :---------------: | :--------: | :----------: | :----------: | :----------: | :------------------------------- |
+| `Latitude_deg_SAR`          |     20,000     |       0.0%       |    -88.5347°    |  1.0476°  |  -89.9870°  |  -88.7092°  |  -86.5188°  | Polar cap boundary               |
+| `Longitude_deg_SAR`         |     20,000     |       0.0%       |    -95.2980°    | 94.0079° | -179.8736° | -143.5240° | +179.9628° | Full polar circumpolar ring      |
+| `Incidence_Angle_deg_SAR`   |     20,000     |       0.0%       |     27.2875°     |  2.5192°  |  21.3800°  |  26.7900°  |  36.6300°  | Radar incidence geometry         |
+| `Ground_Range_m_SAR`        |     20,000     |       0.0%       |    42,994.99 m    | 4,974.90 m | 35,509.58 m | 41,633.31 m | 73,462.31 m | Across-track swath width         |
+| `Slant_Range_m_SAR`         |     20,000     |       0.0%       |    96,571.67 m    | 2,338.32 m | 93,334.89 m | 95,982.01 m | 113,729.50 m | Orbit altitude ~100 km           |
+| `Sat_Pos_Z_m_SAR_OAT`       |     20,000     |       0.0%       |   -1,819,787 m   |  850.92 m  | -1,820,582 m | -1,820,102 m | -1,817,441 m | Polar orbit inclination          |
+| `Power_LH_DFSAR`            |     20,000     |       0.0%       | **0.0000** |   0.0000   |    0.0000    |    0.0000    |    0.0000    | *Synthetic Constant Bug*       |
+| `Power_LV_DFSAR`            |     20,000     |       0.0%       | **1.0e-06** |   0.0000   |   1.0e-06   |   1.0e-06   |   1.0e-06   | *Synthetic Constant Bug*       |
+| `CPR_DFSAR`                 |     20,000     |       0.0%       | **0.0500** |   0.0000   |    0.0500    |    0.0500    |    0.0500    | *Zero Radar Variance*          |
+| `DOP_DFSAR`                 |     20,000     |       0.0%       | **0.9048** |   0.0000   |    0.9048    |    0.9048    |    0.9048    | *Zero Radar Variance*          |
+| `Reflectance_OHRC`          |     20,000     |       0.0%       |      0.1653      |   0.0928   |    0.0000    |    0.1653    |    1.0000    | 78% Imputed with Global Mean     |
+| `Elevation_m_TMC2`          |     20,000     |       0.0%       |    -1837.04 m    |  22.33 m  |  -1850.00 m  |  -1844.10 m  |  -1749.30 m  | Crater floor depression          |
+| `Slope_deg_TMC2`            |     20,000     |       0.0%       |      1.08°      |   1.86°   |    0.00°    |    0.50°    |    8.40°    | Coupled to Elevation ($r=1.0$) |
+| `Reflectance_IIRS_1500nm`   |     8,156     | **59.22%** |      121.76      |   190.17   |    11.46    |    40.07    |    953.62    | Raw radiance scaling             |
+| `Reflectance_IIRS_2000nm`   |     8,156     | **59.22%** |       87.72       |   83.87   |     4.62     |    53.45    |    448.51    | Trough band                      |
+| `IIRS_Band_Ratio`           |     8,156     | **59.22%** |      0.9938      |   0.5022   |    0.1584    |    0.7984    |    7.4648    | Continuum slope ratio            |
+| `IIRS_H2O_Absorption_Depth` |     8,156     | **59.22%** | **-0.4523** |   0.3460   |   -3.3518   |   -0.4432   |   +0.8435   | Thermal emission artifact        |
 
 ---
 
 ### 4.2 Sensor Modality Coverage & The Swath Mismatch
+
 A core finding of our data analysis is that **different remote sensing instruments operate at vastly different spatial swaths**:
 
 ```
@@ -273,7 +279,7 @@ TOTAL SPATIAL ANCHOR (DFSAR Radar Track): 20,000 points (100.0%)
 └── SINGLE MODALITY (SAR only):            11,022 points (55.11%)
 ```
 
-**Key Scientific Takeaway for the Presentation:**  
+**Key Scientific Takeaway for the Presentation:**
 You cannot build an operational lunar exploration pipeline that expects all 4 sensors to be simultaneously present. More than **55% of the lunar terrain** in this polar track is imaged *only* by Synthetic Aperture Radar. An ML architecture must be natively decoupled to handle asymmetric sensor availability.
 
 ---
@@ -285,12 +291,18 @@ To demonstrate intellectual maturity to the evaluators, document the progression
 ---
 
 ### 5.1 Mistake 1: Severe Target Data Leakage in Initial ML Models
+
 - **What Happened:** In the early exploration scripts, the target label `IIRS_OH_Detection_State` was derived using the formula:
-  $$\text{Target} = 1 \quad \text{if } (\text{IIRS\_H2O\_Absorption\_Depth} > 0.02) \quad \text{else } 0$$
+
+  $$
+  \text{Target} = 1 \quad \text{if } (\text{IIRS\_H2O\_Absorption\_Depth} > 0.02) \quad \text{else } 0
+  $$
+
   When training the baseline classifier, `IIRS_H2O_Absorption_Depth` and `IIRS_Band_Ratio` were accidentally kept in the feature matrix $X$.
 - **The Symptom:** The model yielded **99.98% Accuracy** and an **F1 score of 1.0000**.
 - **The Flaw:** This was an artificial illusion. The decision tree was simply learning a single split on `IIRS_H2O_Absorption_Depth > 0.02`. In a real mission, when the rover encounters an unmapped shadow crater, `IIRS_H2O_Absorption_Depth` is unavailable.
 - **The Permanent Fix:**
+
   1. We decoupled the pipeline (Option B in `retrain_leakage_free_pipeline.py`).
   2. We explicitly barred `IIRS_H2O_Absorption_Depth`, `IIRS_Band_Ratio`, and `IIRS_Data_Available` from the predictor matrix.
   3. We forced the model to infer volatile presence from **raw physical and topographical variables**:
@@ -299,6 +311,7 @@ To demonstrate intellectual maturity to the evaluators, document the progression
 ---
 
 ### 5.2 Mistake 2: Polarimetric Collapse & Global Mean Imputation in Fused Data
+
 - **What Happened:** In `F2_combined_dataset_1790091673.csv`, the radar columns were flat constants (`CPR = 0.0500`, `DOP = 0.9048`), and 78% of OHRC optical values were set to the global scalar mean `0.1653`.
 - **The Cause:** When `generate_combined_dataset.py` was executed, the true DFSAR GeoTIFF rasters (`*_d_cpr_*.tif`) were missing from the local folder, so the script fell back to static scalar constants to prevent a runtime crash.
 - **The Impact:** A machine learning model trained on constant CPR has zero variance to learn the difference between volumetric ice backscatter ($\text{CPR} > 1.0$) and surface rock scattering ($\text{CPR} < 0.4$).
@@ -309,6 +322,7 @@ To demonstrate intellectual maturity to the evaluators, document the progression
 ---
 
 ### 5.3 Mistake 3: Spatial Autocorrelation Leakage (Tobler's First Law)
+
 - **What Happened:** Standard random k-fold cross-validation was initially applied:
   ```python
   from sklearn.model_selection import KFold
@@ -330,16 +344,20 @@ To demonstrate intellectual maturity to the evaluators, document the progression
 ---
 
 ### 5.4 Mistake 4: Windows Path Decoding & `UnicodeEscape` Syntax Errors
+
 - **What Happened:** When running analysis notebooks in Jupyter on Windows, path strings formatted as:
+
   ```python
   dataset_filename = 'DATASET\CUSTOM_DATASET\Module_training\F2_combined_dataset_IIRS_processed.csv'
   # or
   path = "C:\Users\patil\OneDrive..."
   ```
+
   threw the fatal exception:
   `SyntaxError: (unicode error) 'unicodeescape' codec can't decode bytes: truncated \UXXXXXXXX escape`
 - **The Technical Root Cause:** In standard Python strings, backslashes are escape sequences. `\U` initiates an 8-character 32-bit Unicode escape sequence (e.g., `\U0001F600`). When Python encounters `\Users`, it attempts to parse `sers` as hexadecimal bytes and crashes. Furthermore, `\F` or `\f` in `\F2_...` is interpreted as an ASCII Form Feed (`0x0C`).
 - **The Permanent Fix:**
+
   1. Standardized all paths across `laep-api`, Jupyter notebooks, and ML training scripts to **raw string literals** (`r"..."`) or **forward slashes** (`/`), which Windows and Python natively support:
      ```python
      Path(r"c:/Users/patil/.../DATASET/CUSTOM_DATASET/Module_training") / dataset_filename
@@ -349,6 +367,7 @@ To demonstrate intellectual maturity to the evaluators, document the progression
 ---
 
 ### 5.5 Mistake 5: Frontend Terminal Slop to Claude-Inspired Refinement
+
 - **What Happened:** The initial AI assistant sidebar in `laep-web` was styled with blocky neon-blue cyber-borders, a jarring flashing terminal box, unrendered raw LaTeX text (e.g., `80^\circ$`, `$\text{CPR} > 1$`), and a raw environment variable status line.
 - **The Permanent Fix:**
   1. Integrated the **KaTeX math engine** into React to parse and render inline math (`$...$`) and display equations (`$$...$$`).
@@ -389,6 +408,7 @@ The core ML architecture addresses the reality of planetary data: **spatial cove
 ---
 
 ### 6.1 Tier 1: Optical & Topographical Cold Trap Segmentation (SegFormer)
+
 - **Role:** Identifies **Doubly Shadowed Regions (DSRs)**—depressions inside craters that receive zero direct sunlight and zero secondary scattered light from surrounding crater walls.
 - **Model:** **SegFormer (MiT-B3 Transformer Encoder)**.
 - **Why SegFormer Over Vanilla U-Net?**
@@ -421,14 +441,18 @@ branch_b = (
 ```
 
 #### Why Are Slope and Elevation Strictly Constrained in Branch B?
+
 This is a key scientific point:
+
 - **Outside crater bowls**, high CPR ($\text{CPR} > 1.0$) is caused by **surface roughness and boulder block fields** (dielectric blocky ejecta scattering radar in all directions).
 - **Inside deep crater bowls** ($\text{Elevation} < -1800\text{ m}$) on **flat terraces** ($\text{Slope} < 12^\circ$), boulders are buried by regolith infill and temperatures stay below $110\text{ K}$. Here, $\text{CPR} > 1.0$ is caused by **Coherent Backscatter Opposition Effect (CBOE)** inside low-loss subsurface water ice deposits!
 
 ---
 
 ### 6.3 NASA-IBM Lunar Foundation Model (LFM) Cross-Mission Late-Fusion
+
 In `NASA_IBM_LFM/NASA-IBM-Lunar-Foundation-Model/`, we integrated the **NASA-IBM Lunar Foundation Model (ni_lfm)** built on TerraTorch:
+
 - **Macro-Spatial Backbone:** Vision Transformer (ViT-B) pre-trained on multi-spectral LROC NAC/WAC mosaics. Outputs a **256-dimensional spatial context embedding** per terrain tile.
 - **Micro-Physical Ingestion:** Chandrayaan-2 DFSAR polarimetric Stokes vector ($S_0, S_1, S_2, S_3$) + IIRS 256-channel reflectance cube. Outputs a **160-dimensional physical feature vector**.
 - **Late-Fusion Concatenation:** Combines the $256$-dim orbital context vector with the $160$-dim ISRO sensor vector into a $416$-dimensional dense representation, achieving cross-mission validation.
@@ -436,7 +460,9 @@ In `NASA_IBM_LFM/NASA-IBM-Lunar-Foundation-Model/`, we integrated the **NASA-IBM
 ---
 
 ### 6.4 Model Explainability (SHAP) & Physical Feature Attribution
+
 In `retrain_leakage_free_pipeline.py`, we generated Tree SHAP summary attributions:
+
 - **Top Predictive Features:**
   1. `Reflectance_IIRS_2000nm`: Captures the core molecular vibrational absorption trough of water ice.
   2. `Slope_deg_TMC2`: Regulates gravitational stability and volatile accumulation.
@@ -451,50 +477,99 @@ In `retrain_leakage_free_pipeline.py`, we generated Tree SHAP summary attributio
 Every formula below is actively implemented in the project codebase:
 
 ### 7.1 Radar Polarimetry (Chandrayaan-2 DFSAR)
-*Implemented in [polarimetry.py](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/polarimetry.py)*
+
+*Implemented in [polarimetry.py](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/polarimetry.py>)*
 
 1. **Stokes Parameters (Real Power Cross-Sections):**
-   $$S_0 = \sigma_{HH} + \sigma_{VV}$$
-   $$S_1 = \sigma_{HH} - \sigma_{VV}$$
-   $$S_2 = 2 \sqrt{\sigma_{HH} \sigma_{VV}} \quad (\text{real power approximation})$$
-   $$S_3 = 2 \operatorname{Im}(\sigma_{HV})$$
 
+   $$
+   S_0 = \sigma_{HH} + \sigma_{VV}
+   $$
+
+   $$
+   S_1 = \sigma_{HH} - \sigma_{VV}
+   $$
+
+   $$
+   S_2 = 2 \sqrt{\sigma_{HH} \sigma_{VV}} \quad (\text{real power approximation})
+   $$
+
+   $$
+   S_3 = 2 \operatorname{Im}(\sigma_{HV})
+   $$
 2. **Degree of Polarization (DOP, $m$):**
-   $$m = \frac{\sqrt{S_1^2 + S_2^2 + S_3^2}}{S_0 + \epsilon}$$
 
+   $$
+   m = \frac{\sqrt{S_1^2 + S_2^2 + S_3^2}}{S_0 + \epsilon}
+   $$
 3. **Circular Polarization Ratio (CPR):**
-   $$\text{CPR} = \frac{\sigma_{SC}}{\sigma_{OC}} = \frac{S_0 - S_3}{S_0 + S_3}$$
+
+   $$
+   \text{CPR} = \frac{\sigma_{SC}}{\sigma_{OC}} = \frac{S_0 - S_3}{S_0 + S_3}
+   $$
+
    - $\sigma_{SC}$: Same-Sense Circular backscatter power.
    - $\sigma_{OC}$: Opposite-Sense Circular backscatter power.
    - *Physical Rule:* $\text{CPR} > 1.0$ inside a cold trap indicates volumetric ice backscatter; $\text{CPR} > 1.0$ outside on steep terrain indicates rough surface rocky ejecta.
-
 4. **$m\text{-}\chi$ Polarimetric Target Decomposition:**
-   $$\sin(2\chi) = \operatorname{clip}\left(\frac{-S_3}{m \cdot S_0 + \epsilon}, -1.0, 1.0\right)$$
-   $$P_{\text{volume}} = S_0 (1 - m) \quad \text{[Volumetric scatter from ice grains]}$$
-   $$P_{\text{double}} = S_0 \cdot m \cdot \left(\frac{1 - \sin(2\chi)}{2}\right) \quad \text{[Dihedral bounce from crater walls/boulders]}$$
-   $$P_{\text{surface}} = S_0 \cdot m \cdot \left(\frac{1 + \sin(2\chi)}{2}\right) \quad \text{[Bragg single bounce from smooth regolith]}$$
+
+   $$
+   \sin(2\chi) = \operatorname{clip}\left(\frac{-S_3}{m \cdot S_0 + \epsilon}, -1.0, 1.0\right)
+   $$
+
+   $$
+   P_{\text{volume}} = S_0 (1 - m) \quad \text{[Volumetric scatter from ice grains]}
+   $$
+
+   $$
+   P_{\text{double}} = S_0 \cdot m \cdot \left(\frac{1 - \sin(2\chi)}{2}\right) \quad \text{[Dihedral bounce from crater walls/boulders]}
+   $$
+
+   $$
+   P_{\text{surface}} = S_0 \cdot m \cdot \left(\frac{1 + \sin(2\chi)}{2}\right) \quad \text{[Bragg single bounce from smooth regolith]}
+   $$
 
 ---
 
 ### 7.2 Continuous Ice Confidence Score (ICS)
-*Implemented in [ice_confidence.py](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/ice_confidence.py)*
+
+*Implemented in [ice_confidence.py](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/ice_confidence.py>)*
 
 Based on Physical Research Laboratory (PRL Ahmedabad) & ISRO criterion ($\text{CPR} > 1.0$ and $\text{DOP} < 0.13$):
-$$\text{CPR}_{\text{conf}} = \operatorname{clip}\left(\frac{\text{CPR} - 1.0}{1.0}, 0.0, 1.0\right)$$
-$$\text{DOP}_{\text{conf}} = \operatorname{clip}\left(\frac{0.13 - \text{DOP}}{0.08}, 0.0, 1.0\right)$$
-$$\text{ICS} = \sqrt{\text{CPR}_{\text{conf}} \cdot \text{DOP}_{\text{conf}}} \quad \in [0.0, 1.0]$$
+
+$$
+\text{CPR}_{\text{conf}} = \operatorname{clip}\left(\frac{\text{CPR} - 1.0}{1.0}, 0.0, 1.0\right)
+$$
+
+$$
+\text{DOP}_{\text{conf}} = \operatorname{clip}\left(\frac{0.13 - \text{DOP}}{0.08}, 0.0, 1.0\right)
+$$
+
+$$
+\text{ICS} = \sqrt{\text{CPR}_{\text{conf}} \cdot \text{DOP}_{\text{conf}}} \quad \in [0.0, 1.0]
+$$
 
 ---
 
 ### 7.3 IIRS Hyperspectral Diagnostic Metrics
-*Implemented in [code/analysis.md](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/code/analysis.md) and [GeminiAssistant.jsx](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-web/src/components/assistant/GeminiAssistant.jsx)*
+
+*Implemented in [code/analysis.md](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/code/analysis.md>) and [GeminiAssistant.jsx](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-web/src/components/assistant/GeminiAssistant.jsx>)*
 
 1. **Continuum-Normalized Band Depth (BD at 2.0 µm and 3.0 µm):**
-   $$\text{BD}_{3.0} = 1 - \frac{R_{3.0}}{0.5 \cdot (R_{2.8} + R_{3.2})}$$
-   $$\text{BD}_{2.0} = 1 - \frac{R_{2.0}}{R_{\text{continuum}}(2.0\,\mu\text{m})}$$
 
+   $$
+   \text{BD}_{3.0} = 1 - \frac{R_{3.0}}{0.5 \cdot (R_{2.8} + R_{3.2})}
+   $$
+
+   $$
+   \text{BD}_{2.0} = 1 - \frac{R_{2.0}}{R_{\text{continuum}}(2.0\,\mu\text{m})}
+   $$
 2. **Photometric $I/F$ Reflectance Calibration:**
-   $$\frac{I}{F} = \frac{\pi \cdot L_{\lambda}}{F_{\odot}(\lambda) \cdot \cos(i)}$$
+
+   $$
+   \frac{I}{F} = \frac{\pi \cdot L_{\lambda}}{F_{\odot}(\lambda) \cdot \cos(i)}
+   $$
+
    - $L_{\lambda}$: Spectral radiance measured by IIRS detector.
    - $F_{\odot}$: Solar spectral irradiance at $1\text{ AU}$.
    - $i$: Solar incidence angle.
@@ -502,47 +577,88 @@ $$\text{ICS} = \sqrt{\text{CPR}_{\text{conf}} \cdot \text{DOP}_{\text{conf}}} \q
 ---
 
 ### 7.4 Polar Conformal Coordinate Mapping (EPSG:3032)
-*Implemented in [laep_dataset_analysis.ipynb](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/DATASET/LAEP_Pipeline/code/laep_dataset_analysis.ipynb)*
+
+*Implemented in [laep_dataset_analysis.ipynb](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/DATASET/LAEP_Pipeline/code/laep_dataset_analysis.ipynb>)*
 
 Maps geographic latitude $\phi$ and longitude $\lambda$ into Cartesian meters $(x, y)$ on the Moon ($R_M = 1,737,400\text{ m}$):
-$$x = 2 R_M \tan\left(\frac{\pi}{4} - \frac{|\phi|}{2}\right) \sin(\lambda)$$
-$$y = -2 R_M \tan\left(\frac{\pi}{4} - \frac{|\phi|}{2}\right) \cos(\lambda)$$
+
+$$
+x = 2 R_M \tan\left(\frac{\pi}{4} - \frac{|\phi|}{2}\right) \sin(\lambda)
+$$
+
+$$
+y = -2 R_M \tan\left(\frac{\pi}{4} - \frac{|\phi|}{2}\right) \cos(\lambda)
+$$
 
 ---
 
 ### 7.5 Terrain Slope & Dual-Axis SAR Geometric Roughness
-*Implemented in [cost_grid.py](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/cost_grid.py)*
+
+*Implemented in [cost_grid.py](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/cost_grid.py>)*
 
 1. **Slope Angle ($\theta$) via DEM Central Differences:**
-   $$\frac{\partial z}{\partial x} = \frac{z_{i, j+1} - z_{i, j-1}}{2 \cdot \Delta x}, \quad \frac{\partial z}{\partial y} = \frac{z_{i+1, j} - z_{i-1, j}}{2 \cdot \Delta y}$$
-   $$\theta = \arctan\left(\sqrt{\left(\frac{\partial z}{\partial x}\right)^2 + \left(\frac{\partial z}{\partial y}\right)^2}\right) \times \frac{180^\circ}{\pi}$$
 
+   $$
+   \frac{\partial z}{\partial x} = \frac{z_{i, j+1} - z_{i, j-1}}{2 \cdot \Delta x}, \quad \frac{\partial z}{\partial y} = \frac{z_{i+1, j} - z_{i-1, j}}{2 \cdot \Delta y}
+   $$
+
+   $$
+   \theta = \arctan\left(\sqrt{\left(\frac{\partial z}{\partial x}\right)^2 + \left(\frac{\partial z}{\partial y}\right)^2}\right) \times \frac{180^\circ}{\pi}
+   $$
 2. **Dual-Axis SAR Geometric Mean Roughness ($W_z$):**
-   $$W_p = \left| \frac{\ln(\operatorname{Var}(I) + \epsilon)}{\ln\left(1 - \frac{|I_{x} - I_{x-1}|}{I_{x} + I_{x-1} + \epsilon} + \epsilon\right)} \right|$$
-   $$W_q = \left| \frac{\ln(\operatorname{Var}(I) + \epsilon)}{\ln\left(1 - \frac{|I_{y} - I_{y-1}|}{I_{y} + I_{y-1} + \epsilon} + \epsilon\right)} \right|$$
-   $$W_z = \sqrt{|W_p \cdot W_q|}$$
+
+   $$
+   W_p = \left| \frac{\ln(\operatorname{Var}(I) + \epsilon)}{\ln\left(1 - \frac{|I_{x} - I_{x-1}|}{I_{x} + I_{x-1} + \epsilon} + \epsilon\right)} \right|
+   $$
+
+   $$
+   W_q = \left| \frac{\ln(\operatorname{Var}(I) + \epsilon)}{\ln\left(1 - \frac{|I_{y} - I_{y-1}|}{I_{y} + I_{y-1} + \epsilon} + \epsilon\right)} \right|
+   $$
+
+   $$
+   W_z = \sqrt{|W_p \cdot W_q|}
+   $$
 
 ---
 
 ### 7.6 Kinematic A* Rover Traversal Cost Function
-*Implemented in [a_star.py](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/a_star.py) and [cost_grid.py](file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/cost_grid.py)*
+
+*Implemented in [a_star.py](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/a_star.py>) and [cost_grid.py](<file:///c:/Users/patil/OneDrive%20-%20South%20Indian%20Education%20Society/Desktop/ISRO/laep-api/algorithms/cost_grid.py>)*
 
 The total traversal evaluation function:
-$$f(n) = g(n) + h(n)$$
+
+$$
+f(n) = g(n) + h(n)
+$$
+
 Where the cumulative step cost across node $n$ is:
-$$g(n) = g(n-1) + d(n-1, n) \cdot \operatorname{Cost}(n)$$
-$$\operatorname{Cost}(n) = 1.0 + W_{\text{slope}} \cdot \theta(n) + W_{\text{shadow}} \cdot \Phi_{\text{shadow}}(n) \cdot 50.0 + W_{\text{roughness}} \cdot W_z(n) \cdot 20.0$$
+
+$$
+g(n) = g(n-1) + d(n-1, n) \cdot \operatorname{Cost}(n)
+$$
+
+$$
+\operatorname{Cost}(n) = 1.0 + W_{\text{slope}} \cdot \theta(n) + W_{\text{shadow}} \cdot \Phi_{\text{shadow}}(n) \cdot 50.0 + W_{\text{roughness}} \cdot W_z(n) \cdot 20.0
+$$
 
 **Hard Navigational Cutoffs:**
-$$\operatorname{Cost}(n) = \infty \quad \text{if } \theta(n) > 20.0^\circ \quad (\text{Rollover / Terramechanic Slip Threshold})$$
+
+$$
+\operatorname{Cost}(n) = \infty \quad \text{if } \theta(n) > 20.0^\circ \quad (\text{Rollover / Terramechanic Slip Threshold})
+$$
+
 Heuristic $h(n)$ is Euclidean distance (admissible for 8-connected grid):
-$$h(n) = \sqrt{(x_n - x_{\text{goal}})^2 + (y_n - y_{\text{goal}})^2}$$
+
+$$
+h(n) = \sqrt{(x_n - x_{\text{goal}})^2 + (y_n - y_{\text{goal}})^2}
+$$
 
 ---
 
 # 8. Autonomous Rover Navigation & Traversal Engine (Kinematic A*)
 
 ### 8.1 The Two-Phase Traversal Strategy
+
 Planetary pathfinding algorithms often fail inside impact craters because they wander into steep bowl walls, expanding thousands of futile nodes. In `a_star.py`, we designed a **two-phase reachability pathfinder**:
 
 ```
@@ -570,12 +686,14 @@ Planetary pathfinding algorithms often fail inside impact craters because they w
 # 9. Frontend Architecture & Claude-Inspired Mission Copilot
 
 ### 9.1 Technical Stack
+
 - **Framework:** React 18 with Vite bundling.
 - **State Management:** Zustand (`useMissionStore.js`) maintaining selected coordinates, active layers (DEM, CPR, DOP, Bounds), and computed traversal paths.
 - **3D Visualization:** Three.js and `@react-three/fiber` rendering an accurate 3D lunar sphere, elevation displacements, and rover kinematic movement.
 - **GIS Mapping:** OpenLayers 9 rendering multi-band raster overlays and vector traversal paths in lunar coordinate projections.
 
 ### 9.2 The Claude-Inspired Mission Copilot (`GeminiAssistant.jsx`)
+
 - **Model Engine:** Powered by **Google Gemini 3.6 Flash** (with fallback to `gemini-2.5-flash` and local offline scientific knowledge base).
 - **LaTeX Math Engine:** Integrated **KaTeX** (`katex.renderToString`). Parses and renders both inline equations (`$CPR = \frac{\sigma_{SC}}{\sigma_{OC}}$`) and block display equations (`$$J(n) = ...$$`).
 - **Claude Aesthetics:** Warm dark palette (`#181715`), soft terracotta accents (`#d97757`), rounded user/assistant speech bubbles, and pill query buttons.
@@ -591,53 +709,59 @@ Below are the most probing technical questions examiners, professors, or ISRO sc
 ---
 
 ### Q1: "Why did your initial ML models achieve near-100% accuracy, and why was that actually a failure?"
-> **Your Answer:**  
-> *"That initial 99.98% accuracy was a classic symptom of **target data leakage**. In our initial pipeline, the ground-truth target was labeled based on whether `IIRS_H2O_Absorption_Depth` exceeded 0.02. Because that column was mistakenly retained in the training feature matrix, the model simply reversed our own labeling equation rather than learning physical correlations from the raw remote sensing measurements.  
+
+> **Your Answer:**
+> *"That initial 99.98% accuracy was a classic symptom of **target data leakage**. In our initial pipeline, the ground-truth target was labeled based on whether `IIRS_H2O_Absorption_Depth` exceeded 0.02. Because that column was mistakenly retained in the training feature matrix, the model simply reversed our own labeling equation rather than learning physical correlations from the raw remote sensing measurements.
 > We recognized this flaw, overhauled the pipeline, and adopted **Option B feature selection**: we stripped out all circular derived features (`Absorption_Depth`, `Band_Ratio`, `Data_Available`) and forced the model to predict volatiles strictly from raw spectral reflectance (1500 nm, 2000 nm), SAR geometry, and TMC-2 topography. The resulting F1 score was physically honest and truly generalizable to unmapped lunar craters."*
 
 ---
 
 ### Q2: "Why can't you just use CPR > 1.0 everywhere to detect water ice?"
-> **Your Answer:**  
-> *"Because high CPR is a **necessary but ambiguous** condition. High Circular Polarization Ratio ($\text{CPR} > 1.0$) indicates that the received backscatter has preserved the transmitted circular polarization sense. This occurs through two completely distinct physical mechanisms:  
-> 1. **Coherent Backscatter Opposition Effect (CBOE)** inside low-loss, transparent volume scatterers like subsurface water ice grains.  
-> 2. **Double-bounce / multiple surface scattering** from blocky, rough surface rocks and crater ejecta.  
-> If you apply $\text{CPR} > 1.0$ outside crater bowls on sunny ridges, you are simply detecting fields of boulders. That is why our pipeline couples DFSAR radar with **TMC-2 slope, elevation, and Diviner thermal equilibrium limits**: CPR indicates ice *only* when constrained to permanently shadowed crater floors where temperatures remain below $110\text{ K}$ and slopes are flat ($< 12^\circ$), ruling out rough ejecta."*
+
+> **Your Answer:***"Because high CPR is a **necessary but ambiguous** condition. High Circular Polarization Ratio ($\text{CPR} > 1.0$) indicates that the received backscatter has preserved the transmitted circular polarization sense. This occurs through two completely distinct physical mechanisms:
+>
+> 1. **Coherent Backscatter Opposition Effect (CBOE)** inside low-loss, transparent volume scatterers like subsurface water ice grains.
+> 2. **Double-bounce / multiple surface scattering** from blocky, rough surface rocks and crater ejecta.
+>    If you apply $\text{CPR} > 1.0$ outside crater bowls on sunny ridges, you are simply detecting fields of boulders. That is why our pipeline couples DFSAR radar with **TMC-2 slope, elevation, and Diviner thermal equilibrium limits**: CPR indicates ice *only* when constrained to permanently shadowed crater floors where temperatures remain below $110\text{ K}$ and slopes are flat ($< 12^\circ$), ruling out rough ejecta."*
 
 ---
 
 ### Q3: "Why did you use Spatial Block GroupKFold instead of standard 5-fold cross-validation?"
-> **Your Answer:**  
-> *"Planetary spatial data severely violates the independent and identically distributed (i.i.d.) assumption due to **spatial autocorrelation** (Tobler's First Law of Geography). In standard random k-fold cross-validation, pixels located 10 meters away from each other are split between the training and test sets. Because adjacent lunar pixels share almost identical thermal and elevation contexts, the model simply memorized spatial coordinates, giving an inflated validation metric.  
+
+> **Your Answer:**
+> *"Planetary spatial data severely violates the independent and identically distributed (i.i.d.) assumption due to **spatial autocorrelation** (Tobler's First Law of Geography). In standard random k-fold cross-validation, pixels located 10 meters away from each other are split between the training and test sets. Because adjacent lunar pixels share almost identical thermal and elevation contexts, the model simply memorized spatial coordinates, giving an inflated validation metric.
 > By implementing **Spatial Block GroupKFold** with $0.05^\circ$ (~1.5 km) spatial tiles, we held out entire geographic blocks during validation. This proved our model can accurately detect volatiles in completely unseen craters miles away from the training footprint."*
 
 ---
 
 ### Q4: "Why did your IIRS water absorption depth have negative values in the raw dataset?"
-> **Your Answer:**  
+
+> **Your Answer:**
 > *"In our empirical data audit, `IIRS_H2O_Absorption_Depth` exhibited a mean of $-0.4523$. This occurred because the raw PDS4 `.qub` product contained uncalibrated digital numbers and spectral radiance ($W/(m^2 \cdot \text{sr} \cdot \mu\text{m})$) rather than photometrically normalized reflectance ($I/F$). At wavelengths beyond $2.0\,\mu\text{m}$, thermal emission from the warm lunar surface introduces an upward continuum tilt. Without Planck thermal subtraction and photometric division by $\cos(i)$, the $2.0\,\mu\text{m}$ reflectance appeared artificially higher than the continuum shoulder, resulting in a negative band depth. Our analysis highlighted the necessity of applying a photometric $I/F$ conversion and upper convex hull continuum removal."*
 
 ---
 
 ### Q5: "How does your rover navigate without GPS, and how does your A* algorithm avoid falling into craters?"
-> **Your Answer:**  
-> *"Since the Moon lacks a GPS satellite constellation, our pipeline uses a **pre-mapped static cost grid** built from Chandrayaan-2 TMC-2 stereo DEMs and LOLA elevation datasets. The cost function fuses slope gradient central differences, SAR geometric mean roughness ($W_z$), and shadow battery penalties.  
+
+> **Your Answer:**
+> *"Since the Moon lacks a GPS satellite constellation, our pipeline uses a **pre-mapped static cost grid** built from Chandrayaan-2 TMC-2 stereo DEMs and LOLA elevation datasets. The cost function fuses slope gradient central differences, SAR geometric mean roughness ($W_z$), and shadow battery penalties.
 > To prevent the rover from tumbling into craters, we enforce a **hard kinematic cutoff**: any terrain with a slope $> 20^\circ$ is set to infinity ($\operatorname{Cost} = \infty$), reflecting the terramechanic slip limit of lunar rover wheels. Furthermore, our **Phase 1 BFS reachability pre-filter** flood-fills from the start position through passable cells before A* begins. If a goal inside a deep crater is physically unreachable, the algorithm detects it in $O(V)$ time, preventing infinite search loops."*
 
 ---
 
 ### Q6: "What is the role of the NASA-IBM Lunar Foundation Model in an ISRO project?"
-> **Your Answer:**  
-> *"The NASA-IBM Lunar Foundation Model (LFM) provides a **cross-mission late-fusion architecture**. The LFM is a Vision Transformer (ViT-B) pre-trained on millions of square kilometers of global lunar orbital imagery, producing a 256-dimensional spatial context embedding of macro-topography.  
+
+> **Your Answer:**
+> *"The NASA-IBM Lunar Foundation Model (LFM) provides a **cross-mission late-fusion architecture**. The LFM is a Vision Transformer (ViT-B) pre-trained on millions of square kilometers of global lunar orbital imagery, producing a 256-dimensional spatial context embedding of macro-topography.
 > We take this 256-dimensional spatial representation and concatenate it with the 160-dimensional physical feature vector from Chandrayaan-2 DFSAR radar and IIRS spectrometer measurements. This late-fusion strategy bridges NASA's global spatial context with ISRO's specialized polarimetric and hyperspectral payload observations, significantly reducing false positive ice detections."*
 
 ---
 
 # 11. Final Summary Checklist for Presentation Day
 
-- [x] **Core Narrative:** Explain the autonomy chain (Orbit Data $\rightarrow$ Two-Branch ML $\rightarrow$ Cost Grid $\rightarrow$ Kinematic Rover Path).
-- [x] **Scientific Terminology:** Confidently use terms like *Coherent Backscatter Opposition Effect (CBOE)*, *Circular Polarization Ratio (CPR)*, *Degree of Polarization (DOP)*, *Spatial Autocorrelation*, and *Permanently Shadowed Regions (PSRs)*.
-- [x] **Admit the Mistakes Early:** Highlighting how you caught the data leakage bug and instituted Spatial Block CV proves you understand real-world machine learning engineering.
-- [x] **Demonstrate Live Capabilities:** Walk through the 3D globe, show the KaTeX math in the Copilot drawer, and trigger the A* pathfinding simulator to show the rover avoiding steep slopes.
+- [X] **Core Narrative:** Explain the autonomy chain (Orbit Data $\rightarrow$ Two-Branch ML $\rightarrow$ Cost Grid $\rightarrow$ Kinematic Rover Path).
+- [X] **Scientific Terminology:** Confidently use terms like *Coherent Backscatter Opposition Effect (CBOE)*, *Circular Polarization Ratio (CPR)*, *Degree of Polarization (DOP)*, *Spatial Autocorrelation*, and *Permanently Shadowed Regions (PSRs)*.
+- [X] **Admit the Mistakes Early:** Highlighting how you caught the data leakage bug and instituted Spatial Block CV proves you understand real-world machine learning engineering.
+- [X] **Demonstrate Live Capabilities:** Walk through the 3D globe, show the KaTeX math in the Copilot drawer, and trigger the A* pathfinding simulator to show the rover avoiding steep slopes.
 
 *You are completely prepared. Every formula, dataset row, ML failure, and architectural fix is documented in this dossier. Good luck with your defense!*

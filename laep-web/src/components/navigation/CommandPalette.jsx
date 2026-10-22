@@ -9,6 +9,8 @@ import { useMissionStore, LAYER_IDS } from '../../stores/useMissionStore';
 import { soundEngine } from '../../lib/soundEffects';
 
 const COMMANDS = [
+  { id: 'nav_moon', label: 'Open 3D Moon — verified planetary catalog', category: 'NAVIGATION', action: 'route', target: '/moon' },
+  { id: 'nav_ice', label: 'Open Ice Deposits — experimental model evidence', category: 'NAVIGATION', action: 'route', target: '/ice-deposits' },
   { id: 'faustini', label: 'Faustini Crater (82.1°E, 87.3°S)', category: 'CRATER BENCHMARK', action: 'crater', target: 'faustini' },
   { id: 'shoemaker', label: 'Shoemaker Crater (45.3°E, 88.1°S)', category: 'CRATER BENCHMARK', action: 'crater', target: 'shoemaker' },
   { id: 'haworth', label: 'Haworth Crater (5.2°W, 87.4°S)', category: 'CRATER BENCHMARK', action: 'crater', target: 'haworth' },
@@ -115,7 +117,7 @@ export default function CommandPalette() {
           background: 'rgba(10, 14, 23, 0.95)',
           borderRadius: '4px',
           border: '1px solid rgba(125, 211, 252, 0.3)',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(125, 211, 252, 0.15)',
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9)',
           overflow: 'hidden',
           fontFamily: "'IBM Plex Mono', monospace",
         }}

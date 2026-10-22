@@ -1,19 +1,24 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import App from './App';
-import Home from './pages/Home';
-import Explorer from './pages/Explorer';
-import Simulator from './pages/Simulator';
-import AnalyticsLab from './pages/AnalyticsLab';
-import Methodology from './pages/Methodology';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+const App = lazy(() => import('./App'));
+const Home = lazy(() => import('./pages/Home'));
+const Explorer = lazy(() => import('./pages/Explorer'));
+const Simulator = lazy(() => import('./pages/Simulator'));
+const AnalyticsLab = lazy(() => import('./pages/AnalyticsLab'));
+const Methodology = lazy(() => import('./pages/Methodology'));
+const IceDemo = lazy(() => import('./pages/IceDemo'));
+const LunarExplorer = lazy(() => import('./features/lunar-explorer/LunarExplorer'));
 
 const router = createBrowserRouter([
+  { path: '/ice-demo', element: <Navigate to="/ice-deposits" replace /> },
   {
     path: '/',
     element: <App />,
     children: [
       { index: true,          element: <Home /> },
+      { path: 'moon',         element: <LunarExplorer /> },
+      { path: 'ice-deposits', element: <IceDemo /> },
       { path: 'explorer',     element: <Explorer /> },
       { path: 'simulator',    element: <Simulator /> },
       { path: 'analytics',    element: <AnalyticsLab /> },
@@ -24,6 +29,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Suspense fallback={<p role="status" style={{ padding: 24 }}>Loading LAEP…</p>}>
+      <RouterProvider router={router} />
+    </Suspense>
   </StrictMode>
 );

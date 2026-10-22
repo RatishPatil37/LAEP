@@ -5,6 +5,18 @@ import MoonHero from '../scenes/MoonHero/MoonHero';
 import { useMissionStore, LAYER_IDS } from '../stores/useMissionStore';
 import { soundEngine } from '../lib/soundEffects';
 import { displayCraterName } from '../lib/crater';
+import { useScrollReveal } from '../hooks/useScrollReveal';
+
+const DEFAULT_BENCHMARK_CRATERS = [
+  { id: "F2", name: "Faustini F2 (Ground Truth Ice)", host: "Faustini", lon: 82.31, lat: -87.39, diameter_km: 1.1, depth_m: 144, peak_cpr: 1.95, dop: 0.10, wall_slope_deg: "20–27°", lobate_rim: true, verdict: "Strong Evidence (47% interior CPR > 1)", status: "positive", color: "#00ffcc", summary: "Doubly-shadowed crater with lobate ejecta rim punching into subsurface ice sheet." },
+  { id: "F3", name: "Faustini F3 (Secondary Target)", host: "Faustini", lon: 84.15, lat: -87.25, diameter_km: 0.7, depth_m: 95, peak_cpr: 1.73, dop: 0.11, wall_slope_deg: "18–20°", lobate_rim: false, verdict: "Likely (42% interior CPR > 1)", status: "positive", color: "#00e5ff", summary: "Small sub-crater with strong internal volume scattering and depressed DOP." },
+  { id: "H3", name: "Haworth H3", host: "Haworth", lon: 354.80, lat: -87.45, diameter_km: 0.8, depth_m: 170, peak_cpr: 1.57, dop: 0.12, wall_slope_deg: "24–29°", lobate_rim: false, verdict: "Partially Likely (Melt Flows)", status: "partial", color: "#ffd740", summary: "Steep wall cold trap exhibiting localized volumetric scattering." },
+  { id: "S1", name: "Shoemaker S1", host: "Shoemaker", lon: 44.90, lat: -88.10, diameter_km: 2.98, depth_m: 345, peak_cpr: 1.94, dop: 0.11, wall_slope_deg: "13–16°", lobate_rim: false, verdict: "Partially Likely (Localized Patch)", status: "partial", color: "#ffd740", summary: "Large sub-crater basin with localized high-CPR volumetric anomalies." },
+  { id: "CABEUS", name: "Cabeus Crater (LCROSS Site)", host: "Cabeus", lon: 324.50, lat: -84.90, diameter_km: 100.0, depth_m: 3800, peak_cpr: 1.45, dop: 0.14, wall_slope_deg: "15–25°", lobate_rim: false, verdict: "Confirmed 5.6 wt% Water Ice", status: "positive", color: "#00ffcc", summary: "Site of NASA LCROSS impact plume confirmation of volatile water ice." },
+  { id: "NOBILE", name: "Nobile Crater (VIPER Target)", host: "Nobile", lon: 53.50, lat: -85.20, diameter_km: 73.0, depth_m: 3100, peak_cpr: 1.38, dop: 0.15, wall_slope_deg: "14–22°", lobate_rim: false, verdict: "Primary Artemis / VIPER Zone", status: "positive", color: "#00e5ff", summary: "Traversable high-illumination ridges adjacent to deep cold traps." },
+  { id: "SHACKLETON", name: "Shackleton Crater", host: "Shackleton", lon: 129.80, lat: -89.60, diameter_km: 20.9, depth_m: 4200, peak_cpr: 1.65, dop: 0.13, wall_slope_deg: "28–32°", lobate_rim: false, verdict: "Peak Illumination Rim (~86%) & 21K Deep Interior", status: "positive", color: "#00ffcc", summary: "True South Pole Axis Cold Trap." },
+  { id: "TOOLEY", name: "Tooley Crater (Negative Control)", host: "Standalone", lon: 51.05, lat: -88.04, diameter_km: 7.05, depth_m: 310, peak_cpr: 0.92, dop: 0.66, wall_slope_deg: "7.7–9.3°", lobate_rim: false, verdict: "No Evidence (Scientific Negative Control)", status: "negative", color: "#ff5252", summary: "Shallow standalone crater with dry rocky regolith reflection (DOP=0.66, CPR<1.0)." }
+];
 
 const NARRATIVE_PHASES = [
   {
@@ -38,17 +50,23 @@ const NARRATIVE_PHASES = [
 ];
 
 export default function Home() {
-  const [craters, setCraters] = useState([]);
+  // Initialize immediately with the full 8 benchmark craters to guarantee zero empty states
+  const [craters, setCraters] = useState(DEFAULT_BENCHMARK_CRATERS);
   const selectCrater = useMissionStore((s) => s.selectCrater);
   const setActiveLayer = useMissionStore((s) => s.setActiveLayer);
   const deepZoomLevel = useMissionStore((s) => s.deepZoomLevel);
   const setDeepZoomLevel = useMissionStore((s) => s.setDeepZoomLevel);
 
+  // Smooth scroll on appear animation hook
+  useScrollReveal('.scroll-appear', [craters]);
+
   useEffect(() => {
     let active = true;
     getBenchmarkCraters()
       .then((data) => {
-        if (active) setCraters(data.craters || []);
+        if (active && data.craters?.length) {
+          setCraters(data.craters);
+        }
       })
       .catch(() => {});
     return () => {
@@ -63,7 +81,7 @@ export default function Home() {
       <section style={{ minHeight: 'calc(100vh - 60px)', padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
         <div style={{ maxWidth: '960px', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.8rem' }}>
-            <span className="telemetry-tag" style={{ color: '#7dd3fc' }}>MISSION OPERATIONS // PHASE 01</span>
+            <span className="telemetry-tag" style={{ color: '#00e5ff' }}>MISSION OPERATIONS // PHASE 01</span>
             <span style={{ color: 'rgba(255,255,255,0.2)' }}>/</span>
             <span className="telemetry-tag" style={{ color: '#ffc857' }}>CHANDRAYAAN-2 DFSAR · OHRC · TMC-2 · IIRS</span>
           </div>
@@ -121,7 +139,7 @@ export default function Home() {
               style={{ minHeight: '46px', padding: '0.6rem 1.4rem', fontSize: '0.85rem' }}
               onClick={() => soundEngine.playTelemetryClick()}
             >
-              <span>ANALYTICS LAB</span>
+              <span>RESEARCH & METHODOLOGY LAB</span>
             </Link>
           </div>
         </div>
@@ -136,8 +154,8 @@ export default function Home() {
       <section
         style={{
           padding: '2rem',
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid rgba(0, 229, 255, 0.12)',
+          borderBottom: '1px solid rgba(0, 229, 255, 0.12)',
           backgroundColor: '#07090c',
           display: 'flex',
           flexWrap: 'wrap',
@@ -147,7 +165,7 @@ export default function Home() {
         }}
       >
         <div>
-          <span className="telemetry-tag" style={{ color: '#b8f0ff' }}>SPATIAL SCALE CONTINUUM</span>
+          <span className="telemetry-tag" style={{ color: '#00e5ff' }}>SPATIAL SCALE CONTINUUM</span>
           <div style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.2rem', fontWeight: 600, marginTop: '0.2rem' }}>
             Planetary Orbit to Sub-Meter Regolith
           </div>
@@ -174,8 +192,8 @@ export default function Home() {
 
       {/* ── 3. Narrative Progression (4 Editorial Aerospace Blocks) ── */}
       <section style={{ padding: '5rem 2rem', maxWidth: '1240px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
-          <span className="telemetry-tag" style={{ color: '#7dd3fc' }}>SCIENTIFIC REASONING ENGINE</span>
+        <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+          <span className="telemetry-tag" style={{ color: '#00e5ff' }}>SCIENTIFIC REASONING ENGINE</span>
           <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, margin: '0.5rem 0' }}>
             From Remote Sensing to Decision Context
           </h2>
@@ -184,21 +202,37 @@ export default function Home() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
-          {NARRATIVE_PHASES.map((item) => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.8rem' }}>
+          {NARRATIVE_PHASES.map((item, idx) => (
             <div
               key={item.phase}
-              className="glass-instrument hud-corner-bracket"
+              className="glass-card-aerospace hud-corner-bracket scroll-appear"
               style={{
-                padding: '2rem',
-                borderRadius: '4px',
+                padding: '1.8rem',
+                borderRadius: '14px',
+                background: 'rgba(10, 16, 26, 0.78)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                border: '1px solid rgba(0, 229, 255, 0.16)',
+                boxShadow: '0 8px 30px rgba(0, 0, 0, 0.45)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
+                transitionDelay: `${idx * 0.1}s`,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.35)';
+                e.currentTarget.style.boxShadow = '0 14px 36px rgba(0, 0, 0, 0.65)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.16)';
+                e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.45)';
               }}
             >
               <div>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#b8f0ff', fontSize: '1.1rem', fontWeight: 600 }}>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#00e5ff', fontSize: '1.1rem', fontWeight: 600 }}>
                   // {item.phase}
                 </span>
                 <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.25rem', fontWeight: 700, margin: '0.6rem 0 0.2rem' }}>
@@ -213,8 +247,8 @@ export default function Home() {
               </div>
 
               <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {item.stats.map((s, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.72rem' }}>
+                {item.stats.map((s, sIdx) => (
+                  <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.72rem' }}>
                     <span style={{ color: '#6b7280' }}>{s.label}</span>
                     <span style={{ color: '#f4f4f0', fontWeight: 600 }}>{s.val}</span>
                   </div>
@@ -226,11 +260,11 @@ export default function Home() {
       </section>
 
       {/* ── 4. Interactive Target Radar Catalog ── */}
-      <section style={{ padding: '4rem 2rem', backgroundColor: '#07090d', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+      <section style={{ padding: '4.5rem 2rem', backgroundColor: '#07090d', borderTop: '1px solid rgba(0, 229, 255, 0.12)' }}>
         <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <span className="telemetry-tag" style={{ color: '#b8f0ff' }}>TARGET SELECTION RADAR</span>
+              <span className="telemetry-tag" style={{ color: '#00e5ff' }}>TARGET SELECTION RADAR</span>
               <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '2rem', fontWeight: 700, margin: '0.4rem 0 0' }}>
                 Ground Truth Benchmark Craters
               </h2>
@@ -238,20 +272,34 @@ export default function Home() {
             <span className="telemetry-tag" style={{ color: '#7be495' }}>8 PEER-REVIEWED POLAR TARGETS (SINHA ET AL. 2026)</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.2rem' }}>
-            {craters.map((crater) => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.4rem' }}>
+            {craters.map((crater, idx) => (
               <div
                 key={crater.id}
-                className="glass-instrument"
+                className="glass-card-aerospace scroll-appear"
                 style={{
-                  padding: '1.25rem',
-                  borderRadius: '3px',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  padding: '1.35rem',
+                  borderRadius: '14px',
+                  background: 'rgba(11, 16, 26, 0.75)',
+                  backdropFilter: 'blur(18px)',
+                  WebkitBackdropFilter: 'blur(18px)',
+                  border: '1px solid rgba(0, 229, 255, 0.16)',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   cursor: 'pointer',
-                  transition: 'border-color 150ms ease, transform 150ms ease',
+                  transitionDelay: `${idx * 0.06}s`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.35)';
+                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.borderColor = 'rgba(0, 229, 255, 0.16)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.45)';
                 }}
                 onClick={() => {
                   soundEngine.playTargetAcquired();
@@ -261,20 +309,22 @@ export default function Home() {
               >
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#7dd3fc', fontSize: '0.75rem', fontWeight: 600 }}>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: '#00e5ff', fontSize: '0.75rem', fontWeight: 700 }}>
                       {crater.id}
                     </span>
                     <span
                       style={{
-                        padding: '0.15rem 0.45rem',
-                        borderRadius: '2px',
+                        padding: '0.18rem 0.5rem',
+                        borderRadius: '4px',
                         fontSize: '0.62rem',
+                        fontWeight: 600,
                         fontFamily: "'IBM Plex Mono', monospace",
                         color: crater.status === 'positive' ? '#7be495' : '#ffc857',
-                        backgroundColor: crater.status === 'positive' ? 'rgba(123, 228, 149, 0.1)' : 'rgba(255, 200, 87, 0.1)',
+                        backgroundColor: crater.status === 'positive' ? 'rgba(123, 228, 149, 0.12)' : 'rgba(255, 200, 87, 0.12)',
+                        border: crater.status === 'positive' ? '1px solid rgba(123, 228, 149, 0.3)' : '1px solid rgba(255, 200, 87, 0.3)',
                       }}
                     >
-                      {crater.status === 'positive' ? 'CONFIRMED' : 'CANDIDATE'}
+                      {crater.status === 'positive' ? 'CONFIRMED ICE' : 'CANDIDATE'}
                     </span>
                   </div>
 
@@ -289,9 +339,9 @@ export default function Home() {
                 <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.72rem' }}>
                     <span style={{ color: '#6b7280' }}>PEAK CPR: </span>
-                    <span style={{ color: '#b8f0ff', fontWeight: 600 }}>{crater.peak_cpr ? crater.peak_cpr.toFixed(2) : '1.42'}</span>
+                    <span style={{ color: '#00e5ff', fontWeight: 700 }}>{crater.peak_cpr ? crater.peak_cpr.toFixed(2) : '1.42'}</span>
                   </div>
-                  <span style={{ color: '#7dd3fc', fontSize: '0.8rem' }}>LOCK TARGET →</span>
+                  <span style={{ color: '#00e5ff', fontSize: '0.78rem', fontWeight: 600 }}>LOCK TARGET →</span>
                 </div>
               </div>
             ))}
@@ -300,7 +350,7 @@ export default function Home() {
       </section>
 
       {/* ── 5. Call To Action Banner ── */}
-      <section style={{ padding: '6rem 2rem', textAlign: 'center', backgroundColor: '#050608', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+      <section style={{ padding: '6rem 2rem', textAlign: 'center', backgroundColor: '#050608', borderTop: '1px solid rgba(0, 229, 255, 0.12)' }}>
         <span className="telemetry-tag" style={{ color: '#ffc857' }}>READY FOR MISSION DEPLOYMENT</span>
         <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 'clamp(2.2rem, 5vw, 3.5rem)', fontWeight: 700, margin: '0.6rem 0 1.2rem' }}>
           Explore South Polar Resources

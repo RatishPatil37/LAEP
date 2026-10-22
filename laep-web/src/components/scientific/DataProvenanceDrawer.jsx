@@ -18,7 +18,7 @@ export default function DataProvenanceDrawer({ isOpen, onClose }) {
         padding: '1.5rem',
         borderRadius: '3px',
         border: '1px solid rgba(125, 211, 252, 0.3)',
-        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8), 0 0 25px rgba(125, 211, 252, 0.12)',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
         color: '#f4f4f0',
         fontFamily: "'IBM Plex Mono', monospace",
         fontSize: '0.72rem',
